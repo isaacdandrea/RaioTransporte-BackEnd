@@ -1,5 +1,5 @@
 from django.db import models
-#from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.db import models as gis_models
 
 class Agency(models.Model):
     agency_id = models.CharField(max_length=100, primary_key=True)
@@ -34,7 +34,7 @@ class Stop(models.Model):
     stop_lat = models.FloatField()
     stop_lon = models.FloatField()
     stop_desc = models.TextField(null=True, blank=True)
-    #geom = gis_models.PointField(geography=True, null=True)
+    geom = gis_models.PointField(geography=True, null=True)
 
 class Trip(models.Model):
     trip_id = models.CharField(max_length=100, primary_key=True)
