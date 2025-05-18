@@ -1,0 +1,26 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+echo "*.pyc
+__pycache__/
+db.sqlite3
+/media
+/staticfiles
+.env
+*.log
+*.sqlite3
+*.pot
+*.py[cod]
+.Python
+venv/
+.env/
+*.sqlite3
+*.DS_Store
+" > .gitignore
+

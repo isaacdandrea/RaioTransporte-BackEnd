@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: mobilidade_postgis
+    restart: always
+    environment:
+      POSTGRES_DB: mobilidade
+      POSTGRES_USER: mobilidade
+      POSTGRES_PASSWORD: eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
