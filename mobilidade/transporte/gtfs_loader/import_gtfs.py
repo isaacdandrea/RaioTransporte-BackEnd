@@ -139,7 +139,7 @@ def importar_gtfs(caminho_gtfs):
                 price=row['price'],
                 currency_type=row['currency_type'],
                 payment_method=int(row['payment_method']),
-                transfers=int(row['transfers']),
+                transfers=int(row['transfers']) if row.get('transfers') and row['transfers'].isdigit() else None,
                 agency_id=row.get('agency_id'),
             ))
         FareAttribute.objects.bulk_create(fares, ignore_conflicts=True)

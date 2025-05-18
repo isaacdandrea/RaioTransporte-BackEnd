@@ -1,32 +1,32 @@
-# testar_algoritmo.py
-
+import datetime
 import os
 import django
-from django.contrib.gis.geos import Point
-
-# Configura o ambiente do Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mobilidade.settings')
 django.setup()
-
 from transporte.algorithms.raio_alcance import calcular_raio
 
 def main():
-    # Coordenadas em São Paulo (ex: Av. Paulista)
     lat = -23.561414
     lon = -46.655881
     tempo_limite = 30  # minutos
 
-    print(f"Calculando raio de alcance a partir de {lat}, {lon} em {tempo_limite} minutos...\n")
+    # Dia da semana atual (ex: 'monday', 'tuesday', etc.)
+    hoje = datetime.datetime.today()
+    dia_semana = hoje.strftime('%A').lower()
 
-    resultado = calcular_raio(lat, lon, tempo_limite)
+    # Horário atual
+    hora_atual = hoje.time()
 
-    if "error" in resultado:
-        print("Erro:", resultado["error"])
-    else:
-        print(f"{len(resultado['features'])} paradas alcançáveis encontradas.\n")
-        for feature in resultado["features"][:10]:  # mostra só as 10 primeiras
-            props = feature["properties"]
-            print(f"{props['stop_name']} ({props['stop_id']}) - {props['tempo_min']} min")
+    print(f"Calculando raio de alcance a partir de {lat}, {lon} em {tempo_limite} minutos...")
+    print(f"🕒 Dia: {dia_semana}, Hora: {hora_atual.strftime('%H:%M:%S')}")
 
-if __name__ == '__main__':
+    resultado = calcular_raio(lat, lon, tempo_limite, dia_semana, hora_atual)
+
+    print(f"\n{len(resultado['features'])} paradas alcançáveis encontradas.\n")
+    for f in sorted(resultado['features'], key=lambda f: f['properties']['tempo_min']):
+        nome = f['properties']['stop_name']
+        tempo = f['properties']['tempo_min']
+        print(f"{nome} ({f['properties']['stop_id']}) - {tempo} min")
+
+if __name__ == "__main__":
     main()

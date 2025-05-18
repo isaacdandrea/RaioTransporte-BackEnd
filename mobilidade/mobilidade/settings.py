@@ -77,14 +77,6 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'defaultdb',
-        'USER': 'avnadmin',
-        'PASSWORD': 'AVNS_el5i7iL-VK_OcZta6rr',
-        'HOST': 'postgre-mobilidade-tcc-mobilidade.h.aivencloud.com',
-        'PORT': '11705',
-    },
-    'geodados': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'mobilidade',
         'USER': 'mobilidade',
