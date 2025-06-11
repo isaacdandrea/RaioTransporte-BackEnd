@@ -1,5 +1,5 @@
 import heapq
-from datetime import datetime
+from datetime import datetime, time
 from collections import defaultdict
 
 from scipy.spatial import KDTree
@@ -17,6 +17,9 @@ def distancia_em_minutos(distancia_metros):
 
 def calcular_raio(lat, lon, tempo_limite_minutos, dia_semana, hora_inicio):
     print("🔄 Pré-carregando dados...")
+
+    # ✅ Converte minutos para datetime.time
+    hora_time = time(hour=hora_inicio // 60, minute=hora_inicio % 60)
 
     # 1️⃣ Carregar paradas com geom
     stops = {}
@@ -36,10 +39,10 @@ def calcular_raio(lat, lon, tempo_limite_minutos, dia_semana, hora_inicio):
         Calendar.objects.filter(**{dia_semana: True}).values_list('service_id', flat=True)
     )
 
-    # 3️⃣ Carregar stoptimes válidos
+    # 3️⃣ Carregar stoptimes válidos e filtrar por hora
     stoptimes = StopTime.objects.exclude(arrival_time__isnull=True, departure_time__isnull=True)
     stoptimes = stoptimes.filter(trip__service_id__in=servicos_ativos)
-    stoptimes = [st for st in stoptimes if st.departure_time >= hora_inicio]
+    stoptimes = [st for st in stoptimes if st.departure_time >= hora_time]
 
     # Agrupar stoptimes
     stoptimes_by_stop = defaultdict(list)
