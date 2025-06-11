@@ -13,15 +13,6 @@ import json
 from datetime import datetime
 import pytz
 
-class AlcanceAPIView(APIView):
-    def get(self, request):
-        lat = float(request.query_params.get('lat'))
-        lon = float(request.query_params.get('lon'))
-        tempo = int(request.query_params.get('tempo'))
-
-        geojson = calcular_raio(lat, lon, tempo)
-        return Response(geojson)
-
 @csrf_exempt
 def raio_de_alcance_view(request):
     if request.method != 'POST':
