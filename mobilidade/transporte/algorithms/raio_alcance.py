@@ -1,147 +1,220 @@
 import heapq
-from datetime import datetime, time
 from collections import defaultdict
+from dataclasses import dataclass
+from math import atan2, cos, radians, sin, sqrt
+from typing import Dict, List, Tuple
 
 from scipy.spatial import KDTree
 from django.contrib.gis.geos import Point
 
 from transporte.models import Calendar, Stop, StopTime, Frequency
 
-# Configurações
-CAMINHADA_MAX_METROS = 300
-VELOCIDADE_CAMINHADA_KMH = 5
-ESPERA_PADRAO_SEM_FREQ = 5  # minutos
+"""
+calcular_raio_csa.py — Isócrona precisa usando o Connection Scan Algorithm (CSA)
+--------------------------------------------------------------------------
+Entrada  | Descrição
+---------|---------------------------------------------------------------------
+lat/lon  | Coordenadas do ponto de partida (WGS‑84)
+max_min  | Horizonte de tempo em minutos (ex.: 30)
+dia_sem  | Dia da semana ("monday", "tuesday", …) conforme GTFS Calendar
+hora_min | Hora local de partida em minutos desde 0h00
 
-def distancia_em_minutos(distancia_metros):
-    return (distancia_metros / 1000) / VELOCIDADE_CAMINHADA_KMH * 60
+Saída
+-----
+GeoJSON FeatureCollection com cada parada acessível até `max_min`,
+propriedade `tempo_min` indica minutos desde a partida.
+"""
 
-def calcular_raio(lat, lon, tempo_limite_minutos, dia_semana, hora_inicio):
-    print("🔄 Pré-carregando dados...")
+# ------------------------------------------------------------
+# Parâmetros globais
+# ------------------------------------------------------------
+CAMINHADA_MAX_METROS = 300         # Raio máximo de caminhada entre paradas
+VELOCIDADE_CAMINHADA_KMH = 5       # Velocidade média a pé
+BUFFER_HORIZONTE_MIN = 5           # Margem extra para pegar conexões limítrofes
 
-    # ✅ Converte minutos para datetime.time
-    hora_time = time(hour=hora_inicio // 60, minute=hora_inicio % 60)
 
-    # 1️⃣ Carregar paradas com geom
-    stops = {}
-    stop_coords = []
-    stop_ids = []
+# ------------------------------------------------------------
+# Utilidades auxiliares
+# ------------------------------------------------------------
 
-    for s in Stop.objects.exclude(geom__isnull=True):
-        stops[s.stop_id] = s
-        stop_coords.append((s.stop_lon, s.stop_lat))  # ordem: x=lon, y=lat
-        stop_ids.append(s.stop_id)
+def hhmm_para_min(t) -> int:
+    """Converte datetime.time → minutos desde 0h00."""
+    return t.hour * 60 + t.minute + round(t.second / 60)
 
-    # Montar KDTree para caminhada
-    tree = KDTree(stop_coords)
 
-    # 2️⃣ Filtrar serviços ativos no calendário
-    servicos_ativos = set(
-        Calendar.objects.filter(**{dia_semana: True}).values_list('service_id', flat=True)
+def haversine_m(lat1, lon1, lat2, lon2) -> float:
+    """Distância Haversine entre dois pares lat/lon em metros."""
+    R = 6_371_000
+    φ1, φ2 = radians(lat1), radians(lat2)
+    dφ = radians(lat2 - lat1)
+    dλ = radians(lon2 - lon1)
+    a = sin(dφ / 2) ** 2 + cos(φ1) * cos(φ2) * sin(dλ / 2) ** 2
+    return 2 * R * atan2(sqrt(a), sqrt(1 - a))
+
+
+def tempo_caminhada(dist_m: float) -> float:
+    """Distância (m) → minutos a pé."""
+    return (dist_m / 1000) / VELOCIDADE_CAMINHADA_KMH * 60
+
+
+# ------------------------------------------------------------
+# Estruturas do CSA
+# ------------------------------------------------------------
+@dataclass(slots=True)
+class Connection:
+    dep_stop: str
+    arr_stop: str
+    dep_min: int
+    arr_min: int
+
+
+# ------------------------------------------------------------
+# Construção das conexões do dia
+# ------------------------------------------------------------
+
+def _add_trip(rows: List[StopTime], conns: List[Connection], offs: Dict[str, List[int]], stps: Dict[str, List[str]]):
+    trip_id = rows[0].trip_id
+    offs[trip_id] = [0]
+    stps[trip_id] = [rows[0].stop_id]
+
+    for s1, s2 in zip(rows, rows[1:]):
+        dep = hhmm_para_min(s1.departure_time)
+        arr = hhmm_para_min(s2.arrival_time)
+        conns.append(Connection(s1.stop_id, s2.stop_id, dep, arr))
+        offs[trip_id].append(offs[trip_id][-1] + (arr - dep))
+        stps[trip_id].append(s2.stop_id)
+
+
+def _gen_headway(freq: Frequency, offs: List[int], stps: List[str], conns: List[Connection], horizon_end: int):
+    head = freq.headway_secs // 60
+    start = hhmm_para_min(freq.start_time)
+    end = hhmm_para_min(freq.end_time)
+    for k in range(0, (end - start) // head + 1):
+        base_dep = start + k * head
+        if base_dep > horizon_end:
+            break
+        for idx in range(len(stps) - 1):
+            dep_seg = base_dep + offs[idx]
+            arr_seg = base_dep + offs[idx + 1]
+            conns.append(Connection(stps[idx], stps[idx + 1], dep_seg, arr_seg))
+
+
+def carregar_conexoes(dia_semana: str, horizon_end: int) -> Tuple[List[Connection], Dict[str, List[int]]]:
+    servicos = set(
+        Calendar.objects.filter(**{dia_semana: True}).values_list("service_id", flat=True)
     )
 
-    # 3️⃣ Carregar stoptimes válidos e filtrar por hora
-    stoptimes = StopTime.objects.exclude(arrival_time__isnull=True, departure_time__isnull=True)
-    stoptimes = stoptimes.filter(trip__service_id__in=servicos_ativos)
-    stoptimes = [st for st in stoptimes if st.departure_time >= hora_time]
+    conns: List[Connection] = []
+    offsets: Dict[str, List[int]] = {}
+    stopseqs: Dict[str, List[str]] = {}
 
-    # Agrupar stoptimes
-    stoptimes_by_stop = defaultdict(list)
-    stoptimes_by_trip = defaultdict(list)
-    for st in stoptimes:
-        stoptimes_by_stop[st.stop_id].append(st)
-        stoptimes_by_trip[st.trip_id].append(st)
-    for st_list in stoptimes_by_trip.values():
-        st_list.sort(key=lambda s: s.stop_sequence)
+    # ------------ trips com horários fixos -------------
+    qs = (
+        StopTime.objects.filter(trip__service_id__in=servicos)
+        .exclude(arrival_time__isnull=True, departure_time__isnull=True)
+        .select_related("trip")
+        .order_by("trip_id", "stop_sequence")
+    )
 
-    # 4️⃣ Frequências
-    freq_by_trip = {f.trip_id: f for f in Frequency.objects.all()}
+    buf: List[StopTime] = []
+    cur = None
+    for st in qs:
+        if st.trip_id != cur and buf:
+            _add_trip(buf, conns, offsets, stopseqs)
+            buf.clear()
+        cur = st.trip_id
+        buf.append(st)
+    if buf:
+        _add_trip(buf, conns, offsets, stopseqs)
 
-    print(f"✅ {len(stops)} paradas | {len(stoptimes)} stoptimes filtrados | {len(freq_by_trip)} frequencies")
+    # ------------- trips com headway (Frequency) -------------
+    for f in Frequency.objects.filter(trip_id__in=offsets):
+        _gen_headway(f, offsets[f.trip_id], stopseqs[f.trip_id], conns, horizon_end)
 
-    # 5️⃣ Parada inicial mais próxima
-    ponto_inicial = (lon, lat)
-    dist_km, idx = tree.query(ponto_inicial)
-    parada_inicial_id = stop_ids[idx]
+    conns.sort(key=lambda c: c.dep_min)
 
-    visitados = {}
-    fila = []
-    heapq.heappush(fila, (0, parada_inicial_id))  # (tempo, stop_id)
+    idx_by_stop: Dict[str, List[int]] = defaultdict(list)
+    for i, c in enumerate(conns):
+        idx_by_stop[c.dep_stop].append(i)
 
-    while fila:
-        tempo_atual, stop_id = heapq.heappop(fila)
+    return conns, idx_by_stop
 
-        if stop_id in visitados and visitados[stop_id] <= tempo_atual:
+
+# ------------------------------------------------------------
+# Algoritmo principal — CSA + caminhada dinâmica
+# ------------------------------------------------------------
+
+def calcular_raio(
+    lat: float,
+    lon: float,
+    max_minutos: int,
+    dia_semana: str,
+    hora_inicio_min: int,
+):
+    """Retorna FeatureCollection de paradas acessíveis."""
+
+    # -------- stops + KDTree --------
+    stops = {s.stop_id: s for s in Stop.objects.exclude(geom__isnull=True)}
+    coords = [(s.stop_lat, s.stop_lon) for s in stops.values()]
+    ids = list(stops)
+    tree = KDTree(coords)
+    deg_walk = CAMINHADA_MAX_METROS / 111_320
+
+    # -------- conexões do dia --------
+    horizon_abs = hora_inicio_min + max_minutos + BUFFER_HORIZONTE_MIN
+    conns, idx_by_stop = carregar_conexoes(dia_semana, horizon_abs)
+
+    # -------- earliest‑arrival --------
+    INF = 10 ** 9
+    eat: Dict[str, float] = defaultdict(lambda: INF)
+    heap = []  # (arr_time, stop_id)
+
+    # ponto de partida → stops caminháveis
+    for i in tree.query_ball_point((lat, lon), deg_walk):
+        sid = ids[i]
+        d = haversine_m(lat, lon, *coords[i])
+        arr = hora_inicio_min + tempo_caminhada(d)
+        eat[sid] = arr
+        heapq.heappush(heap, (arr, sid))
+
+    # -------- relaxação --------
+    while heap:
+        t_cur, sid = heapq.heappop(heap)
+        if t_cur > eat[sid] or t_cur - hora_inicio_min > max_minutos:
             continue
 
-        visitados[stop_id] = tempo_atual
-        parada = stops.get(stop_id)
-        if not parada:
-            continue
-
-        # 6️⃣ Caminhada com KDTree
-        ponto = (parada.stop_lon, parada.stop_lat)
-        idxs = tree.query_ball_point(ponto, CAMINHADA_MAX_METROS / 100000)
-
-        for i in idxs:
-            vizinha_id = stop_ids[i]
-            if vizinha_id == stop_id:
+        # 1) Caminhadas locais
+        for j in tree.query_ball_point(coords[ids.index(sid)], deg_walk):
+            nsid = ids[j]
+            if nsid == sid:
                 continue
-            vizinha = stops[vizinha_id]
-            dist = parada.geom.distance(vizinha.geom) * 100000
-            tempo_caminhada = distancia_em_minutos(dist)
-            total = tempo_atual + tempo_caminhada
-            if total < tempo_limite_minutos and (vizinha_id not in visitados or total < visitados[vizinha_id]):
-                heapq.heappush(fila, (total, vizinha_id))
+            twalk = tempo_caminhada(haversine_m(*coords[ids.index(sid)], *coords[j]))
+            arr_nb = t_cur + twalk
+            if arr_nb < eat[nsid]:
+                eat[nsid] = arr_nb
+                heapq.heappush(heap, (arr_nb, nsid))
 
-        # 7️⃣ Transporte coletivo
-        for st in stoptimes_by_stop.get(stop_id, []):
-            trip_id = st.trip_id
-            trip_sts = stoptimes_by_trip[trip_id]
-            freq = freq_by_trip.get(trip_id)
-            espera = (freq.headway_secs / 60) / 2 if freq and freq.headway_secs else ESPERA_PADRAO_SEM_FREQ
-
-            try:
-                idx_atual = next(i for i, s in enumerate(trip_sts)
-                                 if s.stop_id == stop_id and s.stop_sequence == st.stop_sequence)
-            except StopIteration:
+        # 2) Conexões desde este stop
+        for idx in idx_by_stop.get(sid, []):
+            c = conns[idx]
+            if c.dep_min < t_cur or c.dep_min > horizon_abs:
                 continue
+            if c.arr_min < eat[c.arr_stop]:
+                eat[c.arr_stop] = c.arr_min
+                heapq.heappush(heap, (c.arr_min, c.arr_stop))
 
-            saida = st.departure_time
-            for prox in trip_sts[idx_atual + 1:]:
-                chegada = prox.arrival_time
-                if not chegada or not saida:
-                    continue
-                duracao = (
-                    datetime.combine(datetime.today(), chegada) -
-                    datetime.combine(datetime.today(), saida)
-                ).total_seconds() / 60.0
-                if duracao < 0:
-                    continue
-                total = tempo_atual + espera + duracao
-                if total < tempo_limite_minutos and (prox.stop_id not in visitados or total < visitados[prox.stop_id]):
-                    heapq.heappush(fila, (total, prox.stop_id))
-                    saida = chegada
-
-    # GeoJSON de retorno
+    # -------- GeoJSON --------
     features = []
-    for stop_id, tempo in visitados.items():
-        stop = stops.get(stop_id)
-        if not stop:
-            continue
-        features.append({
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": [stop.stop_lon, stop.stop_lat]
-            },
-            "properties": {
-                "stop_id": stop.stop_id,
-                "stop_name": stop.stop_name,
-                "tempo_min": round(tempo, 1),
-            }
-        })
+    for sid, arr in eat.items():
+        delta = arr - hora_inicio_min
+        if delta <= max_minutos:
+            s = stops[sid]
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [s.stop_lon, s.stop_lat]},
+                    "properties": {"stop_id": sid, "stop_name": s.stop_name, "tempo_min": round(delta, 1)},
+                }
+            )
 
-    return {
-        "type": "FeatureCollection",
-        "features": features
-    }
+    return {"type": "FeatureCollection", "features": features}

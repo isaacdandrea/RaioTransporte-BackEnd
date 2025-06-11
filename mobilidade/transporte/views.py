@@ -5,12 +5,13 @@ from django.shortcuts import render
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .algorithms.raio_alcance import calcular_raio
+from .algorithms.calcular_raio_csa import calcular_raio
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
-from datetime import datetime
+from datetime import datetime, timedelta, time
 import pytz
 
 @csrf_exempt
@@ -24,9 +25,20 @@ def raio_de_alcance_view(request):
         lon = float(dados['lon'])
         tempo = int(dados['tempo'])
 
-        agora = datetime.now(pytz.timezone("America/Sao_Paulo"))
-        dia_semana = agora.strftime('%A').lower()  # exemplo: 'monday'
-        hora_inicio = agora.hour * 60 + agora.minute
+        tz = pytz.timezone("America/Sao_Paulo")
+
+        # 1. Descobre a próxima (ou a própria) quinta-feira
+        hoje = datetime.now(tz).date()
+        # weekday(): segunda=0 … domingo=6  ⇒  quinta=3
+        dias_ate_quinta = (3 - hoje.weekday()) % 7
+        data_quinta = hoje + timedelta(days=dias_ate_quinta)
+
+        # 2. Constrói o instante exato da quinta-feira às 18h00
+        agora = tz.localize(datetime.combine(data_quinta, time(18, 0)))
+
+        # 3. Dia da semana e hora de início em minutos
+        dia_semana = agora.strftime("%A").lower()  # sempre 'thursday'
+        hora_inicio = 18 * 60  # 1080
 
         geojson = calcular_raio(lat, lon, tempo, dia_semana, hora_inicio)
         return JsonResponse(geojson, safe=False)

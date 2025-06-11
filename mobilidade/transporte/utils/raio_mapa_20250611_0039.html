@@ -1,0 +1,3473 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_8abfbef3d77577a22c5500ecd5650f00 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_8abfbef3d77577a22c5500ecd5650f00" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_8abfbef3d77577a22c5500ecd5650f00 = L.map(
+                "map_8abfbef3d77577a22c5500ecd5650f00",
+                {
+                    center: [-23.557983, -46.660507],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 14,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_c762ccc6678372763ae2826d58aa981b = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_c762ccc6678372763ae2826d58aa981b.addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+            var marker_66bb4183d726cdfad4097ac7313cc1d0 = L.marker(
+                [-23.557983, -46.660507],
+                {
+}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+            var icon_c12e3c8f41ccf4b689a0c29706c90409 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+            marker_66bb4183d726cdfad4097ac7313cc1d0.bindTooltip(
+                `<div>
+                     Origem
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_66bb4183d726cdfad4097ac7313cc1d0.setIcon(icon_c12e3c8f41ccf4b689a0c29706c90409);
+            
+    
+            var circle_marker_7fd04be74655674e8b5afdee89a7e398 = L.circleMarker(
+                [-23.558094, -46.660205],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_011678a6ea168e0804d688c11827bcbe = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c499cdfa9b988c4673014ae60b68bfe4 = $(`<div id="html_c499cdfa9b988c4673014ae60b68bfe4" style="width: 100.0%; height: 100.0%;">Consolação (0.4 min)</div>`)[0];
+                popup_011678a6ea168e0804d688c11827bcbe.setContent(html_c499cdfa9b988c4673014ae60b68bfe4);
+            
+        
+
+        circle_marker_7fd04be74655674e8b5afdee89a7e398.bindPopup(popup_011678a6ea168e0804d688c11827bcbe)
+        ;
+
+        
+    
+    
+            var circle_marker_f63062050c2c69cd1b83a8d4c3a6d2ab = L.circleMarker(
+                [-23.558578, -46.660572],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_498f011992b7c40cc7dbeb04d6b0d5a0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8430f9ec161f0c7dcb8b23b791dc4780 = $(`<div id="html_8430f9ec161f0c7dcb8b23b791dc4780" style="width: 100.0%; height: 100.0%;">R. Augusta, 1771 (1.2 min)</div>`)[0];
+                popup_498f011992b7c40cc7dbeb04d6b0d5a0.setContent(html_8430f9ec161f0c7dcb8b23b791dc4780);
+            
+        
+
+        circle_marker_f63062050c2c69cd1b83a8d4c3a6d2ab.bindPopup(popup_498f011992b7c40cc7dbeb04d6b0d5a0)
+        ;
+
+        
+    
+    
+            var circle_marker_b7b826d3dcd1afc62e64b0b6f091573c = L.circleMarker(
+                [-23.557403, -46.659503],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_78c819f396aee06942f9be652d0f4786 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f62cfe3a48a333eabaf04bf147146d69 = $(`<div id="html_f62cfe3a48a333eabaf04bf147146d69" style="width: 100.0%; height: 100.0%;">R. Augusta, 1592 (1.7 min)</div>`)[0];
+                popup_78c819f396aee06942f9be652d0f4786.setContent(html_f62cfe3a48a333eabaf04bf147146d69);
+            
+        
+
+        circle_marker_b7b826d3dcd1afc62e64b0b6f091573c.bindPopup(popup_78c819f396aee06942f9be652d0f4786)
+        ;
+
+        
+    
+    
+            var circle_marker_a545fe42aede8f471c7d2c47d48f746c = L.circleMarker(
+                [-23.558947, -46.659585],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b29adbb4ea8c0d05e44e79d07cbfbff5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ca0d4f4a704bcc34f0ccfd7dc66484de = $(`<div id="html_ca0d4f4a704bcc34f0ccfd7dc66484de" style="width: 100.0%; height: 100.0%;">Av. Paulista, 2027 (1.8 min)</div>`)[0];
+                popup_b29adbb4ea8c0d05e44e79d07cbfbff5.setContent(html_ca0d4f4a704bcc34f0ccfd7dc66484de);
+            
+        
+
+        circle_marker_a545fe42aede8f471c7d2c47d48f746c.bindPopup(popup_b29adbb4ea8c0d05e44e79d07cbfbff5)
+        ;
+
+        
+    
+    
+            var circle_marker_4a4317a93ba45d306e159dc1c0657133 = L.circleMarker(
+                [-23.558768, -46.659175],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_2dae8e530b5a44d76f393ce92cdc35de = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7cebb6dd408c76ce41868d90593356eb = $(`<div id="html_7cebb6dd408c76ce41868d90593356eb" style="width: 100.0%; height: 100.0%;">Parada 2 - Frei Caneca (1.9 min)</div>`)[0];
+                popup_2dae8e530b5a44d76f393ce92cdc35de.setContent(html_7cebb6dd408c76ce41868d90593356eb);
+            
+        
+
+        circle_marker_4a4317a93ba45d306e159dc1c0657133.bindPopup(popup_2dae8e530b5a44d76f393ce92cdc35de)
+        ;
+
+        
+    
+    
+            var circle_marker_81fad978c470cef79f209babf8392d3f = L.circleMarker(
+                [-23.558767, -46.661457],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6eb515991ee0fe973482b88b4fe68dbb = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9feee736fa5366f992354c4d93d0fd18 = $(`<div id="html_9feee736fa5366f992354c4d93d0fd18" style="width: 100.0%; height: 100.0%;">Al. Santos, 2219 (2.2 min)</div>`)[0];
+                popup_6eb515991ee0fe973482b88b4fe68dbb.setContent(html_9feee736fa5366f992354c4d93d0fd18);
+            
+        
+
+        circle_marker_81fad978c470cef79f209babf8392d3f.bindPopup(popup_6eb515991ee0fe973482b88b4fe68dbb)
+        ;
+
+        
+    
+    
+            var circle_marker_f841a86fe593d51aed38ef4d4d6abbdf = L.circleMarker(
+                [-23.55713, -46.661572],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3a278a9d5dd0481b94c5a0309bd0f884 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1453847561df713bb695d240b5002692 = $(`<div id="html_1453847561df713bb695d240b5002692" style="width: 100.0%; height: 100.0%;">Av. Paulista, 2319 (2.5 min)</div>`)[0];
+                popup_3a278a9d5dd0481b94c5a0309bd0f884.setContent(html_1453847561df713bb695d240b5002692);
+            
+        
+
+        circle_marker_f841a86fe593d51aed38ef4d4d6abbdf.bindPopup(popup_3a278a9d5dd0481b94c5a0309bd0f884)
+        ;
+
+        
+    
+    
+            var circle_marker_154d4c656ec5d82c231eb202a13b9e86 = L.circleMarker(
+                [-23.559461, -46.658509],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_36ab8dd7c3a30394e9abe1be25d91d22 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9e1bc26be430b229f24f8a6c49a9442c = $(`<div id="html_9e1bc26be430b229f24f8a6c49a9442c" style="width: 100.0%; height: 100.0%;">Parada 1 - Frei Caneca (3.2 min)</div>`)[0];
+                popup_36ab8dd7c3a30394e9abe1be25d91d22.setContent(html_9e1bc26be430b229f24f8a6c49a9442c);
+            
+        
+
+        circle_marker_154d4c656ec5d82c231eb202a13b9e86.bindPopup(popup_36ab8dd7c3a30394e9abe1be25d91d22)
+        ;
+
+        
+    
+    
+            var circle_marker_ee79530f3eb9a9989831b7b0523c0c60 = L.circleMarker(
+                [-23.557214, -46.662629],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_2e0afd49a6c29ac6245a3c0ac9643712 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d6fa5bf814b94ce4beb8372b8ae49ca9 = $(`<div id="html_d6fa5bf814b94ce4beb8372b8ae49ca9" style="width: 100.0%; height: 100.0%;">R. Bela Cintra, 1165 (3.6 min)</div>`)[0];
+                popup_2e0afd49a6c29ac6245a3c0ac9643712.setContent(html_d6fa5bf814b94ce4beb8372b8ae49ca9);
+            
+        
+
+        circle_marker_ee79530f3eb9a9989831b7b0523c0c60.bindPopup(popup_2e0afd49a6c29ac6245a3c0ac9643712)
+        ;
+
+        
+    
+    
+            var circle_marker_2755ae0882bf8ebd40ec238143acd5bc = L.circleMarker(
+                [-23.555528, -46.660759],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e51057950431ac580a9ba4e661c6f44e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2d1a54c47fd60f1778bf51afe1035c53 = $(`<div id="html_2d1a54c47fd60f1778bf51afe1035c53" style="width: 100.0%; height: 100.0%;">R. Bela Cintra, 955 (3.9 min)</div>`)[0];
+                popup_e51057950431ac580a9ba4e661c6f44e.setContent(html_2d1a54c47fd60f1778bf51afe1035c53);
+            
+        
+
+        circle_marker_2755ae0882bf8ebd40ec238143acd5bc.bindPopup(popup_e51057950431ac580a9ba4e661c6f44e)
+        ;
+
+        
+    
+    
+            var circle_marker_c98328b0394d02ef7e9adbec72d81f57 = L.circleMarker(
+                [-23.556066, -46.662369],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_74d3e4971687c04472e1abd36563685e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d8ed37301ff82b0dc45728143f971804 = $(`<div id="html_d8ed37301ff82b0dc45728143f971804" style="width: 100.0%; height: 100.0%;">Av. Paulista, 2452 (4.2 min)</div>`)[0];
+                popup_74d3e4971687c04472e1abd36563685e.setContent(html_d8ed37301ff82b0dc45728143f971804);
+            
+        
+
+        circle_marker_c98328b0394d02ef7e9adbec72d81f57.bindPopup(popup_74d3e4971687c04472e1abd36563685e)
+        ;
+
+        
+    
+    
+            var circle_marker_6ee6da13c2092c861084115257e4dd9e = L.circleMarker(
+                [-23.560226, -46.662366],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6c672c6aa1c5a75f1e61a6b99fdf54bb = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_02816da6ad43659d3f531cadff8a7e92 = $(`<div id="html_02816da6ad43659d3f531cadff8a7e92" style="width: 100.0%; height: 100.0%;">R. Augusta, 2047 (4.3 min)</div>`)[0];
+                popup_6c672c6aa1c5a75f1e61a6b99fdf54bb.setContent(html_02816da6ad43659d3f531cadff8a7e92);
+            
+        
+
+        circle_marker_6ee6da13c2092c861084115257e4dd9e.bindPopup(popup_6c672c6aa1c5a75f1e61a6b99fdf54bb)
+        ;
+
+        
+    
+    
+            var circle_marker_b25a555a3e01804eececc370b8616387 = L.circleMarker(
+                [-23.555155, -46.659306],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_ad7559716e04882d248f80a95ad77e31 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c60d5b5fddbfed42c44510e5d15aa0e0 = $(`<div id="html_c60d5b5fddbfed42c44510e5d15aa0e0" style="width: 100.0%; height: 100.0%;">R. Antônio Carlos, 534 (4.7 min)</div>`)[0];
+                popup_ad7559716e04882d248f80a95ad77e31.setContent(html_c60d5b5fddbfed42c44510e5d15aa0e0);
+            
+        
+
+        circle_marker_b25a555a3e01804eececc370b8616387.bindPopup(popup_ad7559716e04882d248f80a95ad77e31)
+        ;
+
+        
+    
+    
+            var circle_marker_a8fbcaae8f0567f94d1cc55df6a265b3 = L.circleMarker(
+                [-23.557171, -46.657021],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e31c307299047764571865db680a622f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f62aa892d1cf9967b2060af0e98a93e1 = $(`<div id="html_f62aa892d1cf9967b2060af0e98a93e1" style="width: 100.0%; height: 100.0%;">R. Antônio Carlos, 196 (4.7 min)</div>`)[0];
+                popup_e31c307299047764571865db680a622f.setContent(html_f62aa892d1cf9967b2060af0e98a93e1);
+            
+        
+
+        circle_marker_a8fbcaae8f0567f94d1cc55df6a265b3.bindPopup(popup_e31c307299047764571865db680a622f)
+        ;
+
+        
+    
+    
+            var circle_marker_7870127bdfdbaf36ccaf24f886e7727b = L.circleMarker(
+                [-23.560303, -46.657365],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0f58df7764b53b363c55f3ea5bbe5b30 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d037e418eaf7977cf8be6db7dc26b37d = $(`<div id="html_d037e418eaf7977cf8be6db7dc26b37d" style="width: 100.0%; height: 100.0%;">Av. Paulista, 1754 (5.0 min)</div>`)[0];
+                popup_0f58df7764b53b363c55f3ea5bbe5b30.setContent(html_d037e418eaf7977cf8be6db7dc26b37d);
+            
+        
+
+        circle_marker_7870127bdfdbaf36ccaf24f886e7727b.bindPopup(popup_0f58df7764b53b363c55f3ea5bbe5b30)
+        ;
+
+        
+    
+    
+            var circle_marker_abdd34a6211853ef4a4d947c76fc5563 = L.circleMarker(
+                [-23.555883, -46.66306],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5defc1f11cc03bca213d84cc41519ac7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8ea42f13eb0b56619a9cdb2c3996f89e = $(`<div id="html_8ea42f13eb0b56619a9cdb2c3996f89e" style="width: 100.0%; height: 100.0%;">Paulista B/C (5.0 min)</div>`)[0];
+                popup_5defc1f11cc03bca213d84cc41519ac7.setContent(html_8ea42f13eb0b56619a9cdb2c3996f89e);
+            
+        
+
+        circle_marker_abdd34a6211853ef4a4d947c76fc5563.bindPopup(popup_5defc1f11cc03bca213d84cc41519ac7)
+        ;
+
+        
+    
+    
+            var circle_marker_0a1053589f3b33c3678edb69e4d40fcb = L.circleMarker(
+                [-23.555176, -46.66237],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c472e1f6462a1578d3e37aaab5d94fb2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b7d14f83d9a39f7577a48273a0cf1bf9 = $(`<div id="html_b7d14f83d9a39f7577a48273a0cf1bf9" style="width: 100.0%; height: 100.0%;">Paulista C/B (5.3 min)</div>`)[0];
+                popup_c472e1f6462a1578d3e37aaab5d94fb2.setContent(html_b7d14f83d9a39f7577a48273a0cf1bf9);
+            
+        
+
+        circle_marker_0a1053589f3b33c3678edb69e4d40fcb.bindPopup(popup_c472e1f6462a1578d3e37aaab5d94fb2)
+        ;
+
+        
+    
+    
+            var circle_marker_9298ad94c697c7be6483bfe0ec7199e0 = L.circleMarker(
+                [-23.555071, -46.662131],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_170567f255c50b58c5dbc9223a790333 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fdd2fd8691066aba5c1781133f939de6 = $(`<div id="html_fdd2fd8691066aba5c1781133f939de6" style="width: 100.0%; height: 100.0%;">Paulista (5.3 min)</div>`)[0];
+                popup_170567f255c50b58c5dbc9223a790333.setContent(html_fdd2fd8691066aba5c1781133f939de6);
+            
+        
+
+        circle_marker_9298ad94c697c7be6483bfe0ec7199e0.bindPopup(popup_170567f255c50b58c5dbc9223a790333)
+        ;
+
+        
+    
+    
+            var circle_marker_f9c11332ee7f143a8d4b175ee6dad88b = L.circleMarker(
+                [-23.554529, -46.659647],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d1219820d8bea27aefcdb843ee0e1623 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d7bf3e3543aa9dac2b26eeb9e4bf3515 = $(`<div id="html_d7bf3e3543aa9dac2b26eeb9e4bf3515" style="width: 100.0%; height: 100.0%;">R. Bela Cintra, 769 (5.6 min)</div>`)[0];
+                popup_d1219820d8bea27aefcdb843ee0e1623.setContent(html_d7bf3e3543aa9dac2b26eeb9e4bf3515);
+            
+        
+
+        circle_marker_f9c11332ee7f143a8d4b175ee6dad88b.bindPopup(popup_d1219820d8bea27aefcdb843ee0e1623)
+        ;
+
+        
+    
+    
+            var circle_marker_30df4e73becdf73e09a8f5657076117e = L.circleMarker(
+                [-23.555195, -46.663271],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_56067c0dd95cfc1dcaf2d184d510ddd5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_db4b0de60e837613e9ca82801479e187 = $(`<div id="html_db4b0de60e837613e9ca82801479e187" style="width: 100.0%; height: 100.0%;">Av. Paulista, 2584 (5.8 min)</div>`)[0];
+                popup_56067c0dd95cfc1dcaf2d184d510ddd5.setContent(html_db4b0de60e837613e9ca82801479e187);
+            
+        
+
+        circle_marker_30df4e73becdf73e09a8f5657076117e.bindPopup(popup_56067c0dd95cfc1dcaf2d184d510ddd5)
+        ;
+
+        
+    
+    
+            var circle_marker_55a8c59f2937e5757ad1ddd94b64c3d9 = L.circleMarker(
+                [-23.561257, -46.657558],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_1192e1b13ce147d4a10d85b002e10dae = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ebaf808d00afe541da318144bd0acfbe = $(`<div id="html_ebaf808d00afe541da318144bd0acfbe" style="width: 100.0%; height: 100.0%;">R. Peixoto Gomide, 894 (5.8 min)</div>`)[0];
+                popup_1192e1b13ce147d4a10d85b002e10dae.setContent(html_ebaf808d00afe541da318144bd0acfbe);
+            
+        
+
+        circle_marker_55a8c59f2937e5757ad1ddd94b64c3d9.bindPopup(popup_1192e1b13ce147d4a10d85b002e10dae)
+        ;
+
+        
+    
+    
+            var circle_marker_9a1b4112c508d923d4e2d9267829ae69 = L.circleMarker(
+                [-23.55865, -46.656255],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_9c918d1664785c740386600654d7d04a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_79c7d713092500505b5ff92901becbf4 = $(`<div id="html_79c7d713092500505b5ff92901becbf4" style="width: 100.0%; height: 100.0%;">R. S. Carlos Do Pinhal, 1306 (6.1 min)</div>`)[0];
+                popup_9c918d1664785c740386600654d7d04a.setContent(html_79c7d713092500505b5ff92901becbf4);
+            
+        
+
+        circle_marker_9a1b4112c508d923d4e2d9267829ae69.bindPopup(popup_9c918d1664785c740386600654d7d04a)
+        ;
+
+        
+    
+    
+            var circle_marker_b9b372788d75b83bbf55e69da9e3ec61 = L.circleMarker(
+                [-23.561699, -46.658295],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e84da0b0337a88e348487da4f4fd2c1b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b37b1c408b230d972143edfa8db77a1c = $(`<div id="html_b37b1c408b230d972143edfa8db77a1c" style="width: 100.0%; height: 100.0%;">Al. Santos, 1767 (6.2 min)</div>`)[0];
+                popup_e84da0b0337a88e348487da4f4fd2c1b.setContent(html_b37b1c408b230d972143edfa8db77a1c);
+            
+        
+
+        circle_marker_b9b372788d75b83bbf55e69da9e3ec61.bindPopup(popup_e84da0b0337a88e348487da4f4fd2c1b)
+        ;
+
+        
+    
+    
+            var circle_marker_2a58200c890d8f664b0ec7249442dab8 = L.circleMarker(
+                [-23.554738, -46.663404],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_005cc6da3542db34406112cf07342824 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_36eab9dc44fe2b1473b26ac1fa264dc2 = $(`<div id="html_36eab9dc44fe2b1473b26ac1fa264dc2" style="width: 100.0%; height: 100.0%;">Av. Angélica, 2646 (6.4 min)</div>`)[0];
+                popup_005cc6da3542db34406112cf07342824.setContent(html_36eab9dc44fe2b1473b26ac1fa264dc2);
+            
+        
+
+        circle_marker_2a58200c890d8f664b0ec7249442dab8.bindPopup(popup_005cc6da3542db34406112cf07342824)
+        ;
+
+        
+    
+    
+            var circle_marker_732b8b43a05d34c1869e8d18e8076449 = L.circleMarker(
+                [-23.561342, -46.663649],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3b97068a06a57612c6955ff042deb0b1 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_58dd5f6ae369bd9ed0f68c7e4e32f274 = $(`<div id="html_58dd5f6ae369bd9ed0f68c7e4e32f274" style="width: 100.0%; height: 100.0%;">R. Augusta, 2212 (6.5 min)</div>`)[0];
+                popup_3b97068a06a57612c6955ff042deb0b1.setContent(html_58dd5f6ae369bd9ed0f68c7e4e32f274);
+            
+        
+
+        circle_marker_732b8b43a05d34c1869e8d18e8076449.bindPopup(popup_3b97068a06a57612c6955ff042deb0b1)
+        ;
+
+        
+    
+    
+            var circle_marker_aa52150f5c343c700b148ec045603ec6 = L.circleMarker(
+                [-23.561459, -46.65655],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a7c31a9467bec048820bb7591d86b4a7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_08058f71019b7277f48fba5ca027b22e = $(`<div id="html_08058f71019b7277f48fba5ca027b22e" style="width: 100.0%; height: 100.0%;">Av. Paulista, 1578 (6.8 min)</div>`)[0];
+                popup_a7c31a9467bec048820bb7591d86b4a7.setContent(html_08058f71019b7277f48fba5ca027b22e);
+            
+        
+
+        circle_marker_aa52150f5c343c700b148ec045603ec6.bindPopup(popup_a7c31a9467bec048820bb7591d86b4a7)
+        ;
+
+        
+    
+    
+            var circle_marker_3478cfe36e1073bb843c5d20c4d82869 = L.circleMarker(
+                [-23.555306, -46.657231],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_892509f65aeadbb8a3b2b912bbe83129 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a494288b9fa79d269069bd7526c4d533 = $(`<div id="html_a494288b9fa79d269069bd7526c4d533" style="width: 100.0%; height: 100.0%;">R. Augusta, 1300 (7.2 min)</div>`)[0];
+                popup_892509f65aeadbb8a3b2b912bbe83129.setContent(html_a494288b9fa79d269069bd7526c4d533);
+            
+        
+
+        circle_marker_3478cfe36e1073bb843c5d20c4d82869.bindPopup(popup_892509f65aeadbb8a3b2b912bbe83129)
+        ;
+
+        
+    
+    
+            var circle_marker_2a732e14d0b56cec7893a4e71af1f6f6 = L.circleMarker(
+                [-23.562026, -46.664216],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5967959b84808a879dbc7bdbbf0723c6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7bb2b78d998f211ca5ad57e5b8ef4348 = $(`<div id="html_7bb2b78d998f211ca5ad57e5b8ef4348" style="width: 100.0%; height: 100.0%;">R. Augusta, 2293 (7.6 min)</div>`)[0];
+                popup_5967959b84808a879dbc7bdbbf0723c6.setContent(html_7bb2b78d998f211ca5ad57e5b8ef4348);
+            
+        
+
+        circle_marker_2a732e14d0b56cec7893a4e71af1f6f6.bindPopup(popup_5967959b84808a879dbc7bdbbf0723c6)
+        ;
+
+        
+    
+    
+            var circle_marker_3b77419d605c3452b38b5effba75505b = L.circleMarker(
+                [-23.55296, -46.66164],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d4ccbfa4bbd444bdfe7ed1523b8826ad = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ca4d3096306f46339e0fb3bb73d1d91c = $(`<div id="html_ca4d3096306f46339e0fb3bb73d1d91c" style="width: 100.0%; height: 100.0%;">Av. Angélica, 2404 (8.2 min)</div>`)[0];
+                popup_d4ccbfa4bbd444bdfe7ed1523b8826ad.setContent(html_ca4d3096306f46339e0fb3bb73d1d91c);
+            
+        
+
+        circle_marker_3b77419d605c3452b38b5effba75505b.bindPopup(popup_d4ccbfa4bbd444bdfe7ed1523b8826ad)
+        ;
+
+        
+    
+    
+            var circle_marker_6ba1a24b4da1c5403eae0387005bc2ec = L.circleMarker(
+                [-23.554564, -46.656455],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cf1aa1db4939e48c40b055791245a2a9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_63146a1df90893e29c3f708b00ca9e94 = $(`<div id="html_63146a1df90893e29c3f708b00ca9e94" style="width: 100.0%; height: 100.0%;">R. Augusta, 1149 (8.3 min)</div>`)[0];
+                popup_cf1aa1db4939e48c40b055791245a2a9.setContent(html_63146a1df90893e29c3f708b00ca9e94);
+            
+        
+
+        circle_marker_6ba1a24b4da1c5403eae0387005bc2ec.bindPopup(popup_cf1aa1db4939e48c40b055791245a2a9)
+        ;
+
+        
+    
+    
+            var circle_marker_9ddcdafb348551b52d3b57a5a09c92d5 = L.circleMarker(
+                [-23.559028, -46.654302],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_7e5b0edefde6bc8e9ca962c6df165d28 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_212f1f1f940ee28be484c24306845245 = $(`<div id="html_212f1f1f940ee28be484c24306845245" style="width: 100.0%; height: 100.0%;">Ponto Provisório (8.6 min)</div>`)[0];
+                popup_7e5b0edefde6bc8e9ca962c6df165d28.setContent(html_212f1f1f940ee28be484c24306845245);
+            
+        
+
+        circle_marker_9ddcdafb348551b52d3b57a5a09c92d5.bindPopup(popup_7e5b0edefde6bc8e9ca962c6df165d28)
+        ;
+
+        
+    
+    
+            var circle_marker_fb364d8cc4a630a81fadcc9d3bcd10a1 = L.circleMarker(
+                [-23.559846, -46.654687],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3578186ca6e2fd57b7d67501d0371ad5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d7eb9b8f72026a16f642a2fc810afcf6 = $(`<div id="html_d7eb9b8f72026a16f642a2fc810afcf6" style="width: 100.0%; height: 100.0%;">Parada 1 - Getúlio Vargas C/B (8.6 min)</div>`)[0];
+                popup_3578186ca6e2fd57b7d67501d0371ad5.setContent(html_d7eb9b8f72026a16f642a2fc810afcf6);
+            
+        
+
+        circle_marker_fb364d8cc4a630a81fadcc9d3bcd10a1.bindPopup(popup_3578186ca6e2fd57b7d67501d0371ad5)
+        ;
+
+        
+    
+    
+            var circle_marker_70024afbb9e292e1cf48164189448d0d = L.circleMarker(
+                [-23.559239, -46.654314],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_21872ffcb180e1b1a3be87ced5f8bf83 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_114d556d460dd2d5dcab14570261ee1b = $(`<div id="html_114d556d460dd2d5dcab14570261ee1b" style="width: 100.0%; height: 100.0%;">Parada 2 - Getúlio Vargas C/B (8.6 min)</div>`)[0];
+                popup_21872ffcb180e1b1a3be87ced5f8bf83.setContent(html_114d556d460dd2d5dcab14570261ee1b);
+            
+        
+
+        circle_marker_70024afbb9e292e1cf48164189448d0d.bindPopup(popup_21872ffcb180e1b1a3be87ced5f8bf83)
+        ;
+
+        
+    
+    
+            var circle_marker_3a01eb5da346126451e3df7e63525f71 = L.circleMarker(
+                [-23.558836, -46.653843],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b5ba89bb2c67ed51dd4e799ca91dae6e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_618a23157d193b1de0ef60686bc3c0d7 = $(`<div id="html_618a23157d193b1de0ef60686bc3c0d7" style="width: 100.0%; height: 100.0%;">Getúlio Vargas B/C (9.1 min)</div>`)[0];
+                popup_b5ba89bb2c67ed51dd4e799ca91dae6e.setContent(html_618a23157d193b1de0ef60686bc3c0d7);
+            
+        
+
+        circle_marker_3a01eb5da346126451e3df7e63525f71.bindPopup(popup_b5ba89bb2c67ed51dd4e799ca91dae6e)
+        ;
+
+        
+    
+    
+            var circle_marker_2cc7cdb8bd0a810abd29058b8eef90a0 = L.circleMarker(
+                [-23.563215, -46.665499],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_ddfcaf04c55f18f7a7d4dc9df9574271 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_259c17fe9cc2b40317aae8908c3d915f = $(`<div id="html_259c17fe9cc2b40317aae8908c3d915f" style="width: 100.0%; height: 100.0%;">R. Augusta, 2500 (9.8 min)</div>`)[0];
+                popup_ddfcaf04c55f18f7a7d4dc9df9574271.setContent(html_259c17fe9cc2b40317aae8908c3d915f);
+            
+        
+
+        circle_marker_2cc7cdb8bd0a810abd29058b8eef90a0.bindPopup(popup_ddfcaf04c55f18f7a7d4dc9df9574271)
+        ;
+
+        
+    
+    
+            var circle_marker_290bb5e2ccd33ac2ecac87a98f59ff74 = L.circleMarker(
+                [-23.562931, -46.654428],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3eaab274f80ecbe8e12e2753415d09a2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c8e26802202aa95ae2b813d43c2404ed = $(`<div id="html_c8e26802202aa95ae2b813d43c2404ed" style="width: 100.0%; height: 100.0%;">Av. Paulista, 1374 (10.0 min)</div>`)[0];
+                popup_3eaab274f80ecbe8e12e2753415d09a2.setContent(html_c8e26802202aa95ae2b813d43c2404ed);
+            
+        
+
+        circle_marker_290bb5e2ccd33ac2ecac87a98f59ff74.bindPopup(popup_3eaab274f80ecbe8e12e2753415d09a2)
+        ;
+
+        
+    
+    
+            var circle_marker_e898683a386bad0c1ac9c1559aa2e142 = L.circleMarker(
+                [-23.551545, -46.660535],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0e5e844ba98ee6084490e7512fbfe5a3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3e7671e7f79c6bed1c446167159950a3 = $(`<div id="html_3e7671e7f79c6bed1c446167159950a3" style="width: 100.0%; height: 100.0%;">Av. Angélica, 2197 (10.5 min)</div>`)[0];
+                popup_0e5e844ba98ee6084490e7512fbfe5a3.setContent(html_3e7671e7f79c6bed1c446167159950a3);
+            
+        
+
+        circle_marker_e898683a386bad0c1ac9c1559aa2e142.bindPopup(popup_0e5e844ba98ee6084490e7512fbfe5a3)
+        ;
+
+        
+    
+    
+            var circle_marker_4f0930906d58c0ad947f89688bf57938 = L.circleMarker(
+                [-23.56357, -46.653893],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e693ac676a00dbac7f68736234038e70 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_28bf5e03c68331069bed4377f50a1e4e = $(`<div id="html_28bf5e03c68331069bed4377f50a1e4e" style="width: 100.0%; height: 100.0%;">Trianon-masp (11.1 min)</div>`)[0];
+                popup_e693ac676a00dbac7f68736234038e70.setContent(html_28bf5e03c68331069bed4377f50a1e4e);
+            
+        
+
+        circle_marker_4f0930906d58c0ad947f89688bf57938.bindPopup(popup_e693ac676a00dbac7f68736234038e70)
+        ;
+
+        
+    
+    
+            var circle_marker_d8cc1fe755be21d5d396f3347ea75fda = L.circleMarker(
+                [-23.553066, -46.654383],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_16759b4b9a427d494a299060afd5a708 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_41dfc2ce14b24ae5f314d0e80070f67b = $(`<div id="html_41dfc2ce14b24ae5f314d0e80070f67b" style="width: 100.0%; height: 100.0%;">R. Augusta, 905 (11.5 min)</div>`)[0];
+                popup_16759b4b9a427d494a299060afd5a708.setContent(html_41dfc2ce14b24ae5f314d0e80070f67b);
+            
+        
+
+        circle_marker_d8cc1fe755be21d5d396f3347ea75fda.bindPopup(popup_16759b4b9a427d494a299060afd5a708)
+        ;
+
+        
+    
+    
+            var circle_marker_6c317edd268d5380e3e5d0b791b71253 = L.circleMarker(
+                [-23.564313, -46.666541],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_ce0c98680f7dda2230daa25108af4fcc = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c555b0d7954977d0484bbb42bba73d5b = $(`<div id="html_c555b0d7954977d0484bbb42bba73d5b" style="width: 100.0%; height: 100.0%;">R. Augusta, 2665 (11.8 min)</div>`)[0];
+                popup_ce0c98680f7dda2230daa25108af4fcc.setContent(html_c555b0d7954977d0484bbb42bba73d5b);
+            
+        
+
+        circle_marker_6c317edd268d5380e3e5d0b791b71253.bindPopup(popup_ce0c98680f7dda2230daa25108af4fcc)
+        ;
+
+        
+    
+    
+            var circle_marker_2742d0a7f227ff152045dd04c1d33d2e = L.circleMarker(
+                [-23.56427, -46.666683],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5aab902d403691c24a8252436a42cfb0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1ff32248b95ae4e0c4a9e16aa4f8f3e8 = $(`<div id="html_1ff32248b95ae4e0c4a9e16aa4f8f3e8" style="width: 100.0%; height: 100.0%;">R. Augusta, 2672 (11.8 min)</div>`)[0];
+                popup_5aab902d403691c24a8252436a42cfb0.setContent(html_1ff32248b95ae4e0c4a9e16aa4f8f3e8);
+            
+        
+
+        circle_marker_2742d0a7f227ff152045dd04c1d33d2e.bindPopup(popup_5aab902d403691c24a8252436a42cfb0)
+        ;
+
+        
+    
+    
+            var circle_marker_70f62e56f03f326def44d1e7419b5cc1 = L.circleMarker(
+                [-23.56442, -46.655074],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_eae313224e169ba1bbc2d96e3c2496b4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_40c6069b2a095ef41d0f0cb4d420415d = $(`<div id="html_40c6069b2a095ef41d0f0cb4d420415d" style="width: 100.0%; height: 100.0%;">Al. Santos, 1307 (12.2 min)</div>`)[0];
+                popup_eae313224e169ba1bbc2d96e3c2496b4.setContent(html_40c6069b2a095ef41d0f0cb4d420415d);
+            
+        
+
+        circle_marker_70f62e56f03f326def44d1e7419b5cc1.bindPopup(popup_eae313224e169ba1bbc2d96e3c2496b4)
+        ;
+
+        
+    
+    
+            var circle_marker_11795b84c15ca38b77b151cca5b864a7 = L.circleMarker(
+                [-23.550733, -46.659358],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c9bd4db43ab5710915369f89bc0be8aa = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d76adc729e618a3f3d5a96e9f247cc60 = $(`<div id="html_d76adc729e618a3f3d5a96e9f247cc60" style="width: 100.0%; height: 100.0%;">R. Mato Grosso, 428 (12.3 min)</div>`)[0];
+                popup_c9bd4db43ab5710915369f89bc0be8aa.setContent(html_d76adc729e618a3f3d5a96e9f247cc60);
+            
+        
+
+        circle_marker_11795b84c15ca38b77b151cca5b864a7.bindPopup(popup_c9bd4db43ab5710915369f89bc0be8aa)
+        ;
+
+        
+    
+    
+            var circle_marker_442682acfc6c55634250d253a7c13dab = L.circleMarker(
+                [-23.550004, -46.659898],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_92f485ad383195e66a340f3eb117dbdc = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d5f772e3f233ea2511209c6ff6b58de6 = $(`<div id="html_d5f772e3f233ea2511209c6ff6b58de6" style="width: 100.0%; height: 100.0%;">Av. Angélica, 2016 (12.7 min)</div>`)[0];
+                popup_92f485ad383195e66a340f3eb117dbdc.setContent(html_d5f772e3f233ea2511209c6ff6b58de6);
+            
+        
+
+        circle_marker_442682acfc6c55634250d253a7c13dab.bindPopup(popup_92f485ad383195e66a340f3eb117dbdc)
+        ;
+
+        
+    
+    
+            var circle_marker_d7bfe6936c415b523158507655dbb60d = L.circleMarker(
+                [-23.552431, -46.653585],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_dd8ee4165b257f5199990f83c1790031 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_88be33c64f78166fdbc146635fc13750 = $(`<div id="html_88be33c64f78166fdbc146635fc13750" style="width: 100.0%; height: 100.0%;">R. Augusta, 810 (12.8 min)</div>`)[0];
+                popup_dd8ee4165b257f5199990f83c1790031.setContent(html_88be33c64f78166fdbc146635fc13750);
+            
+        
+
+        circle_marker_d7bfe6936c415b523158507655dbb60d.bindPopup(popup_dd8ee4165b257f5199990f83c1790031)
+        ;
+
+        
+    
+    
+            var circle_marker_c2a5ac340098be5ca38dc4c58f522a32 = L.circleMarker(
+                [-23.550526, -46.658992],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6a5f14656872f2e2285f6c2ea137fae0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_eab372fab643e90e4e11a037beebc434 = $(`<div id="html_eab372fab643e90e4e11a037beebc434" style="width: 100.0%; height: 100.0%;">R. Mato Grosso, 388 (12.9 min)</div>`)[0];
+                popup_6a5f14656872f2e2285f6c2ea137fae0.setContent(html_eab372fab643e90e4e11a037beebc434);
+            
+        
+
+        circle_marker_c2a5ac340098be5ca38dc4c58f522a32.bindPopup(popup_6a5f14656872f2e2285f6c2ea137fae0)
+        ;
+
+        
+    
+    
+            var circle_marker_22909cae595f52fe6b320bf8b5b37132 = L.circleMarker(
+                [-23.563303, -46.652079],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_8aea0419067219acff3e3882cdcdf34e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c86f359d02fc35033d1808fdba79b019 = $(`<div id="html_c86f359d02fc35033d1808fdba79b019" style="width: 100.0%; height: 100.0%;">R. S. Carlos Do Pinhal, 638 (13.0 min)</div>`)[0];
+                popup_8aea0419067219acff3e3882cdcdf34e.setContent(html_c86f359d02fc35033d1808fdba79b019);
+            
+        
+
+        circle_marker_22909cae595f52fe6b320bf8b5b37132.bindPopup(popup_8aea0419067219acff3e3882cdcdf34e)
+        ;
+
+        
+    
+    
+            var circle_marker_8c59f110f63d255346aacf90492137bc = L.circleMarker(
+                [-23.552384, -46.653034],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_eacdad61148fedc7ec98d2b479f35745 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_15dd56d727d465340b9ed44532b58c38 = $(`<div id="html_15dd56d727d465340b9ed44532b58c38" style="width: 100.0%; height: 100.0%;">R. Augusta, 753 (13.4 min)</div>`)[0];
+                popup_eacdad61148fedc7ec98d2b479f35745.setContent(html_15dd56d727d465340b9ed44532b58c38);
+            
+        
+
+        circle_marker_8c59f110f63d255346aacf90492137bc.bindPopup(popup_eacdad61148fedc7ec98d2b479f35745)
+        ;
+
+        
+    
+    
+            var circle_marker_4db0c9e9bbdabd3b08f45e50529415b0 = L.circleMarker(
+                [-23.549155, -46.659385],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_1ff126d08b8fcff3af581cef573f5cd4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8c64247803ee5814530f855aed3df516 = $(`<div id="html_8c64247803ee5814530f855aed3df516" style="width: 100.0%; height: 100.0%;">Av. Angélica, 1905 (14.0 min)</div>`)[0];
+                popup_1ff126d08b8fcff3af581cef573f5cd4.setContent(html_8c64247803ee5814530f855aed3df516);
+            
+        
+
+        circle_marker_4db0c9e9bbdabd3b08f45e50529415b0.bindPopup(popup_1ff126d08b8fcff3af581cef573f5cd4)
+        ;
+
+        
+    
+    
+            var circle_marker_79bbad1403da7e3565057d3b895d117f = L.circleMarker(
+                [-23.565696, -46.668011],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5b50656e9c73126997cc80cf0579b17e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f3473bc8d30cb4a56be616e2bc3b42f9 = $(`<div id="html_f3473bc8d30cb4a56be616e2bc3b42f9" style="width: 100.0%; height: 100.0%;">R. Augusta, 2879 (14.3 min)</div>`)[0];
+                popup_5b50656e9c73126997cc80cf0579b17e.setContent(html_f3473bc8d30cb4a56be616e2bc3b42f9);
+            
+        
+
+        circle_marker_79bbad1403da7e3565057d3b895d117f.bindPopup(popup_5b50656e9c73126997cc80cf0579b17e)
+        ;
+
+        
+    
+    
+            var circle_marker_50d57c2a1588cb9d75045adc77bfb085 = L.circleMarker(
+                [-23.551949, -46.652317],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6da683e6b1d7eb00801e1b7c73a4aa65 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_be2c4a25a2f414303efaf19f41fda54f = $(`<div id="html_be2c4a25a2f414303efaf19f41fda54f" style="width: 100.0%; height: 100.0%;">R. Augusta, 660 (14.4 min)</div>`)[0];
+                popup_6da683e6b1d7eb00801e1b7c73a4aa65.setContent(html_be2c4a25a2f414303efaf19f41fda54f);
+            
+        
+
+        circle_marker_50d57c2a1588cb9d75045adc77bfb085.bindPopup(popup_6da683e6b1d7eb00801e1b7c73a4aa65)
+        ;
+
+        
+    
+    
+            var circle_marker_3c812ae395d6661d9173b5766f1adfb1 = L.circleMarker(
+                [-23.548615, -46.65919],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_fd122a768ac0e03c0c0f5f4cae49737b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8a51aeafde3abb54ffe18c16c1900e7e = $(`<div id="html_8a51aeafde3abb54ffe18c16c1900e7e" style="width: 100.0%; height: 100.0%;">Av. Angélica, 1854 (14.8 min)</div>`)[0];
+                popup_fd122a768ac0e03c0c0f5f4cae49737b.setContent(html_8a51aeafde3abb54ffe18c16c1900e7e);
+            
+        
+
+        circle_marker_3c812ae395d6661d9173b5766f1adfb1.bindPopup(popup_fd122a768ac0e03c0c0f5f4cae49737b)
+        ;
+
+        
+    
+    
+            var circle_marker_656666c98ad46b76e8df9e2f90490a8e = L.circleMarker(
+                [-23.551813, -46.657607],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_21bcb0ce96a588e493a7755d8b0e2879 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_4e2e513bacef7b0c5b6336259274acfd = $(`<div id="html_4e2e513bacef7b0c5b6336259274acfd" style="width: 100.0%; height: 100.0%;">Pedro Taques C/B (14.9 min)</div>`)[0];
+                popup_21bcb0ce96a588e493a7755d8b0e2879.setContent(html_4e2e513bacef7b0c5b6336259274acfd);
+            
+        
+
+        circle_marker_656666c98ad46b76e8df9e2f90490a8e.bindPopup(popup_21bcb0ce96a588e493a7755d8b0e2879)
+        ;
+
+        
+    
+    
+            var circle_marker_1ec2bf35a09f9d6450520e22d93833b1 = L.circleMarker(
+                [-23.551843, -46.657399],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b4c86534e3221d6bfcb63499ba352d5a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f333b20832dc6aa3495cbcf1082e9cfd = $(`<div id="html_f333b20832dc6aa3495cbcf1082e9cfd" style="width: 100.0%; height: 100.0%;">Pedro Taques B/C (15.2 min)</div>`)[0];
+                popup_b4c86534e3221d6bfcb63499ba352d5a.setContent(html_f333b20832dc6aa3495cbcf1082e9cfd);
+            
+        
+
+        circle_marker_1ec2bf35a09f9d6450520e22d93833b1.bindPopup(popup_b4c86534e3221d6bfcb63499ba352d5a)
+        ;
+
+        
+    
+    
+            var circle_marker_140bd05221bad9d57ee038f5673e5ae1 = L.circleMarker(
+                [-23.56612, -46.668646],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a70772bb596a96a321aff95e3b6d3e92 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9d80c37774730d07efba7f3bc25b536c = $(`<div id="html_9d80c37774730d07efba7f3bc25b536c" style="width: 100.0%; height: 100.0%;">R. Augusta, 2962 (15.3 min)</div>`)[0];
+                popup_a70772bb596a96a321aff95e3b6d3e92.setContent(html_9d80c37774730d07efba7f3bc25b536c);
+            
+        
+
+        circle_marker_140bd05221bad9d57ee038f5673e5ae1.bindPopup(popup_a70772bb596a96a321aff95e3b6d3e92)
+        ;
+
+        
+    
+    
+            var circle_marker_001323365e3050b8c302fb9f984a5e14 = L.circleMarker(
+                [-23.565789, -46.651451],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_568ea3e9d3aa3c40023a46d0fd3d54d8 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_db636f708b464c495f3f113d5667528d = $(`<div id="html_db636f708b464c495f3f113d5667528d" style="width: 100.0%; height: 100.0%;">Av. Paulista, 901 (16.4 min)</div>`)[0];
+                popup_568ea3e9d3aa3c40023a46d0fd3d54d8.setContent(html_db636f708b464c495f3f113d5667528d);
+            
+        
+
+        circle_marker_001323365e3050b8c302fb9f984a5e14.bindPopup(popup_568ea3e9d3aa3c40023a46d0fd3d54d8)
+        ;
+
+        
+    
+    
+            var circle_marker_f4034ee4286c7bcd26be542978814bef = L.circleMarker(
+                [-23.566865, -46.669249],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_02abbe0512c3cc8c5a58fbc42ef52a50 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_53ed306237e493fa1d992ab0de565cf0 = $(`<div id="html_53ed306237e493fa1d992ab0de565cf0" style="width: 100.0%; height: 100.0%;">R. Colômbia, 65 (16.5 min)</div>`)[0];
+                popup_02abbe0512c3cc8c5a58fbc42ef52a50.setContent(html_53ed306237e493fa1d992ab0de565cf0);
+            
+        
+
+        circle_marker_f4034ee4286c7bcd26be542978814bef.bindPopup(popup_02abbe0512c3cc8c5a58fbc42ef52a50)
+        ;
+
+        
+    
+    
+            var circle_marker_3af458af5ff01d4654004f4dbedb2bc6 = L.circleMarker(
+                [-23.5659, -46.650929],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_031981d0d6baa2f16a12fd94614dfeda = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ae74e1a1b1627327c035bf8c572b20aa = $(`<div id="html_ae74e1a1b1627327c035bf8c572b20aa" style="width: 100.0%; height: 100.0%;">Av. Paulista, 900 (17.0 min)</div>`)[0];
+                popup_031981d0d6baa2f16a12fd94614dfeda.setContent(html_ae74e1a1b1627327c035bf8c572b20aa);
+            
+        
+
+        circle_marker_3af458af5ff01d4654004f4dbedb2bc6.bindPopup(popup_031981d0d6baa2f16a12fd94614dfeda)
+        ;
+
+        
+    
+    
+            var circle_marker_e912fedbd574c39e598f44eda73b81de = L.circleMarker(
+                [-23.546788, -46.658163],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c8405801dd5735aebc627adff7a8806d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6989937dc0771ac9b9b09e5a39fbe962 = $(`<div id="html_6989937dc0771ac9b9b09e5a39fbe962" style="width: 100.0%; height: 100.0%;">Av. Angélica, 1617 (17.5 min)</div>`)[0];
+                popup_c8405801dd5735aebc627adff7a8806d.setContent(html_6989937dc0771ac9b9b09e5a39fbe962);
+            
+        
+
+        circle_marker_e912fedbd574c39e598f44eda73b81de.bindPopup(popup_c8405801dd5735aebc627adff7a8806d)
+        ;
+
+        
+    
+    
+            var circle_marker_5dc18c4e0a51208fbc25e826692465e9 = L.circleMarker(
+                [-23.55121, -46.649887],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_eede5ff0824ba48b3f75641266e993de = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_80fc1396533463fdc0e52bf3ffdf984d = $(`<div id="html_80fc1396533463fdc0e52bf3ffdf984d" style="width: 100.0%; height: 100.0%;">R. Augusta, 409 (17.5 min)</div>`)[0];
+                popup_eede5ff0824ba48b3f75641266e993de.setContent(html_80fc1396533463fdc0e52bf3ffdf984d);
+            
+        
+
+        circle_marker_5dc18c4e0a51208fbc25e826692465e9.bindPopup(popup_eede5ff0824ba48b3f75641266e993de)
+        ;
+
+        
+    
+    
+            var circle_marker_6585117a981f2c06bdb8f611746f97cc = L.circleMarker(
+                [-23.549577, -46.653216],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cefabc12be76c1c211b8113564f06e8e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_01527663156beec77f9bf531ae19bf99 = $(`<div id="html_01527663156beec77f9bf531ae19bf99" style="width: 100.0%; height: 100.0%;">Antônia De Queirós - B/C (17.8 min)</div>`)[0];
+                popup_cefabc12be76c1c211b8113564f06e8e.setContent(html_01527663156beec77f9bf531ae19bf99);
+            
+        
+
+        circle_marker_6585117a981f2c06bdb8f611746f97cc.bindPopup(popup_cefabc12be76c1c211b8113564f06e8e)
+        ;
+
+        
+    
+    
+            var circle_marker_aaa1c2568aaae3ece8543148018fab35 = L.circleMarker(
+                [-23.54958, -46.65343],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5173d36d8303ffc48c3fc4d60a3a4bb0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d504b3aad89ee5383d1e913bcd893a76 = $(`<div id="html_d504b3aad89ee5383d1e913bcd893a76" style="width: 100.0%; height: 100.0%;">Antônia De Queirós - C/B (17.9 min)</div>`)[0];
+                popup_5173d36d8303ffc48c3fc4d60a3a4bb0.setContent(html_d504b3aad89ee5383d1e913bcd893a76);
+            
+        
+
+        circle_marker_aaa1c2568aaae3ece8543148018fab35.bindPopup(popup_5173d36d8303ffc48c3fc4d60a3a4bb0)
+        ;
+
+        
+    
+    
+            var circle_marker_ad202ab2d179301f6236b1c21ed44a47 = L.circleMarker(
+                [-23.567663, -46.67019],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_02d1f442ecb5e992b04511fe556ad979 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b5167fb765c7e1add9d309489d2a9ac1 = $(`<div id="html_b5167fb765c7e1add9d309489d2a9ac1" style="width: 100.0%; height: 100.0%;">R. Colômbia, 182 (18.1 min)</div>`)[0];
+                popup_02d1f442ecb5e992b04511fe556ad979.setContent(html_b5167fb765c7e1add9d309489d2a9ac1);
+            
+        
+
+        circle_marker_ad202ab2d179301f6236b1c21ed44a47.bindPopup(popup_02d1f442ecb5e992b04511fe556ad979)
+        ;
+
+        
+    
+    
+            var circle_marker_a2e7affbb49f16336901d4396c35074b = L.circleMarker(
+                [-23.56736, -46.651453],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e92afe7949fda1cc4488f98783462afd = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f2ed14c0df292da9829eafcefbbcd074 = $(`<div id="html_f2ed14c0df292da9829eafcefbbcd074" style="width: 100.0%; height: 100.0%;">Al. Santos, 815 (18.5 min)</div>`)[0];
+                popup_e92afe7949fda1cc4488f98783462afd.setContent(html_f2ed14c0df292da9829eafcefbbcd074);
+            
+        
+
+        circle_marker_a2e7affbb49f16336901d4396c35074b.bindPopup(popup_e92afe7949fda1cc4488f98783462afd)
+        ;
+
+        
+    
+    
+            var circle_marker_a146470dd0f03dba908fc719b8f04ffb = L.circleMarker(
+                [-23.550826, -46.648905],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5458721e096f1ad75a2334d62ac3ff95 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f6ab96c6cf37e347cfda5ac7052f58e9 = $(`<div id="html_f6ab96c6cf37e347cfda5ac7052f58e9" style="width: 100.0%; height: 100.0%;">R. Augusta, 304 (18.9 min)</div>`)[0];
+                popup_5458721e096f1ad75a2334d62ac3ff95.setContent(html_f6ab96c6cf37e347cfda5ac7052f58e9);
+            
+        
+
+        circle_marker_a146470dd0f03dba908fc719b8f04ffb.bindPopup(popup_5458721e096f1ad75a2334d62ac3ff95)
+        ;
+
+        
+    
+    
+            var circle_marker_0f44e9df614e07fa6be3d837865ef2ef = L.circleMarker(
+                [-23.54582, -46.657806],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_9177b34836b7e83a461e6181382122e4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e08a0f380a3f22cbc45a6688f945e8c7 = $(`<div id="html_e08a0f380a3f22cbc45a6688f945e8c7" style="width: 100.0%; height: 100.0%;">Av. Angélica (pça. Buenos Aires), 1490 (18.9 min)</div>`)[0];
+                popup_9177b34836b7e83a461e6181382122e4.setContent(html_e08a0f380a3f22cbc45a6688f945e8c7);
+            
+        
+
+        circle_marker_0f44e9df614e07fa6be3d837865ef2ef.bindPopup(popup_9177b34836b7e83a461e6181382122e4)
+        ;
+
+        
+    
+    
+            var circle_marker_4da728758cc9b4d451d7ff67450bec31 = L.circleMarker(
+                [-23.565655, -46.649265],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_49c81772e01b3874405b03b80582b384 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0bb2fb1a3bd1a2757e30d98fa6bc13a7 = $(`<div id="html_0bb2fb1a3bd1a2757e30d98fa6bc13a7" style="width: 100.0%; height: 100.0%;">R. S. Carlos Do Pinhal, 140 (19.0 min)</div>`)[0];
+                popup_49c81772e01b3874405b03b80582b384.setContent(html_0bb2fb1a3bd1a2757e30d98fa6bc13a7);
+            
+        
+
+        circle_marker_4da728758cc9b4d451d7ff67450bec31.bindPopup(popup_49c81772e01b3874405b03b80582b384)
+        ;
+
+        
+    
+    
+            var circle_marker_755e13b2e06a623421f8482f6335a04d = L.circleMarker(
+                [-23.549031, -46.652303],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_12f4b9fe85a047befbf518bb1fcf26d8 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_91940a1c9487e7b7175a7ee0686abbc5 = $(`<div id="html_91940a1c9487e7b7175a7ee0686abbc5" style="width: 100.0%; height: 100.0%;">Higienópolis-mackenzie (19.1 min)</div>`)[0];
+                popup_12f4b9fe85a047befbf518bb1fcf26d8.setContent(html_91940a1c9487e7b7175a7ee0686abbc5);
+            
+        
+
+        circle_marker_755e13b2e06a623421f8482f6335a04d.bindPopup(popup_12f4b9fe85a047befbf518bb1fcf26d8)
+        ;
+
+        
+    
+    
+            var circle_marker_44f2186db5f870ed06643b5fa195ce60 = L.circleMarker(
+                [-23.568387, -46.670815],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_8a46a943db984999cd2cca4e9c934740 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_445774fee033291082cb009bcb873309 = $(`<div id="html_445774fee033291082cb009bcb873309" style="width: 100.0%; height: 100.0%;">R. Colômbia, 271 (19.3 min)</div>`)[0];
+                popup_8a46a943db984999cd2cca4e9c934740.setContent(html_445774fee033291082cb009bcb873309);
+            
+        
+
+        circle_marker_44f2186db5f870ed06643b5fa195ce60.bindPopup(popup_8a46a943db984999cd2cca4e9c934740)
+        ;
+
+        
+    
+    
+            var circle_marker_a3757ce23e7820fd582aa0551177114f = L.circleMarker(
+                [-23.567308, -46.649529],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b85d22240c0e850cc719f0949dda0362 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2bc9febd077f14ae53af9eb4b66cce1d = $(`<div id="html_2bc9febd077f14ae53af9eb4b66cce1d" style="width: 100.0%; height: 100.0%;">Av. Paulista, 659 (19.5 min)</div>`)[0];
+                popup_b85d22240c0e850cc719f0949dda0362.setContent(html_2bc9febd077f14ae53af9eb4b66cce1d);
+            
+        
+
+        circle_marker_a3757ce23e7820fd582aa0551177114f.bindPopup(popup_b85d22240c0e850cc719f0949dda0362)
+        ;
+
+        
+    
+    
+            var circle_marker_1d7363ebcdc2613d6fa69ff3d63fbe9c = L.circleMarker(
+                [-23.544925, -46.6587],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_261bab31aa18b855aa17015f2825c48e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cb11bda7753e3bd8f3b4c6031fa529b3 = $(`<div id="html_cb11bda7753e3bd8f3b4c6031fa529b3" style="width: 100.0%; height: 100.0%;">R. Piauí, 841 (20.1 min)</div>`)[0];
+                popup_261bab31aa18b855aa17015f2825c48e.setContent(html_cb11bda7753e3bd8f3b4c6031fa529b3);
+            
+        
+
+        circle_marker_1d7363ebcdc2613d6fa69ff3d63fbe9c.bindPopup(popup_261bab31aa18b855aa17015f2825c48e)
+        ;
+
+        
+    
+    
+            var circle_marker_2759cc25444f7289c57fda0dde1bf10c = L.circleMarker(
+                [-23.567615, -46.649027],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_59fca45ab8eddc82d5e38e84ba2051d3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fe16257b7c674e25c87a61445867cbfb = $(`<div id="html_fe16257b7c674e25c87a61445867cbfb" style="width: 100.0%; height: 100.0%;">Brigadeiro (20.2 min)</div>`)[0];
+                popup_59fca45ab8eddc82d5e38e84ba2051d3.setContent(html_fe16257b7c674e25c87a61445867cbfb);
+            
+        
+
+        circle_marker_2759cc25444f7289c57fda0dde1bf10c.bindPopup(popup_59fca45ab8eddc82d5e38e84ba2051d3)
+        ;
+
+        
+    
+    
+            var circle_marker_734410faf08891a859982da13fe14f9d = L.circleMarker(
+                [-23.549296, -46.655412],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e0085b1794b786176f365c5795c0e81a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e3c06a931b4aad8c3e2d468eb2a65b1f = $(`<div id="html_e3c06a931b4aad8c3e2d468eb2a65b1f" style="width: 100.0%; height: 100.0%;">R. Sergipe, 177 (20.3 min)</div>`)[0];
+                popup_e0085b1794b786176f365c5795c0e81a.setContent(html_e3c06a931b4aad8c3e2d468eb2a65b1f);
+            
+        
+
+        circle_marker_734410faf08891a859982da13fe14f9d.bindPopup(popup_e0085b1794b786176f365c5795c0e81a)
+        ;
+
+        
+    
+    
+            var circle_marker_813465502cbb5d5d3f8e17e25b4e5076 = L.circleMarker(
+                [-23.566211, -46.648198],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_582eeb3d9499b515998c52742a98abcb = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cf26f68c07d81dee78e7a4393e607e6d = $(`<div id="html_cf26f68c07d81dee78e7a4393e607e6d" style="width: 100.0%; height: 100.0%;">Parada Avenida Paulista (20.5 min)</div>`)[0];
+                popup_582eeb3d9499b515998c52742a98abcb.setContent(html_cf26f68c07d81dee78e7a4393e607e6d);
+            
+        
+
+        circle_marker_813465502cbb5d5d3f8e17e25b4e5076.bindPopup(popup_582eeb3d9499b515998c52742a98abcb)
+        ;
+
+        
+    
+    
+            var circle_marker_01a5fb201ddb441e64b0f17ea5e9a258 = L.circleMarker(
+                [-23.546255, -46.655658],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0b984bfb09e06ad26bc32e67d14cc222 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_40419ecf2441286ab6ab68a4842ba2c8 = $(`<div id="html_40419ecf2441286ab6ab68a4842ba2c8" style="width: 100.0%; height: 100.0%;">R. Piauí, 591 (20.7 min)</div>`)[0];
+                popup_0b984bfb09e06ad26bc32e67d14cc222.setContent(html_40419ecf2441286ab6ab68a4842ba2c8);
+            
+        
+
+        circle_marker_01a5fb201ddb441e64b0f17ea5e9a258.bindPopup(popup_0b984bfb09e06ad26bc32e67d14cc222)
+        ;
+
+        
+    
+    
+            var circle_marker_21a3a5a625d206d04d0e25d7c9916e6a = L.circleMarker(
+                [-23.549258, -46.648459],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_7f08302fa971771bd035cd703e9f7268 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_bc5e1d4e80e18d690538bb6ee38819a2 = $(`<div id="html_bc5e1d4e80e18d690538bb6ee38819a2" style="width: 100.0%; height: 100.0%;">R. Caio Prado, 165 (20.7 min)</div>`)[0];
+                popup_7f08302fa971771bd035cd703e9f7268.setContent(html_bc5e1d4e80e18d690538bb6ee38819a2);
+            
+        
+
+        circle_marker_21a3a5a625d206d04d0e25d7c9916e6a.bindPopup(popup_7f08302fa971771bd035cd703e9f7268)
+        ;
+
+        
+    
+    
+            var circle_marker_8ccbbad8d30a844ea7b25b5cede7e66e = L.circleMarker(
+                [-23.565941, -46.647922],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_21b3163a8958b2686dd16b0370dcfc04 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1adc764628d41f83f48382e503802adc = $(`<div id="html_1adc764628d41f83f48382e503802adc" style="width: 100.0%; height: 100.0%;">Parada Cincinato Braga (20.7 min)</div>`)[0];
+                popup_21b3163a8958b2686dd16b0370dcfc04.setContent(html_1adc764628d41f83f48382e503802adc);
+            
+        
+
+        circle_marker_8ccbbad8d30a844ea7b25b5cede7e66e.bindPopup(popup_21b3163a8958b2686dd16b0370dcfc04)
+        ;
+
+        
+    
+    
+            var circle_marker_b6b9abd17fec59b0273958ad4314c365 = L.circleMarker(
+                [-23.568341, -46.649488],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_60c5fbdeffc74a3a36958701b3e1a4a9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_35d7bceb5b139a7591fbb4fadb0bb0f9 = $(`<div id="html_35d7bceb5b139a7591fbb4fadb0bb0f9" style="width: 100.0%; height: 100.0%;">Avenida Paulista (20.8 min)</div>`)[0];
+                popup_60c5fbdeffc74a3a36958701b3e1a4a9.setContent(html_35d7bceb5b139a7591fbb4fadb0bb0f9);
+            
+        
+
+        circle_marker_b6b9abd17fec59b0273958ad4314c365.bindPopup(popup_60c5fbdeffc74a3a36958701b3e1a4a9)
+        ;
+
+        
+    
+    
+            var circle_marker_1d8eaa705b1e558dd520ee59072d4f10 = L.circleMarker(
+                [-23.568337, -46.649655],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_7dab361e327b05f9d7e927c15094b032 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0c0d8c982d10661b0dec7ced4fe781f9 = $(`<div id="html_0c0d8c982d10661b0dec7ced4fe781f9" style="width: 100.0%; height: 100.0%;">Av. Brig. Luís Antônio, 2344 (20.9 min)</div>`)[0];
+                popup_7dab361e327b05f9d7e927c15094b032.setContent(html_0c0d8c982d10661b0dec7ced4fe781f9);
+            
+        
+
+        circle_marker_1d8eaa705b1e558dd520ee59072d4f10.bindPopup(popup_7dab361e327b05f9d7e927c15094b032)
+        ;
+
+        
+    
+    
+            var circle_marker_0538f281c66c80913aa58bd36700e7a6 = L.circleMarker(
+                [-23.544749, -46.656346],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_89a00b70b51fe9f08851b751a9b2f032 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8a1d40633b5dca82b6a1ef45d1685008 = $(`<div id="html_8a1d40633b5dca82b6a1ef45d1685008" style="width: 100.0%; height: 100.0%;">R. Maranhão, 382 (21.2 min)</div>`)[0];
+                popup_89a00b70b51fe9f08851b751a9b2f032.setContent(html_8a1d40633b5dca82b6a1ef45d1685008);
+            
+        
+
+        circle_marker_0538f281c66c80913aa58bd36700e7a6.bindPopup(popup_89a00b70b51fe9f08851b751a9b2f032)
+        ;
+
+        
+    
+    
+            var circle_marker_4c87e6c8c44bae81fa722f099834d525 = L.circleMarker(
+                [-23.568023, -46.648338],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a559aaa60669aae09a4c5446ceaa86a2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_212417e4c53b91cd82493b2441c4a665 = $(`<div id="html_212417e4c53b91cd82493b2441c4a665" style="width: 100.0%; height: 100.0%;">Av. Paulista, 500 (21.2 min)</div>`)[0];
+                popup_a559aaa60669aae09a4c5446ceaa86a2.setContent(html_212417e4c53b91cd82493b2441c4a665);
+            
+        
+
+        circle_marker_4c87e6c8c44bae81fa722f099834d525.bindPopup(popup_a559aaa60669aae09a4c5446ceaa86a2)
+        ;
+
+        
+    
+    
+            var circle_marker_35ce8ce6f646c34dd55b5da6dc3b44ec = L.circleMarker(
+                [-23.543985, -46.656843],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_43767ae49d9db86895ffd03982944d75 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8419fbd9c0c1331ecd58c107d6edd85d = $(`<div id="html_8419fbd9c0c1331ecd58c107d6edd85d" style="width: 100.0%; height: 100.0%;">Av. Angélica, 1280 (21.6 min)</div>`)[0];
+                popup_43767ae49d9db86895ffd03982944d75.setContent(html_8419fbd9c0c1331ecd58c107d6edd85d);
+            
+        
+
+        circle_marker_35ce8ce6f646c34dd55b5da6dc3b44ec.bindPopup(popup_43767ae49d9db86895ffd03982944d75)
+        ;
+
+        
+    
+    
+            var circle_marker_25c10fb15b8fc0b9ff3f489b770fe51d = L.circleMarker(
+                [-23.548312, -46.650406],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c1edc7a94245ec15557e41b53b0a04c4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3ed7557065759f5a7cd71ecd63ab67f5 = $(`<div id="html_3ed7557065759f5a7cd71ecd63ab67f5" style="width: 100.0%; height: 100.0%;">Caio Prado C/B (21.6 min)</div>`)[0];
+                popup_c1edc7a94245ec15557e41b53b0a04c4.setContent(html_3ed7557065759f5a7cd71ecd63ab67f5);
+            
+        
+
+        circle_marker_25c10fb15b8fc0b9ff3f489b770fe51d.bindPopup(popup_c1edc7a94245ec15557e41b53b0a04c4)
+        ;
+
+        
+    
+    
+            var circle_marker_61172571aeb7442301789528f428d61a = L.circleMarker(
+                [-23.544072, -46.656637],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6b473d12fd2d298a01acd06b9070830c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_325cd82b65b6b2bda4c3ef9c744af6ad = $(`<div id="html_325cd82b65b6b2bda4c3ef9c744af6ad" style="width: 100.0%; height: 100.0%;">Av. Angélica, 1281 (21.6 min)</div>`)[0];
+                popup_6b473d12fd2d298a01acd06b9070830c.setContent(html_325cd82b65b6b2bda4c3ef9c744af6ad);
+            
+        
+
+        circle_marker_61172571aeb7442301789528f428d61a.bindPopup(popup_6b473d12fd2d298a01acd06b9070830c)
+        ;
+
+        
+    
+    
+            var circle_marker_57ce687d792b17b74c2acf039dd971de = L.circleMarker(
+                [-23.569056, -46.649432],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e0f9af103fdab7a9a78dbfb668ba13b1 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1ef593fbf443ad649911247ed8069f97 = $(`<div id="html_1ef593fbf443ad649911247ed8069f97" style="width: 100.0%; height: 100.0%;">Al. Santos, 545 (21.8 min)</div>`)[0];
+                popup_e0f9af103fdab7a9a78dbfb668ba13b1.setContent(html_1ef593fbf443ad649911247ed8069f97);
+            
+        
+
+        circle_marker_57ce687d792b17b74c2acf039dd971de.bindPopup(popup_e0f9af103fdab7a9a78dbfb668ba13b1)
+        ;
+
+        
+    
+    
+            var circle_marker_03ec53c5f90814bbf853f721eb8a0aea = L.circleMarker(
+                [-23.56715, -46.647238],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_67bf58be62880105321b571ff119a04a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_375ac4d04b340aab1d617f5e9520a9d3 = $(`<div id="html_375ac4d04b340aab1d617f5e9520a9d3" style="width: 100.0%; height: 100.0%;">R. Cincinato Braga, 440 (22.2 min)</div>`)[0];
+                popup_67bf58be62880105321b571ff119a04a.setContent(html_375ac4d04b340aab1d617f5e9520a9d3);
+            
+        
+
+        circle_marker_03ec53c5f90814bbf853f721eb8a0aea.bindPopup(popup_67bf58be62880105321b571ff119a04a)
+        ;
+
+        
+    
+    
+            var circle_marker_7c0f18bc91b3b814c3f6659eb826d2cd = L.circleMarker(
+                [-23.543296, -46.659063],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b0a5ba53afe1ab58ae5362fc35fe0a18 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_16b36051c4481a841a5655f8c8ea9c9c = $(`<div id="html_16b36051c4481a841a5655f8c8ea9c9c" style="width: 100.0%; height: 100.0%;">R. Maranhão, 730 (22.3 min)</div>`)[0];
+                popup_b0a5ba53afe1ab58ae5362fc35fe0a18.setContent(html_16b36051c4481a841a5655f8c8ea9c9c);
+            
+        
+
+        circle_marker_7c0f18bc91b3b814c3f6659eb826d2cd.bindPopup(popup_b0a5ba53afe1ab58ae5362fc35fe0a18)
+        ;
+
+        
+    
+    
+            var circle_marker_c9b93b9a29a18247bcb6c5c010b4196f = L.circleMarker(
+                [-23.568182, -46.673402],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_b76a702065631fb87a4a34658247e420 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_561adef4206d2727f9251c9738253ea5 = $(`<div id="html_561adef4206d2727f9251c9738253ea5" style="width: 100.0%; height: 100.0%;">Av. Brasil, 1693 (22.5 min)</div>`)[0];
+                popup_b76a702065631fb87a4a34658247e420.setContent(html_561adef4206d2727f9251c9738253ea5);
+            
+        
+
+        circle_marker_c9b93b9a29a18247bcb6c5c010b4196f.bindPopup(popup_b76a702065631fb87a4a34658247e420)
+        ;
+
+        
+    
+    
+            var circle_marker_86c6598e58fa20400f3e87435e65d894 = L.circleMarker(
+                [-23.546774, -46.654266],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3ee4f3e0b3e3bf45c0f277e9ca979695 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3412975440ca8ffc3e25c251ce34bd9e = $(`<div id="html_3412975440ca8ffc3e25c251ce34bd9e" style="width: 100.0%; height: 100.0%;">R. Piauí, 335 (22.5 min)</div>`)[0];
+                popup_3ee4f3e0b3e3bf45c0f277e9ca979695.setContent(html_3412975440ca8ffc3e25c251ce34bd9e);
+            
+        
+
+        circle_marker_86c6598e58fa20400f3e87435e65d894.bindPopup(popup_3ee4f3e0b3e3bf45c0f277e9ca979695)
+        ;
+
+        
+    
+    
+            var circle_marker_9985784f04c11adcd005e303026d721e = L.circleMarker(
+                [-23.570119, -46.672679],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_1c6f717ffa1d6332bde5bead7a02345e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_973f3e06c344151cff173eeca4eb0220 = $(`<div id="html_973f3e06c344151cff173eeca4eb0220" style="width: 100.0%; height: 100.0%;">R. Colômbia, 535 (22.6 min)</div>`)[0];
+                popup_1c6f717ffa1d6332bde5bead7a02345e.setContent(html_973f3e06c344151cff173eeca4eb0220);
+            
+        
+
+        circle_marker_9985784f04c11adcd005e303026d721e.bindPopup(popup_1c6f717ffa1d6332bde5bead7a02345e)
+        ;
+
+        
+    
+    
+            var circle_marker_c5317c44c8464dfa0225fac66b7950dd = L.circleMarker(
+                [-23.548174, -46.649565],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3d8a4714c136f8e9b7e4cf4b548753f9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cf7dc60cbc6f81a7e19bbe3576950174 = $(`<div id="html_cf7dc60cbc6f81a7e19bbe3576950174" style="width: 100.0%; height: 100.0%;">Caio Prado B/C (22.7 min)</div>`)[0];
+                popup_3d8a4714c136f8e9b7e4cf4b548753f9.setContent(html_cf7dc60cbc6f81a7e19bbe3576950174);
+            
+        
+
+        circle_marker_c5317c44c8464dfa0225fac66b7950dd.bindPopup(popup_3d8a4714c136f8e9b7e4cf4b548753f9)
+        ;
+
+        
+    
+    
+            var circle_marker_3eb1ccea4f8ce1ba01ccc34ee6c67a1a = L.circleMarker(
+                [-23.54544, -46.654126],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a06b841862423b460953974bc323680c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_135082a3ef802e7193d1adc3a8f91d70 = $(`<div id="html_135082a3ef802e7193d1adc3a8f91d70" style="width: 100.0%; height: 100.0%;">R. Sabará, 210 (22.8 min)</div>`)[0];
+                popup_a06b841862423b460953974bc323680c.setContent(html_135082a3ef802e7193d1adc3a8f91d70);
+            
+        
+
+        circle_marker_3eb1ccea4f8ce1ba01ccc34ee6c67a1a.bindPopup(popup_a06b841862423b460953974bc323680c)
+        ;
+
+        
+    
+    
+            var circle_marker_50cc0c46666c2b95834e5455300e983f = L.circleMarker(
+                [-23.544361, -46.660903],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_329bf9c63b5cd5b09650f2f390681316 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_56c5533d68d7c1d36f70fd33cd9de8ca = $(`<div id="html_56c5533d68d7c1d36f70fd33cd9de8ca" style="width: 100.0%; height: 100.0%;">Pça. Vilaboim, 150 (22.9 min)</div>`)[0];
+                popup_329bf9c63b5cd5b09650f2f390681316.setContent(html_56c5533d68d7c1d36f70fd33cd9de8ca);
+            
+        
+
+        circle_marker_50cc0c46666c2b95834e5455300e983f.bindPopup(popup_329bf9c63b5cd5b09650f2f390681316)
+        ;
+
+        
+    
+    
+            var circle_marker_41c9d632e43f766ba96e779375892690 = L.circleMarker(
+                [-23.570258, -46.672941],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_11541356b408d8996ab97837bfb71edd = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d894ecd178960e0f4442d6179b38a02c = $(`<div id="html_d894ecd178960e0f4442d6179b38a02c" style="width: 100.0%; height: 100.0%;">R. Colômbia, 534 (22.9 min)</div>`)[0];
+                popup_11541356b408d8996ab97837bfb71edd.setContent(html_d894ecd178960e0f4442d6179b38a02c);
+            
+        
+
+        circle_marker_41c9d632e43f766ba96e779375892690.bindPopup(popup_11541356b408d8996ab97837bfb71edd)
+        ;
+
+        
+    
+    
+            var circle_marker_08637a77298790a054f8a220d16fd733 = L.circleMarker(
+                [-23.567809, -46.673503],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a2d4e61919b4b8c9321c97b94c979560 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_02bb5237b15132c2a85634c61453c0fd = $(`<div id="html_02bb5237b15132c2a85634c61453c0fd" style="width: 100.0%; height: 100.0%;">Av. Brasil, 1718 (23.0 min)</div>`)[0];
+                popup_a2d4e61919b4b8c9321c97b94c979560.setContent(html_02bb5237b15132c2a85634c61453c0fd);
+            
+        
+
+        circle_marker_08637a77298790a054f8a220d16fd733.bindPopup(popup_a2d4e61919b4b8c9321c97b94c979560)
+        ;
+
+        
+    
+    
+            var circle_marker_6cefe7daa2f53f0a9db1679d2dceaa3a = L.circleMarker(
+                [-23.550043, -46.646245],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cdca0ee29acbd2298f4782e537cb0c6a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_833eb9a7e4b13b8b63718925d1c82d9c = $(`<div id="html_833eb9a7e4b13b8b63718925d1c82d9c" style="width: 100.0%; height: 100.0%;">R. Augusta, 17 (23.6 min)</div>`)[0];
+                popup_cdca0ee29acbd2298f4782e537cb0c6a.setContent(html_833eb9a7e4b13b8b63718925d1c82d9c);
+            
+        
+
+        circle_marker_6cefe7daa2f53f0a9db1679d2dceaa3a.bindPopup(popup_cdca0ee29acbd2298f4782e537cb0c6a)
+        ;
+
+        
+    
+    
+            var circle_marker_ecca87d916bb808b42cefcb27c35f19d = L.circleMarker(
+                [-23.563945, -46.646421],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_a0994796e1b06b5c7e9ea20d880444b7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fe77d5a449238fe7bee98ece972db944 = $(`<div id="html_fe77d5a449238fe7bee98ece972db944" style="width: 100.0%; height: 100.0%;">Parada Treze De Maio (24.0 min)</div>`)[0];
+                popup_a0994796e1b06b5c7e9ea20d880444b7.setContent(html_fe77d5a449238fe7bee98ece972db944);
+            
+        
+
+        circle_marker_ecca87d916bb808b42cefcb27c35f19d.bindPopup(popup_a0994796e1b06b5c7e9ea20d880444b7)
+        ;
+
+        
+    
+    
+            var circle_marker_cc168055e78ed16130119846640f2e1f = L.circleMarker(
+                [-23.570311, -46.647772],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_f1db86e3017820a007d5ca4c9979248b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0b6e6d276b87fed2f6cbecc211e4d6a7 = $(`<div id="html_0b6e6d276b87fed2f6cbecc211e4d6a7" style="width: 100.0%; height: 100.0%;">Al. Santos, 333 (24.2 min)</div>`)[0];
+                popup_f1db86e3017820a007d5ca4c9979248b.setContent(html_0b6e6d276b87fed2f6cbecc211e4d6a7);
+            
+        
+
+        circle_marker_cc168055e78ed16130119846640f2e1f.bindPopup(popup_f1db86e3017820a007d5ca4c9979248b)
+        ;
+
+        
+    
+    
+            var circle_marker_0648947ac219c28e20c35b6f27298631 = L.circleMarker(
+                [-23.563731, -46.646118],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d5358a3286c5dc2b1183868c828f176e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6f320a5c2f1bd54c6935e89a1f400fc7 = $(`<div id="html_6f320a5c2f1bd54c6935e89a1f400fc7" style="width: 100.0%; height: 100.0%;">Parada Treze De Maio (24.4 min)</div>`)[0];
+                popup_d5358a3286c5dc2b1183868c828f176e.setContent(html_6f320a5c2f1bd54c6935e89a1f400fc7);
+            
+        
+
+        circle_marker_0648947ac219c28e20c35b6f27298631.bindPopup(popup_d5358a3286c5dc2b1183868c828f176e)
+        ;
+
+        
+    
+    
+            var circle_marker_75a3ebab6237c15746164db444f7f39f = L.circleMarker(
+                [-23.546052, -46.652625],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_141ac6cb2b0f51500cf157c4dfcd6f79 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f4247c8867ee9100237e78ac2cfbebab = $(`<div id="html_f4247c8867ee9100237e78ac2cfbebab" style="width: 100.0%; height: 100.0%;">R. Itambé, 84 (24.7 min)</div>`)[0];
+                popup_141ac6cb2b0f51500cf157c4dfcd6f79.setContent(html_f4247c8867ee9100237e78ac2cfbebab);
+            
+        
+
+        circle_marker_75a3ebab6237c15746164db444f7f39f.bindPopup(popup_141ac6cb2b0f51500cf157c4dfcd6f79)
+        ;
+
+        
+    
+    
+            var circle_marker_373c1677264e2f222b6bf044fe1f3c59 = L.circleMarker(
+                [-23.545548, -46.662146],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cb91d7f4964f797bc49e34ac816247c6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0e7dfe7e649d715c9e3b44072efb5d98 = $(`<div id="html_0e7dfe7e649d715c9e3b44072efb5d98" style="width: 100.0%; height: 100.0%;">R. Armando Penteado, 80 (25.1 min)</div>`)[0];
+                popup_cb91d7f4964f797bc49e34ac816247c6.setContent(html_0e7dfe7e649d715c9e3b44072efb5d98);
+            
+        
+
+        circle_marker_373c1677264e2f222b6bf044fe1f3c59.bindPopup(popup_cb91d7f4964f797bc49e34ac816247c6)
+        ;
+
+        
+    
+    
+            var circle_marker_5aa7b22598175baf79cae26c4ec780bb = L.circleMarker(
+                [-23.551204, -46.645968],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_10c6518ab11afe881ea5acb6bd3fa732 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a82eecedc8ed9580eb12373ed12ed5be = $(`<div id="html_a82eecedc8ed9580eb12373ed12ed5be" style="width: 100.0%; height: 100.0%;">Parada Museu Judaico De Sp - C/B (25.2 min)</div>`)[0];
+                popup_10c6518ab11afe881ea5acb6bd3fa732.setContent(html_a82eecedc8ed9580eb12373ed12ed5be);
+            
+        
+
+        circle_marker_5aa7b22598175baf79cae26c4ec780bb.bindPopup(popup_10c6518ab11afe881ea5acb6bd3fa732)
+        ;
+
+        
+    
+    
+            var circle_marker_b6634facda2fb660be7e1299c20081a5 = L.circleMarker(
+                [-23.54949, -46.64507],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e0971d2c78d54eb30266d4a01c9e4e05 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8c217a763f37f574826c22e1dd526424 = $(`<div id="html_8c217a763f37f574826c22e1dd526424" style="width: 100.0%; height: 100.0%;">R. Martins Fontes, 280 (25.2 min)</div>`)[0];
+                popup_e0971d2c78d54eb30266d4a01c9e4e05.setContent(html_8c217a763f37f574826c22e1dd526424);
+            
+        
+
+        circle_marker_b6634facda2fb660be7e1299c20081a5.bindPopup(popup_e0971d2c78d54eb30266d4a01c9e4e05)
+        ;
+
+        
+    
+    
+            var circle_marker_1324744b7a5d905fa2152bf87f7d3aa7 = L.circleMarker(
+                [-23.551241, -46.64583],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_9519c3f3b3be3171beb4f97dcf916dd4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_196378c54af2807fc8e1d0d7ff787337 = $(`<div id="html_196378c54af2807fc8e1d0d7ff787337" style="width: 100.0%; height: 100.0%;">Parada Museu Judaico De Sp - B/C (25.3 min)</div>`)[0];
+                popup_9519c3f3b3be3171beb4f97dcf916dd4.setContent(html_196378c54af2807fc8e1d0d7ff787337);
+            
+        
+
+        circle_marker_1324744b7a5d905fa2152bf87f7d3aa7.bindPopup(popup_9519c3f3b3be3171beb4f97dcf916dd4)
+        ;
+
+        
+    
+    
+            var circle_marker_8a69ab65e2afcce6116e62733a795338 = L.circleMarker(
+                [-23.562943, -46.645978],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e3de93a00c8db3eb3c300d9602d49de5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a16187c5a27bcf4f7393b67d6ecbc43e = $(`<div id="html_a16187c5a27bcf4f7393b67d6ecbc43e" style="width: 100.0%; height: 100.0%;">R. Treze De Maio, 1082 (25.4 min)</div>`)[0];
+                popup_e3de93a00c8db3eb3c300d9602d49de5.setContent(html_a16187c5a27bcf4f7393b67d6ecbc43e);
+            
+        
+
+        circle_marker_8a69ab65e2afcce6116e62733a795338.bindPopup(popup_e3de93a00c8db3eb3c300d9602d49de5)
+        ;
+
+        
+    
+    
+            var circle_marker_dfcb0f53ae3ed4f0aca73cfc6c2032a5 = L.circleMarker(
+                [-23.565771, -46.64506],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c7b7059d7427d6b230454068511c4ee9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_b42ca1ee9753e4945a14f2d5bcc64ebc = $(`<div id="html_b42ca1ee9753e4945a14f2d5bcc64ebc" style="width: 100.0%; height: 100.0%;">R. Treze De Maio, 1376 (25.5 min)</div>`)[0];
+                popup_c7b7059d7427d6b230454068511c4ee9.setContent(html_b42ca1ee9753e4945a14f2d5bcc64ebc);
+            
+        
+
+        circle_marker_dfcb0f53ae3ed4f0aca73cfc6c2032a5.bindPopup(popup_c7b7059d7427d6b230454068511c4ee9)
+        ;
+
+        
+    
+    
+            var circle_marker_04ee5dd58f49f52d2f0e1cfe1dad1e3b = L.circleMarker(
+                [-23.551759, -46.645534],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_bf16280b83482d6d93f73503287a61dd = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7f436a15a24bd885aa0b8848c85b4d0f = $(`<div id="html_7f436a15a24bd885aa0b8848c85b4d0f" style="width: 100.0%; height: 100.0%;">R. Martinho Prado, 43 (26.0 min)</div>`)[0];
+                popup_bf16280b83482d6d93f73503287a61dd.setContent(html_7f436a15a24bd885aa0b8848c85b4d0f);
+            
+        
+
+        circle_marker_04ee5dd58f49f52d2f0e1cfe1dad1e3b.bindPopup(popup_bf16280b83482d6d93f73503287a61dd)
+        ;
+
+        
+    
+    
+            var circle_marker_387154c9d39c149e19b641bf13a9753f = L.circleMarker(
+                [-23.546052, -46.648004],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_97ab301432fde829f4fb4b66e88273bf = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_fa8e36b0a0d1d46f04fb209df16e2c0b = $(`<div id="html_fa8e36b0a0d1d46f04fb209df16e2c0b" style="width: 100.0%; height: 100.0%;">R. Amaral Gurgel, 470 (26.1 min)</div>`)[0];
+                popup_97ab301432fde829f4fb4b66e88273bf.setContent(html_fa8e36b0a0d1d46f04fb209df16e2c0b);
+            
+        
+
+        circle_marker_387154c9d39c149e19b641bf13a9753f.bindPopup(popup_97ab301432fde829f4fb4b66e88273bf)
+        ;
+
+        
+    
+    
+            var circle_marker_220067bc492c25431879ab3da70c5cdd = L.circleMarker(
+                [-23.566288, -46.644605],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_fd97ed6392c5440cdec7d1ff6dcf9f11 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e3191aca1445db9f466310988f8b6883 = $(`<div id="html_e3191aca1445db9f466310988f8b6883" style="width: 100.0%; height: 100.0%;">Parada Treze De Maio (26.4 min)</div>`)[0];
+                popup_fd97ed6392c5440cdec7d1ff6dcf9f11.setContent(html_e3191aca1445db9f466310988f8b6883);
+            
+        
+
+        circle_marker_220067bc492c25431879ab3da70c5cdd.bindPopup(popup_fd97ed6392c5440cdec7d1ff6dcf9f11)
+        ;
+
+        
+    
+    
+            var circle_marker_035d5ffe6e2fb2e77a8bf37ab6b2823f = L.circleMarker(
+                [-23.570159, -46.645986],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d79ab0edf56e0db11904ca163c914367 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0cb8570b51217b851b222c3331b10e28 = $(`<div id="html_0cb8570b51217b851b222c3331b10e28" style="width: 100.0%; height: 100.0%;">Av. Paulista, 171 (26.4 min)</div>`)[0];
+                popup_d79ab0edf56e0db11904ca163c914367.setContent(html_0cb8570b51217b851b222c3331b10e28);
+            
+        
+
+        circle_marker_035d5ffe6e2fb2e77a8bf37ab6b2823f.bindPopup(popup_d79ab0edf56e0db11904ca163c914367)
+        ;
+
+        
+    
+    
+            var circle_marker_873424dedfc88c6b3b52e807c8b7805a = L.circleMarker(
+                [-23.551369, -46.64416],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5489abd4680f8de1f12d734362050820 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_58fb2da07bdc4a4798379c1e3983458a = $(`<div id="html_58fb2da07bdc4a4798379c1e3983458a" style="width: 100.0%; height: 100.0%;">R. Sto. Antônio, 594 (26.7 min)</div>`)[0];
+                popup_5489abd4680f8de1f12d734362050820.setContent(html_58fb2da07bdc4a4798379c1e3983458a);
+            
+        
+
+        circle_marker_873424dedfc88c6b3b52e807c8b7805a.bindPopup(popup_5489abd4680f8de1f12d734362050820)
+        ;
+
+        
+    
+    
+            var circle_marker_cbeb8ca182bb467e25552b70794fefa1 = L.circleMarker(
+                [-23.56278, -46.644571],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_34cd07e82a9c342d6d3e3b6dc7df2a5a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2f8cf2a7fe92147653cd407373e0eeec = $(`<div id="html_2f8cf2a7fe92147653cd407373e0eeec" style="width: 100.0%; height: 100.0%;">R. Sta. Madalena, 371 (26.7 min)</div>`)[0];
+                popup_34cd07e82a9c342d6d3e3b6dc7df2a5a.setContent(html_2f8cf2a7fe92147653cd407373e0eeec);
+            
+        
+
+        circle_marker_cbeb8ca182bb467e25552b70794fefa1.bindPopup(popup_34cd07e82a9c342d6d3e3b6dc7df2a5a)
+        ;
+
+        
+    
+    
+            var circle_marker_434c53bbd72980b5de12e25ac7d281bf = L.circleMarker(
+                [-23.548957, -46.643808],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_af9d4ed0802aceb4778aafb877f0fee2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ee11802ed1db45ad1a7814cb4e54d3e9 = $(`<div id="html_ee11802ed1db45ad1a7814cb4e54d3e9" style="width: 100.0%; height: 100.0%;">R. Martins Fontes, 164 (26.9 min)</div>`)[0];
+                popup_af9d4ed0802aceb4778aafb877f0fee2.setContent(html_ee11802ed1db45ad1a7814cb4e54d3e9);
+            
+        
+
+        circle_marker_434c53bbd72980b5de12e25ac7d281bf.bindPopup(popup_af9d4ed0802aceb4778aafb877f0fee2)
+        ;
+
+        
+    
+    
+            var circle_marker_a7d9f2ac32b573747837c03266ee1e38 = L.circleMarker(
+                [-23.562137, -46.644826],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3315f3c01614d0506b51155cef87f7ad = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a10efabf003a96efa623c3ac922d038d = $(`<div id="html_a10efabf003a96efa623c3ac922d038d" style="width: 100.0%; height: 100.0%;">Rui Barbosa (27.1 min)</div>`)[0];
+                popup_3315f3c01614d0506b51155cef87f7ad.setContent(html_a10efabf003a96efa623c3ac922d038d);
+            
+        
+
+        circle_marker_a7d9f2ac32b573747837c03266ee1e38.bindPopup(popup_3315f3c01614d0506b51155cef87f7ad)
+        ;
+
+        
+    
+    
+            var circle_marker_fcb9a6c27d76773c08823443aa779400 = L.circleMarker(
+                [-23.570405, -46.645227],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_2352d6cee22724e7178cec12c3582232 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8caafa784fb85e114d2961de4f68f0a2 = $(`<div id="html_8caafa784fb85e114d2961de4f68f0a2" style="width: 100.0%; height: 100.0%;">Av. Paulista, 200 (27.3 min)</div>`)[0];
+                popup_2352d6cee22724e7178cec12c3582232.setContent(html_8caafa784fb85e114d2961de4f68f0a2);
+            
+        
+
+        circle_marker_fcb9a6c27d76773c08823443aa779400.bindPopup(popup_2352d6cee22724e7178cec12c3582232)
+        ;
+
+        
+    
+    
+            var circle_marker_0796d9dc6ea0f5fe58c1275837d055ca = L.circleMarker(
+                [-23.548488, -46.643559],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_e5998886094ea3f60ed3b496229a379b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_cb35c598ac19fe67354d6199da16d7c0 = $(`<div id="html_cb35c598ac19fe67354d6199da16d7c0" style="width: 100.0%; height: 100.0%;">R. Martins Fontes, 109 (27.5 min)</div>`)[0];
+                popup_e5998886094ea3f60ed3b496229a379b.setContent(html_cb35c598ac19fe67354d6199da16d7c0);
+            
+        
+
+        circle_marker_0796d9dc6ea0f5fe58c1275837d055ca.bindPopup(popup_e5998886094ea3f60ed3b496229a379b)
+        ;
+
+        
+    
+    
+            var circle_marker_41d9c1820a44df5a64975cb33091c22b = L.circleMarker(
+                [-23.545476, -46.647015],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0f19ac96e9297bbe58a5c5412b9d2e0f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1da32a49c6ce1baf2392a92e690200f3 = $(`<div id="html_1da32a49c6ce1baf2392a92e690200f3" style="width: 100.0%; height: 100.0%;">R. Mj. Sertório, 295 (27.5 min)</div>`)[0];
+                popup_0f19ac96e9297bbe58a5c5412b9d2e0f.setContent(html_1da32a49c6ce1baf2392a92e690200f3);
+            
+        
+
+        circle_marker_41d9c1820a44df5a64975cb33091c22b.bindPopup(popup_0f19ac96e9297bbe58a5c5412b9d2e0f)
+        ;
+
+        
+    
+    
+            var circle_marker_fe93d8ba84511f52563f9bde9a10825b = L.circleMarker(
+                [-23.561907, -46.644521],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c219d25c513b44d08d7a8a3c7d175ade = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d64b03ff1902df453374b45fde9e1b5a = $(`<div id="html_d64b03ff1902df453374b45fde9e1b5a" style="width: 100.0%; height: 100.0%;">Pedroso (27.6 min)</div>`)[0];
+                popup_c219d25c513b44d08d7a8a3c7d175ade.setContent(html_d64b03ff1902df453374b45fde9e1b5a);
+            
+        
+
+        circle_marker_fe93d8ba84511f52563f9bde9a10825b.bindPopup(popup_c219d25c513b44d08d7a8a3c7d175ade)
+        ;
+
+        
+    
+    
+            var circle_marker_a14c25a03340a0fae1ebec132fac7426 = L.circleMarker(
+                [-23.545396, -46.649123],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_30d31e59e8f52054086256ae63fd66c4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_95261b4497e948ab4c8fc125bafeb4c4 = $(`<div id="html_95261b4497e948ab4c8fc125bafeb4c4" style="width: 100.0%; height: 100.0%;">R. Mj. Sertório, 517 (27.7 min)</div>`)[0];
+                popup_30d31e59e8f52054086256ae63fd66c4.setContent(html_95261b4497e948ab4c8fc125bafeb4c4);
+            
+        
+
+        circle_marker_a14c25a03340a0fae1ebec132fac7426.bindPopup(popup_30d31e59e8f52054086256ae63fd66c4)
+        ;
+
+        
+    
+    
+            var circle_marker_72df116666aa3230f8da83cae70fe52a = L.circleMarker(
+                [-23.547623, -46.64473],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c1e604edbd6a1084374fc2585b80482a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0ac9013f1c1540d97ac9518b5357c50e = $(`<div id="html_0ac9013f1c1540d97ac9518b5357c50e" style="width: 100.0%; height: 100.0%;">Parada Minhocão (27.7 min)</div>`)[0];
+                popup_c1e604edbd6a1084374fc2585b80482a.setContent(html_0ac9013f1c1540d97ac9518b5357c50e);
+            
+        
+
+        circle_marker_72df116666aa3230f8da83cae70fe52a.bindPopup(popup_c1e604edbd6a1084374fc2585b80482a)
+        ;
+
+        
+    
+    
+            var circle_marker_11ff02da426237f6f52e1c40265a0704 = L.circleMarker(
+                [-23.546133, -46.646567],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_f22aeab16f1aacbd5b431b4d6ddb7cb9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e12970fd313c3144eeefc28b6478e503 = $(`<div id="html_e12970fd313c3144eeefc28b6478e503" style="width: 100.0%; height: 100.0%;">R. Rego Freitas, 475 (27.8 min)</div>`)[0];
+                popup_f22aeab16f1aacbd5b431b4d6ddb7cb9.setContent(html_e12970fd313c3144eeefc28b6478e503);
+            
+        
+
+        circle_marker_11ff02da426237f6f52e1c40265a0704.bindPopup(popup_f22aeab16f1aacbd5b431b4d6ddb7cb9)
+        ;
+
+        
+    
+    
+            var circle_marker_f0d5743dfb9fd543cd636f8b564bd1a1 = L.circleMarker(
+                [-23.553271, -46.645922],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_2f6524309144919cdd0c6004e937c284 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_622ba0cb8ba8fccc622d8545efda244a = $(`<div id="html_622ba0cb8ba8fccc622d8545efda244a" style="width: 100.0%; height: 100.0%;">R. João Passalacqua, 64 (27.9 min)</div>`)[0];
+                popup_2f6524309144919cdd0c6004e937c284.setContent(html_622ba0cb8ba8fccc622d8545efda244a);
+            
+        
+
+        circle_marker_f0d5743dfb9fd543cd636f8b564bd1a1.bindPopup(popup_2f6524309144919cdd0c6004e937c284)
+        ;
+
+        
+    
+    
+            var circle_marker_4fa5bc2c5f105b9ba6cdde21d024a067 = L.circleMarker(
+                [-23.54756, -46.644214],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_3df3a586e38f1a0bf2f271094490056b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_feccf7ce3c179e6c06f14d1356d78b99 = $(`<div id="html_feccf7ce3c179e6c06f14d1356d78b99" style="width: 100.0%; height: 100.0%;">São Luis (28.0 min)</div>`)[0];
+                popup_3df3a586e38f1a0bf2f271094490056b.setContent(html_feccf7ce3c179e6c06f14d1356d78b99);
+            
+        
+
+        circle_marker_4fa5bc2c5f105b9ba6cdde21d024a067.bindPopup(popup_3df3a586e38f1a0bf2f271094490056b)
+        ;
+
+        
+    
+    
+            var circle_marker_d9b7abf91415c876879e079bd60e00bb = L.circleMarker(
+                [-23.569313, -46.644804],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_73d76306a980ba0d67cce79e66e030ec = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d5f3767c44a5ff5ae48a59f358b4cd74 = $(`<div id="html_d5f3767c44a5ff5ae48a59f358b4cd74" style="width: 100.0%; height: 100.0%;">R. Cincinato Braga, 144 (28.2 min)</div>`)[0];
+                popup_73d76306a980ba0d67cce79e66e030ec.setContent(html_d5f3767c44a5ff5ae48a59f358b4cd74);
+            
+        
+
+        circle_marker_d9b7abf91415c876879e079bd60e00bb.bindPopup(popup_73d76306a980ba0d67cce79e66e030ec)
+        ;
+
+        
+    
+    
+            var circle_marker_8961b901d6b780656a09906dc4e5d96d = L.circleMarker(
+                [-23.544456, -46.647617],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d17b4186317f1bb6858168e54d49e4a7 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_37e15d3d08cdd53c96579c500d6e01fd = $(`<div id="html_37e15d3d08cdd53c96579c500d6e01fd" style="width: 100.0%; height: 100.0%;">R. Amaral Gurgel, 287 (28.3 min)</div>`)[0];
+                popup_d17b4186317f1bb6858168e54d49e4a7.setContent(html_37e15d3d08cdd53c96579c500d6e01fd);
+            
+        
+
+        circle_marker_8961b901d6b780656a09906dc4e5d96d.bindPopup(popup_d17b4186317f1bb6858168e54d49e4a7)
+        ;
+
+        
+    
+    
+            var circle_marker_6596ff3bcf6e272ad023ca1760e8f2d1 = L.circleMarker(
+                [-23.56777, -46.644277],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0ed96921e905aa876119b8dbc6a3e03b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_17696eb9a88a77ee3a6616ab83f597b0 = $(`<div id="html_17696eb9a88a77ee3a6616ab83f597b0" style="width: 100.0%; height: 100.0%;">R. Treze De Maio, 1685 (28.3 min)</div>`)[0];
+                popup_0ed96921e905aa876119b8dbc6a3e03b.setContent(html_17696eb9a88a77ee3a6616ab83f597b0);
+            
+        
+
+        circle_marker_6596ff3bcf6e272ad023ca1760e8f2d1.bindPopup(popup_0ed96921e905aa876119b8dbc6a3e03b)
+        ;
+
+        
+    
+    
+            var circle_marker_54e88277b01118b264560826ed6ef9d3 = L.circleMarker(
+                [-23.548963, -46.642538],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_ab8e15dbbd7bae494266fb180f3526ba = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c3764c12e66a5a3dd1a84abaa9f7682b = $(`<div id="html_c3764c12e66a5a3dd1a84abaa9f7682b" style="width: 100.0%; height: 100.0%;">Viad. Nove De Julho, 175 (28.4 min)</div>`)[0];
+                popup_ab8e15dbbd7bae494266fb180f3526ba.setContent(html_c3764c12e66a5a3dd1a84abaa9f7682b);
+            
+        
+
+        circle_marker_54e88277b01118b264560826ed6ef9d3.bindPopup(popup_ab8e15dbbd7bae494266fb180f3526ba)
+        ;
+
+        
+    
+    
+            var circle_marker_eaba73f55692fb6a8a799a46f2072d13 = L.circleMarker(
+                [-23.553734, -46.645721],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_1391f84b92dfe5585b811d7f4ec5408a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_4cb5166cfc1d1175c34120948332303d = $(`<div id="html_4cb5166cfc1d1175c34120948332303d" style="width: 100.0%; height: 100.0%;">R. João Passalacqua (28.6 min)</div>`)[0];
+                popup_1391f84b92dfe5585b811d7f4ec5408a.setContent(html_4cb5166cfc1d1175c34120948332303d);
+            
+        
+
+        circle_marker_eaba73f55692fb6a8a799a46f2072d13.bindPopup(popup_1391f84b92dfe5585b811d7f4ec5408a)
+        ;
+
+        
+    
+    
+            var circle_marker_d7f564cbdd235f550a06fba86c5e9cfe = L.circleMarker(
+                [-23.548922, -46.642361],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cbfe6b0c593f62d9d6db1d4dfa0692e3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3289e582d6b800c57f341b7d9586acce = $(`<div id="html_3289e582d6b800c57f341b7d9586acce" style="width: 100.0%; height: 100.0%;">Viad. Nove De Julho, 160 (28.6 min)</div>`)[0];
+                popup_cbfe6b0c593f62d9d6db1d4dfa0692e3.setContent(html_3289e582d6b800c57f341b7d9586acce);
+            
+        
+
+        circle_marker_d7f564cbdd235f550a06fba86c5e9cfe.bindPopup(popup_cbfe6b0c593f62d9d6db1d4dfa0692e3)
+        ;
+
+        
+    
+    
+            var circle_marker_accea757d1857e3e2c186a0be5f0f193 = L.circleMarker(
+                [-23.546873, -46.645677],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5b83b5365e142087487328ef46b12d84 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_486289a165dbf3a68d601f977ba69576 = $(`<div id="html_486289a165dbf3a68d601f977ba69576" style="width: 100.0%; height: 100.0%;">Av. Ipiranga, 102 (28.8 min)</div>`)[0];
+                popup_5b83b5365e142087487328ef46b12d84.setContent(html_486289a165dbf3a68d601f977ba69576);
+            
+        
+
+        circle_marker_accea757d1857e3e2c186a0be5f0f193.bindPopup(popup_5b83b5365e142087487328ef46b12d84)
+        ;
+
+        
+    
+    
+            var circle_marker_0adf5ee5607a971ed72573366be61622 = L.circleMarker(
+                [-23.569805, -46.644035],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_d542e935c9b6b4b1975d98cb43fd4bc6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f144e050caa8d95aea048e63ac596910 = $(`<div id="html_f144e050caa8d95aea048e63ac596910" style="width: 100.0%; height: 100.0%;">Parada Treze De Maio (28.8 min)</div>`)[0];
+                popup_d542e935c9b6b4b1975d98cb43fd4bc6.setContent(html_f144e050caa8d95aea048e63ac596910);
+            
+        
+
+        circle_marker_0adf5ee5607a971ed72573366be61622.bindPopup(popup_d542e935c9b6b4b1975d98cb43fd4bc6)
+        ;
+
+        
+    
+    
+            var circle_marker_f60d824abad0b2b6abdd002e4e9beee8 = L.circleMarker(
+                [-23.560311, -46.645559],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_6b1140d0e49c5484e5bda11c45e92ab6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_9c2635a28c80e4600cd4660b1682bc4f = $(`<div id="html_9c2635a28c80e4600cd4660b1682bc4f" style="width: 100.0%; height: 100.0%;">Pça. D. Orione (29.0 min)</div>`)[0];
+                popup_6b1140d0e49c5484e5bda11c45e92ab6.setContent(html_9c2635a28c80e4600cd4660b1682bc4f);
+            
+        
+
+        circle_marker_f60d824abad0b2b6abdd002e4e9beee8.bindPopup(popup_6b1140d0e49c5484e5bda11c45e92ab6)
+        ;
+
+        
+    
+    
+            var circle_marker_0ab99c7c5faf9c87c4239c1af39c4e75 = L.circleMarker(
+                [-23.569846, -46.6438],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_50f4fb4af8803d207582df259856a3a4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_69d691a39c646c3d87ec0c13075aeb05 = $(`<div id="html_69d691a39c646c3d87ec0c13075aeb05" style="width: 100.0%; height: 100.0%;">R. Treze De Maio, 1855 (29.1 min)</div>`)[0];
+                popup_50f4fb4af8803d207582df259856a3a4.setContent(html_69d691a39c646c3d87ec0c13075aeb05);
+            
+        
+
+        circle_marker_0ab99c7c5faf9c87c4239c1af39c4e75.bindPopup(popup_50f4fb4af8803d207582df259856a3a4)
+        ;
+
+        
+    
+    
+            var circle_marker_6ab7250f8db7144737820fbf00686387 = L.circleMarker(
+                [-23.543747, -46.648429],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_dfa0b688dedcef873dd3b84d571e5ca0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_548a60807ed9591f26a31cdcb342c7b9 = $(`<div id="html_548a60807ed9591f26a31cdcb342c7b9" style="width: 100.0%; height: 100.0%;">R. Mq. De Itu, 454 (29.2 min)</div>`)[0];
+                popup_dfa0b688dedcef873dd3b84d571e5ca0.setContent(html_548a60807ed9591f26a31cdcb342c7b9);
+            
+        
+
+        circle_marker_6ab7250f8db7144737820fbf00686387.bindPopup(popup_dfa0b688dedcef873dd3b84d571e5ca0)
+        ;
+
+        
+    
+    
+            var circle_marker_98b29b762182e88df0163cbc7568350e = L.circleMarker(
+                [-23.560871, -46.643747],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_63a7e9700845610c1e1db3a2658ce375 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_dfb32317eb4af2d0c2abef4e256d565d = $(`<div id="html_dfb32317eb4af2d0c2abef4e256d565d" style="width: 100.0%; height: 100.0%;">Conselheiro Ramalho (29.2 min)</div>`)[0];
+                popup_63a7e9700845610c1e1db3a2658ce375.setContent(html_dfb32317eb4af2d0c2abef4e256d565d);
+            
+        
+
+        circle_marker_98b29b762182e88df0163cbc7568350e.bindPopup(popup_63a7e9700845610c1e1db3a2658ce375)
+        ;
+
+        
+    
+    
+            var circle_marker_41d21ee7c498f6513bb671007ecb8c3a = L.circleMarker(
+                [-23.543781, -46.647063],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_4f716f92ecc3af474350104222212802 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7d4443e21e4d39af185933ecabf01cee = $(`<div id="html_7d4443e21e4d39af185933ecabf01cee" style="width: 100.0%; height: 100.0%;">R. Mq. De Itu, 284 (29.3 min)</div>`)[0];
+                popup_4f716f92ecc3af474350104222212802.setContent(html_7d4443e21e4d39af185933ecabf01cee);
+            
+        
+
+        circle_marker_41d21ee7c498f6513bb671007ecb8c3a.bindPopup(popup_4f716f92ecc3af474350104222212802)
+        ;
+
+        
+    
+    
+            var circle_marker_2c61da5dd8338e5f9aa6bd01cc11791e = L.circleMarker(
+                [-23.572428, -46.645786],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_c021d7d1451b5fc306719534f2eb31e6 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c34eea8908a1908f8c14e464c27098b4 = $(`<div id="html_c34eea8908a1908f8c14e464c27098b4" style="width: 100.0%; height: 100.0%;">R. Dr. Rafael De Barros, 154 (29.4 min)</div>`)[0];
+                popup_c021d7d1451b5fc306719534f2eb31e6.setContent(html_c34eea8908a1908f8c14e464c27098b4);
+            
+        
+
+        circle_marker_2c61da5dd8338e5f9aa6bd01cc11791e.bindPopup(popup_c021d7d1451b5fc306719534f2eb31e6)
+        ;
+
+        
+    
+    
+            var circle_marker_befd8c38da51e8c65efce7efc536e261 = L.circleMarker(
+                [-23.553301, -46.643161],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_465b83b3d3d701ee66c963e60d8c5786 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c37f985942a7427ddd1a0b282820e19d = $(`<div id="html_c37f985942a7427ddd1a0b282820e19d" style="width: 100.0%; height: 100.0%;">R. Mj. Diogo, 249 (29.5 min)</div>`)[0];
+                popup_465b83b3d3d701ee66c963e60d8c5786.setContent(html_c37f985942a7427ddd1a0b282820e19d);
+            
+        
+
+        circle_marker_befd8c38da51e8c65efce7efc536e261.bindPopup(popup_465b83b3d3d701ee66c963e60d8c5786)
+        ;
+
+        
+    
+    
+            var circle_marker_1a164048679a588e5092b27fb69d3a00 = L.circleMarker(
+                [-23.54786, -46.642002],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_14eddd217f7d005890f674abc65d6ce8 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c9e3c7e1c8fadd64bcd277475180fd92 = $(`<div id="html_c9e3c7e1c8fadd64bcd277475180fd92" style="width: 100.0%; height: 100.0%;">R. Da Consolação (29.6 min)</div>`)[0];
+                popup_14eddd217f7d005890f674abc65d6ce8.setContent(html_c9e3c7e1c8fadd64bcd277475180fd92);
+            
+        
+
+        circle_marker_1a164048679a588e5092b27fb69d3a00.bindPopup(popup_14eddd217f7d005890f674abc65d6ce8)
+        ;
+
+        
+    
+    
+            var circle_marker_aa0a322926a662756c897e926848f65b = L.circleMarker(
+                [-23.543376, -46.647874],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_13fbaa4ed9eb34271bd5fce7cf440659 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_1fc252e11ad49ef83795a590ff726e2d = $(`<div id="html_1fc252e11ad49ef83795a590ff726e2d" style="width: 100.0%; height: 100.0%;">R. Amaral Gurgel, 184 (29.6 min)</div>`)[0];
+                popup_13fbaa4ed9eb34271bd5fce7cf440659.setContent(html_1fc252e11ad49ef83795a590ff726e2d);
+            
+        
+
+        circle_marker_aa0a322926a662756c897e926848f65b.bindPopup(popup_13fbaa4ed9eb34271bd5fce7cf440659)
+        ;
+
+        
+    
+    
+            var circle_marker_9c00f9b1f38bbe78808b03f4aaaf96cb = L.circleMarker(
+                [-23.546957, -46.642914],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_5da7c439f702fbc848f02225000a8846 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7ead5f44912d631cd12d82879481e2eb = $(`<div id="html_7ead5f44912d631cd12d82879481e2eb" style="width: 100.0%; height: 100.0%;">Av. S. Luís, 192 (29.7 min)</div>`)[0];
+                popup_5da7c439f702fbc848f02225000a8846.setContent(html_7ead5f44912d631cd12d82879481e2eb);
+            
+        
+
+        circle_marker_9c00f9b1f38bbe78808b03f4aaaf96cb.bindPopup(popup_5da7c439f702fbc848f02225000a8846)
+        ;
+
+        
+    
+    
+            var circle_marker_693b05b6813b9b77c141b570b7498b2d = L.circleMarker(
+                [-23.546953, -46.642793],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_aa2f8dad0e3eb9aee6dc5fbe284d1ce0 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0bed50cab7d1ee2d4be5ce3f6b0b8cb7 = $(`<div id="html_0bed50cab7d1ee2d4be5ce3f6b0b8cb7" style="width: 100.0%; height: 100.0%;">Av. S. Luís (29.7 min)</div>`)[0];
+                popup_aa2f8dad0e3eb9aee6dc5fbe284d1ce0.setContent(html_0bed50cab7d1ee2d4be5ce3f6b0b8cb7);
+            
+        
+
+        circle_marker_693b05b6813b9b77c141b570b7498b2d.bindPopup(popup_aa2f8dad0e3eb9aee6dc5fbe284d1ce0)
+        ;
+
+        
+    
+    
+            var circle_marker_1b521c8f6c0d37115703277495a8d601 = L.circleMarker(
+                [-23.560533, -46.643365],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_cc8ce2494a5011bd2b882632289a07af = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f727496ccf9568947805a278b0854713 = $(`<div id="html_f727496ccf9568947805a278b0854713" style="width: 100.0%; height: 100.0%;">Av. Brig. Luís Antônio, 1289 (29.9 min)</div>`)[0];
+                popup_cc8ce2494a5011bd2b882632289a07af.setContent(html_f727496ccf9568947805a278b0854713);
+            
+        
+
+        circle_marker_1b521c8f6c0d37115703277495a8d601.bindPopup(popup_cc8ce2494a5011bd2b882632289a07af)
+        ;
+
+        
+    
+    
+            var circle_marker_8d640fd0335c34fbf3f53cf499c14f21 = L.circleMarker(
+                [-23.547809, -46.641714],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_0a6f31fab8f8900d9534ad3f285280ba = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0963cf0cdce056fa4717b4bb4608ad2f = $(`<div id="html_0963cf0cdce056fa4717b4bb4608ad2f" style="width: 100.0%; height: 100.0%;">R. Da Consolação (29.9 min)</div>`)[0];
+                popup_0a6f31fab8f8900d9534ad3f285280ba.setContent(html_0963cf0cdce056fa4717b4bb4608ad2f);
+            
+        
+
+        circle_marker_8d640fd0335c34fbf3f53cf499c14f21.bindPopup(popup_0a6f31fab8f8900d9534ad3f285280ba)
+        ;
+
+        
+    
+    
+            var circle_marker_3de609b3bda3b4eafbe70b7cffb77680 = L.circleMarker(
+                [-23.547809, -46.641696],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "blue", "fillOpacity": 0.7, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 4, "stroke": true, "weight": 3}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+    
+        var popup_bf9a667c133c3ee2c3eb1a0873077daf = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_bda02c4e8c5b91157bd1a82408cb966d = $(`<div id="html_bda02c4e8c5b91157bd1a82408cb966d" style="width: 100.0%; height: 100.0%;">R. Da Consolação, 50 (29.9 min)</div>`)[0];
+                popup_bf9a667c133c3ee2c3eb1a0873077daf.setContent(html_bda02c4e8c5b91157bd1a82408cb966d);
+            
+        
+
+        circle_marker_3de609b3bda3b4eafbe70b7cffb77680.bindPopup(popup_bf9a667c133c3ee2c3eb1a0873077daf)
+        ;
+
+        
+    
+    
+            var poly_line_751b2559f43aa595dc8dc73c2058183f = L.polyline(
+                [[-23.558094, -46.660205], [-23.558578, -46.660572], [-23.557403, -46.659503], [-23.558947, -46.659585], [-23.558768, -46.659175], [-23.558767, -46.661457], [-23.55713, -46.661572], [-23.559461, -46.658509], [-23.557214, -46.662629], [-23.555528, -46.660759], [-23.556066, -46.662369], [-23.560226, -46.662366], [-23.555155, -46.659306], [-23.557171, -46.657021], [-23.560303, -46.657365], [-23.555883, -46.66306], [-23.555176, -46.66237], [-23.555071, -46.662131], [-23.554529, -46.659647], [-23.555195, -46.663271], [-23.561257, -46.657558], [-23.55865, -46.656255], [-23.561699, -46.658295], [-23.554738, -46.663404], [-23.561342, -46.663649], [-23.561459, -46.65655], [-23.555306, -46.657231], [-23.562026, -46.664216], [-23.55296, -46.66164], [-23.554564, -46.656455], [-23.559028, -46.654302], [-23.559846, -46.654687], [-23.559239, -46.654314], [-23.558836, -46.653843], [-23.563215, -46.665499], [-23.562931, -46.654428], [-23.551545, -46.660535], [-23.56357, -46.653893], [-23.553066, -46.654383], [-23.564313, -46.666541], [-23.56427, -46.666683], [-23.56442, -46.655074], [-23.550733, -46.659358], [-23.550004, -46.659898], [-23.552431, -46.653585], [-23.550526, -46.658992], [-23.563303, -46.652079], [-23.552384, -46.653034], [-23.549155, -46.659385], [-23.565696, -46.668011], [-23.551949, -46.652317], [-23.548615, -46.65919], [-23.551813, -46.657607], [-23.551843, -46.657399], [-23.56612, -46.668646], [-23.565789, -46.651451], [-23.566865, -46.669249], [-23.5659, -46.650929], [-23.546788, -46.658163], [-23.55121, -46.649887], [-23.549577, -46.653216], [-23.54958, -46.65343], [-23.567663, -46.67019], [-23.56736, -46.651453], [-23.550826, -46.648905], [-23.54582, -46.657806], [-23.565655, -46.649265], [-23.549031, -46.652303], [-23.568387, -46.670815], [-23.567308, -46.649529], [-23.544925, -46.6587], [-23.567615, -46.649027], [-23.549296, -46.655412], [-23.566211, -46.648198], [-23.546255, -46.655658], [-23.549258, -46.648459], [-23.565941, -46.647922], [-23.568341, -46.649488], [-23.568337, -46.649655], [-23.544749, -46.656346], [-23.568023, -46.648338], [-23.543985, -46.656843], [-23.548312, -46.650406], [-23.544072, -46.656637], [-23.569056, -46.649432], [-23.56715, -46.647238], [-23.543296, -46.659063], [-23.568182, -46.673402], [-23.546774, -46.654266], [-23.570119, -46.672679], [-23.548174, -46.649565], [-23.54544, -46.654126], [-23.544361, -46.660903], [-23.570258, -46.672941], [-23.567809, -46.673503], [-23.550043, -46.646245], [-23.563945, -46.646421], [-23.570311, -46.647772], [-23.563731, -46.646118], [-23.546052, -46.652625], [-23.545548, -46.662146], [-23.551204, -46.645968], [-23.54949, -46.64507], [-23.551241, -46.64583], [-23.562943, -46.645978], [-23.565771, -46.64506], [-23.551759, -46.645534], [-23.546052, -46.648004], [-23.566288, -46.644605], [-23.570159, -46.645986], [-23.551369, -46.64416], [-23.56278, -46.644571], [-23.548957, -46.643808], [-23.562137, -46.644826], [-23.570405, -46.645227], [-23.548488, -46.643559], [-23.545476, -46.647015], [-23.561907, -46.644521], [-23.545396, -46.649123], [-23.547623, -46.64473], [-23.546133, -46.646567], [-23.553271, -46.645922], [-23.54756, -46.644214], [-23.569313, -46.644804], [-23.544456, -46.647617], [-23.56777, -46.644277], [-23.548963, -46.642538], [-23.553734, -46.645721], [-23.548922, -46.642361], [-23.546873, -46.645677], [-23.569805, -46.644035], [-23.560311, -46.645559], [-23.569846, -46.6438], [-23.543747, -46.648429], [-23.560871, -46.643747], [-23.543781, -46.647063], [-23.572428, -46.645786], [-23.553301, -46.643161], [-23.54786, -46.642002], [-23.543376, -46.647874], [-23.546957, -46.642914], [-23.546953, -46.642793], [-23.560533, -46.643365], [-23.547809, -46.641714], [-23.547809, -46.641696]],
+                {"bubblingMouseEvents": true, "color": "green", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "green", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.5, "smoothFactor": 1.0, "stroke": true, "weight": 1}
+            ).addTo(map_8abfbef3d77577a22c5500ecd5650f00);
+        
+</script>
+</html>
