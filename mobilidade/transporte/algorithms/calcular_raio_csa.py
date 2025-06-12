@@ -12,8 +12,6 @@ from pyproj import Transformer
 from transporte.models import Calendar, Stop, StopTime, Frequency
 
 """
-calcular_raio_csa.py — Isócrona precisa com polígonos residuais de caminhada
------------------------------------------------------------------------------
 • CSA para encontrar o earliest‑arrival em cada parada.
 • Para cada parada alcançada: cria um buffer de caminhada proporcional
   ao tempo *restante* até atingir o horizonte.
@@ -23,7 +21,7 @@ calcular_raio_csa.py — Isócrona precisa com polígonos residuais de caminhada
 """
 
 # ---------------- Configurações ----------------
-CAMINHADA_MAX_METROS = 300  # raio para ligações entre paradas
+CAMINHADA_MAX_METROS = 300
 VELOCIDADE_CAMINHADA_KMH = 5
 BUFFER_HORIZONTE_MIN = 5
 
@@ -46,7 +44,7 @@ def tempo_caminhada(d_m):
     return (d_m / 1000) / VELOCIDADE_CAMINHADA_KMH * 60
 
 
-# ------------- Estrutura CSA -------------
+# ------------- Estrutura CSA Connection Scan Algorithm -------------
 @dataclass(slots=True)
 class Connection:
     dep_stop: str
@@ -55,7 +53,7 @@ class Connection:
     arr_min: int
 
 
-# ------------- Build connections -------------
+# ------------- connections -------------
 
 def _add_trip(rows, conns, offs, stps):
     tid = rows[0].trip_id
@@ -131,18 +129,18 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
     eat = defaultdict(lambda: float("inf"))
     pq = []
 
-    # Origin → reachable stops by walking
+    # Origin → paradas iniciais indo de caminhada
     for i in tree.query_ball_point((lat, lon), deg_walk):
         sid = ids[i]
         arr = hora_ini_min + tempo_caminhada(haversine_m(lat, lon, *coords[i]))
         eat[sid] = arr
         heapq.heappush(pq, (arr, sid))
-
+    #Pega a parada sid com menor tempo conhecido (t_cur) para expandir.
     while pq:
         t_cur, sid = heapq.heappop(pq)
         if t_cur > eat[sid] or t_cur - hora_ini_min > max_min:
             continue
-        # Local walks
+        # Caminhada local entre paradas próximas
         base_idx = ids.index(sid)
         for j in tree.query_ball_point(coords[base_idx], deg_walk):
             nsid = ids[j]
@@ -153,7 +151,7 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
             if arr_nb < eat[nsid]:
                 eat[nsid] = arr_nb
                 heapq.heappush(pq, (arr_nb, nsid))
-        # Transit connections
+        # Usar conexões de transporte
         for idx in idx_by_stop.get(sid, []):
             c = conns[idx]
             if c.dep_min < t_cur or c.dep_min > horizon_abs:
