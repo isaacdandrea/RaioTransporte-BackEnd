@@ -11,21 +11,26 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env(
+    DEBUG=(bool, False),          # default DEBUG=False
+)
+environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-mt1icm5ajr48yh_q$+uq6)d(du0)%32b4z_p5x-8wujwio9$j+"
+SECRET_KEY = "cwoOXKIzRaOY4YrtlhHCiucDXU9jSzCnEEf4a9S0MG8pL3yaLXnaM48iK0ilYJhX"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,9 +45,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'transporte',
     'django.contrib.gis',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -51,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = "mobilidade.urls"
 
@@ -76,15 +84,14 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'mobilidade',
-        'USER': 'mobilidade',
-        'PASSWORD': 'eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z',
-        'HOST': 'localhost',
-        'PORT': '5433'
+    "default": {
+        "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
+        "NAME":   env("DB_NAME"),
+        "USER":   env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST":   env("DB_HOST", default="localhost"),
+        "PORT":   env("DB_PORT", default="5432"),
     }
-
 }
 
 
