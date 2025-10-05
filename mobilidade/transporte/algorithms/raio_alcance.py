@@ -72,23 +72,64 @@ class Connection:
 # Construção das conexões do dia
 # ------------------------------------------------------------
 
-def _add_trip(rows: List[StopTime], conns: List[Connection], offs: Dict[str, List[int]], stps: Dict[str, List[str]]):
-    trip_id = rows[0].trip_id
-    offs[trip_id] = [0]
-    stps[trip_id] = [rows[0].stop_id]
+def _add_trip(
+    rows: List[StopTime],
+    conns: List[Connection],
+    offs: Dict[str, List[int]],
+    stps: Dict[str, List[str]],
+):
+    """Adiciona conexões de uma viagem a partir de StopTimes ordenados."""
+
+    cumulative = 0
+    offsets: List[int] = []
+    stops: List[str] = []
 
     for s1, s2 in zip(rows, rows[1:]):
+        if not s1.departure_time or not s2.arrival_time:
+            cumulative = 0
+            offsets = []
+            stops = []
+            continue
+
         dep = hhmm_para_min(s1.departure_time)
         arr = hhmm_para_min(s2.arrival_time)
+        if arr < dep:
+            # Dados inválidos — ignora segmento negativo
+            cumulative = 0
+            offsets = []
+            stops = []
+            continue
+
+        if not stops:
+            stops.append(s1.stop_id)
+            offsets.append(0)
+
         conns.append(Connection(s1.stop_id, s2.stop_id, dep, arr))
-        offs[trip_id].append(offs[trip_id][-1] + (arr - dep))
-        stps[trip_id].append(s2.stop_id)
+        cumulative += arr - dep
+        offsets.append(cumulative)
+        stops.append(s2.stop_id)
+
+    if stops:
+        trip_id = rows[0].trip_id
+        offs[trip_id] = offsets
+        stps[trip_id] = stops
 
 
 def _gen_headway(freq: Frequency, offs: List[int], stps: List[str], conns: List[Connection], horizon_end: int):
-    head = freq.headway_secs // 60
+    if (
+        not freq.start_time
+        or not freq.end_time
+        or freq.headway_secs is None
+        or freq.headway_secs <= 0
+    ):
+        return
+
+    head = max(freq.headway_secs // 60, 1)
     start = hhmm_para_min(freq.start_time)
     end = hhmm_para_min(freq.end_time)
+    if end < start:
+        return
+
     for k in range(0, (end - start) // head + 1):
         base_dep = start + k * head
         if base_dep > horizon_end:
@@ -118,7 +159,7 @@ def carregar_conexoes(dia_semana: str, horizon_end: int) -> Tuple[List[Connectio
 
     buf: List[StopTime] = []
     cur = None
-    for st in qs:
+    for st in qs.iterator():
         if st.trip_id != cur and buf:
             _add_trip(buf, conns, offsets, stopseqs)
             buf.clear()
@@ -128,8 +169,9 @@ def carregar_conexoes(dia_semana: str, horizon_end: int) -> Tuple[List[Connectio
         _add_trip(buf, conns, offsets, stopseqs)
 
     # ------------- trips com headway (Frequency) -------------
-    for f in Frequency.objects.filter(trip_id__in=offsets):
-        _gen_headway(f, offsets[f.trip_id], stopseqs[f.trip_id], conns, horizon_end)
+    if offsets:
+        for f in Frequency.objects.filter(trip_id__in=offsets).iterator():
+            _gen_headway(f, offsets[f.trip_id], stopseqs[f.trip_id], conns, horizon_end)
 
     conns.sort(key=lambda c: c.dep_min)
 
@@ -154,9 +196,15 @@ def calcular_raio(
     """Retorna FeatureCollection de paradas acessíveis."""
 
     # -------- stops + KDTree --------
-    stops = {s.stop_id: s for s in Stop.objects.exclude(geom__isnull=True)}
-    coords = [(s.stop_lat, s.stop_lon) for s in stops.values()]
-    ids = list(stops)
+    stop_queryset = Stop.objects.filter(stop_lat__isnull=False, stop_lon__isnull=False)
+    stops_list = list(stop_queryset)
+    stops = {s.stop_id: s for s in stops_list}
+    if not stops:
+        return {"type": "FeatureCollection", "features": []}
+
+    coords = [(s.stop_lat, s.stop_lon) for s in stops_list]
+    ids = [s.stop_id for s in stops_list]
+    index_by_stop = {sid: idx for idx, sid in enumerate(ids)}
     tree = KDTree(coords)
     deg_walk = CAMINHADA_MAX_METROS / 111_320
 
@@ -184,11 +232,15 @@ def calcular_raio(
             continue
 
         # 1) Caminhadas locais
-        for j in tree.query_ball_point(coords[ids.index(sid)], deg_walk):
+        base_idx = index_by_stop.get(sid)
+        if base_idx is None:
+            continue
+
+        for j in tree.query_ball_point(coords[base_idx], deg_walk):
             nsid = ids[j]
             if nsid == sid:
                 continue
-            twalk = tempo_caminhada(haversine_m(*coords[ids.index(sid)], *coords[j]))
+            twalk = tempo_caminhada(haversine_m(*coords[base_idx], *coords[j]))
             arr_nb = t_cur + twalk
             if arr_nb < eat[nsid]:
                 eat[nsid] = arr_nb
@@ -208,7 +260,9 @@ def calcular_raio(
     for sid, arr in eat.items():
         delta = arr - hora_inicio_min
         if delta <= max_minutos:
-            s = stops[sid]
+            s = stops.get(sid)
+            if not s:
+                continue
             features.append(
                 {
                     "type": "Feature",
