@@ -52,7 +52,7 @@ cache_service = GeoRequestCacheService()
 
 
 PRESET_CONFIGS: Dict[str, Tuple[str, dtime]] = {
-    "DEFAULT": ("thursday", dtime(18, 0)),
+    "DEFAULT": ("tuesday", dtime(15, 0)),
     "DIA_SEMANA_TRAFEGO": ("thursday", dtime(18, 30)),
     "FINAL_DE_SEMANA": ("saturday", dtime(11, 0)),
 }
