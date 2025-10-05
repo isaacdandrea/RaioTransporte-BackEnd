@@ -21,7 +21,7 @@ from transporte.models import Calendar, Stop, StopTime, Frequency
 """
 
 # ---------------- Configurações ----------------
-CAMINHADA_MAX_METROS = 300
+CAMINHADA_MAX_METROS = 1000
 VELOCIDADE_CAMINHADA_KMH = 5
 BUFFER_HORIZONTE_MIN = 5
 
