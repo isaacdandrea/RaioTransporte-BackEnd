@@ -4,7 +4,7 @@ import json
 import logging
 import time
 from datetime import datetime, time as dtime, timedelta
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 import pytz
 from django.conf import settings
@@ -51,6 +51,23 @@ def _log_debug(metrics: Dict[str, Any]) -> None:
 cache_service = GeoRequestCacheService()
 
 
+PRESET_CONFIGS: Dict[str, Tuple[str, dtime]] = {
+    "DEFAULT": ("tuesday", dtime(15, 0)),
+    "DIA_SEMANA_TRAFEGO": ("thursday", dtime(18, 30)),
+    "FINAL_DE_SEMANA": ("saturday", dtime(11, 0)),
+}
+
+WEEKDAY_NAME_TO_ISO = {
+    "monday": 1,
+    "tuesday": 2,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 5,
+    "saturday": 6,
+    "sunday": 7,
+}
+
+
 @csrf_exempt
 def raio_de_alcance_view(request):
     if request.method != "POST":
@@ -68,14 +85,24 @@ def raio_de_alcance_view(request):
 
         tz = pytz.timezone("America/Sao_Paulo")
 
+        preset_raw = dados.get("presetsDia")
+        preset_key = (
+            preset_raw.strip().upper()
+            if isinstance(preset_raw, str)
+            else "DEFAULT"
+        )
+        dia_alvo, hora_alvo = PRESET_CONFIGS.get(preset_key, PRESET_CONFIGS["DEFAULT"])
+
         hoje = datetime.now(tz).date()
-        dias_ate_quinta = (3 - hoje.weekday()) % 7
-        data_quinta = hoje + timedelta(days=dias_ate_quinta)
+        dia_atual_num = hoje.isoweekday()
+        dia_alvo_num = WEEKDAY_NAME_TO_ISO[dia_alvo]
+        dias_ate_alvo = (dia_alvo_num - dia_atual_num) % 7
+        data_alvo = hoje + timedelta(days=dias_ate_alvo)
 
-        agora = tz.localize(datetime.combine(data_quinta, dtime(18, 0)))
+        agora = tz.localize(datetime.combine(data_alvo, hora_alvo))
 
-        dia_semana = agora.strftime("%A").lower()
-        hora_inicio = 18 * 60
+        dia_semana = dia_alvo
+        hora_inicio = hora_alvo.hour * 60 + hora_alvo.minute
 
         cache_params = {
             "tempo": tempo,
