@@ -2,7 +2,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from math import atan2, cos, radians, sin, sqrt
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from scipy.spatial import KDTree
 from shapely.geometry import MultiPolygon, Point as ShpPoint, mapping
@@ -56,21 +56,58 @@ class Connection:
 # ------------- connections -------------
 
 def _add_trip(rows, conns, offs, stps):
-    tid = rows[0].trip_id
-    offs[tid] = [0]
-    stps[tid] = [rows[0].stop_id]
+    """Adiciona conexões válidas de uma viagem ordenada por stop_sequence."""
+
+    cumulative = 0
+    offsets = []
+    stops = []
+
     for s1, s2 in zip(rows, rows[1:]):
+        if not s1.departure_time or not s2.arrival_time:
+            cumulative = 0
+            offsets = []
+            stops = []
+            continue
+
         dep = hhmm_para_min(s1.departure_time)
         arr = hhmm_para_min(s2.arrival_time)
+        if arr < dep:
+            cumulative = 0
+            offsets = []
+            stops = []
+            continue
+
+        if not stops:
+            stops.append(s1.stop_id)
+            offsets.append(0)
+
         conns.append(Connection(s1.stop_id, s2.stop_id, dep, arr))
-        offs[tid].append(offs[tid][-1] + (arr - dep))
-        stps[tid].append(s2.stop_id)
+        cumulative += arr - dep
+        offsets.append(cumulative)
+        stops.append(s2.stop_id)
+
+    if stops:
+        tid = rows[0].trip_id
+        offs[tid] = offsets
+        stps[tid] = stops
 
 
-def _gen_headway(freq, offs, stps, conns, horizon):
-    head = freq.headway_secs // 60
+def _gen_headway(freq, offs, stps, conns, horizon, stats):
+    if (
+        not freq.start_time
+        or not freq.end_time
+        or freq.headway_secs is None
+        or freq.headway_secs <= 0
+    ):
+        return
+
+    head = max(freq.headway_secs // 60, 1)
     start = hhmm_para_min(freq.start_time)
     end = hhmm_para_min(freq.end_time)
+    if end < start:
+        return
+
+    expansions = 0
     for k in range(0, (end - start) // head + 1):
         base = start + k * head
         if base > horizon:
@@ -81,9 +118,13 @@ def _gen_headway(freq, offs, stps, conns, horizon):
                     stps[i], stps[i + 1], base + offs[i], base + offs[i + 1]
                 )
             )
+            expansions += 1
+    if stats is not None:
+        stats["frequency_records"] = stats.get("frequency_records", 0) + 1
+        stats["frequency_connections"] = stats.get("frequency_connections", 0) + expansions
 
 
-def carregar_conexoes(dia_sem, horizon):
+def carregar_conexoes(dia_sem, horizon, stats: Optional[Dict[str, int]] = None):
     servs = set(
         Calendar.objects.filter(**{dia_sem: True}).values_list("service_id", flat=True)
     )
@@ -95,16 +136,29 @@ def carregar_conexoes(dia_sem, horizon):
         .order_by("trip_id", "stop_sequence")
     )
     buf, cur = [], None
-    for st in qs:
+    fixed_segments = 0
+    for st in qs.iterator():
         if st.trip_id != cur and buf:
             _add_trip(buf, conns, offs, stps)
+            fixed_segments += len(buf) - 1 if len(buf) > 1 else 0
             buf.clear()
         cur = st.trip_id
         buf.append(st)
     if buf:
         _add_trip(buf, conns, offs, stps)
-    for f in Frequency.objects.filter(trip_id__in=offs):
-        _gen_headway(f, offs[f.trip_id], stps[f.trip_id], conns, horizon)
+        fixed_segments += len(buf) - 1 if len(buf) > 1 else 0
+    if offs:
+        for f in Frequency.objects.filter(trip_id__in=offs).iterator():
+            _gen_headway(
+                f, offs[f.trip_id], stps[f.trip_id], conns, horizon, stats
+            )
+    if stats is not None:
+        stats["fixed_connections"] = stats.get("fixed_connections", 0) + len(conns) - (
+            stats.get("frequency_connections", 0)
+        )
+        stats["fixed_segments"] = stats.get("fixed_segments", 0) + max(fixed_segments, 0)
+        stats.setdefault("frequency_records", 0)
+        stats.setdefault("frequency_connections", 0)
     conns.sort(key=lambda c: c.dep_min)
     idx_by_stop = defaultdict(list)
     for i, c in enumerate(conns):
@@ -114,34 +168,64 @@ def carregar_conexoes(dia_sem, horizon):
 
 # ------------- Algoritmo principal -------------
 
-def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
+def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min, debug: bool = False):
     # Stops & spatial index
-    stops = {s.stop_id: s for s in Stop.objects.exclude(geom__isnull=True)}
-    coords = [(s.stop_lat, s.stop_lon) for s in stops.values()]
-    ids = list(stops)
+    stop_queryset = Stop.objects.filter(stop_lat__isnull=False, stop_lon__isnull=False)
+    stops_list = list(stop_queryset)
+    stops = {s.stop_id: s for s in stops_list}
+    if not stops:
+        result = {"type": "FeatureCollection", "features": []}
+        if debug:
+            return result, {
+                "walking_network_active": False,
+                "walking_network_nodes": 0,
+                "connections_built": 0,
+                "reachable_stops": 0,
+                "feature_count": 0,
+                "point_features": 0,
+                "polygon_features": 0,
+                "buffer_geometries": 0,
+                "buffer_area_m2": 0.0,
+                "initial_walkable_stops": 0,
+                "frequency_connections": 0,
+                "frequency_records": 0,
+                "fixed_connections": 0,
+                "fixed_segments": 0,
+            }
+        return result
+
+    coords = [(s.stop_lat, s.stop_lon) for s in stops_list]
+    ids = [s.stop_id for s in stops_list]
+    index_by_stop = {sid: idx for idx, sid in enumerate(ids)}
     tree = KDTree(coords)
     deg_walk = CAMINHADA_MAX_METROS / 111_320
 
     # CSA connections
     horizon_abs = hora_ini_min + max_min + BUFFER_HORIZONTE_MIN
-    conns, idx_by_stop = carregar_conexoes(dia_sem, horizon_abs)
+    metrics: Optional[Dict[str, int]] = {} if debug else None
+    conns, idx_by_stop = carregar_conexoes(dia_sem, horizon_abs, metrics)
 
     eat = defaultdict(lambda: float("inf"))
     pq = []
 
     # Origin → paradas iniciais indo de caminhada
+    initial_walkable = 0
     for i in tree.query_ball_point((lat, lon), deg_walk):
         sid = ids[i]
         arr = hora_ini_min + tempo_caminhada(haversine_m(lat, lon, *coords[i]))
         eat[sid] = arr
         heapq.heappush(pq, (arr, sid))
+        initial_walkable += 1
     #Pega a parada sid com menor tempo conhecido (t_cur) para expandir.
     while pq:
         t_cur, sid = heapq.heappop(pq)
         if t_cur > eat[sid] or t_cur - hora_ini_min > max_min:
             continue
         # Caminhada local entre paradas próximas
-        base_idx = ids.index(sid)
+        base_idx = index_by_stop.get(sid)
+        if base_idx is None:
+            continue
+
         for j in tree.query_ball_point(coords[base_idx], deg_walk):
             nsid = ids[j]
             if nsid == sid:
@@ -162,7 +246,24 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
 
     # ----------- Build walking buffers -----------
     if not eat:
-        return {"type": "FeatureCollection", "features": []}
+        result = {"type": "FeatureCollection", "features": []}
+        if debug and metrics is not None:
+            metrics.update(
+                {
+                    "walking_network_active": True,
+                    "walking_network_nodes": len(stops_list),
+                    "initial_walkable_stops": initial_walkable,
+                    "connections_built": len(conns),
+                    "reachable_stops": 0,
+                    "feature_count": 0,
+                    "point_features": 0,
+                    "polygon_features": 0,
+                    "buffer_geometries": 0,
+                    "buffer_area_m2": 0.0,
+                }
+            )
+            return result, metrics
+        return result
 
     transformer_to_m = Transformer.from_crs("epsg:4326", "epsg:3857", always_xy=True)
     transformer_to_deg = Transformer.from_crs("epsg:3857", "epsg:4326", always_xy=True)
@@ -177,10 +278,15 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
         dist_m = restante * VELOCIDADE_CAMINHADA_KMH * 1000 / 60
         if dist_m < 10:  # ignora buffers minúsculos
             dist_m = 10
-        x, y = transformer_to_m.transform(stops[sid].stop_lon, stops[sid].stop_lat)
+        stop = stops.get(sid)
+        if not stop:
+            continue
+        x, y = transformer_to_m.transform(stop.stop_lon, stop.stop_lat)
         buffers.append(ShpPoint(x, y).buffer(dist_m))
-
-    area_union_m = unary_union(buffers)
+    if buffers:
+        area_union_m = unary_union(buffers)
+    else:
+        area_union_m = MultiPolygon([])
 
     # Transforma de volta para WGS‑84
     def to_deg(x, y, z=None):
@@ -205,9 +311,12 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
     ]
 
     # Pontos opcionais para debug/visualização
+    reachable = 0
     for sid, arr in eat.items():
         if arr - hora_ini_min <= max_min:
-            s = stops[sid]
+            s = stops.get(sid)
+            if not s:
+                continue
             features.append(
                 {
                     "type": "Feature",
@@ -219,5 +328,27 @@ def calcular_raio(lat, lon, max_min, dia_sem, hora_ini_min):
                     },
                 }
             )
+            reachable += 1
+
+    if debug and metrics is not None:
+        polygon_features = len(polys)
+        point_features = len(features) - polygon_features
+        buffer_count = len(buffers)
+        buffer_area = getattr(area_union_m, "area", 0.0)
+        metrics.update(
+            {
+                "walking_network_active": True,
+                "walking_network_nodes": len(stops_list),
+                "initial_walkable_stops": initial_walkable,
+                "connections_built": len(conns),
+                "reachable_stops": reachable,
+                "feature_count": len(features),
+                "point_features": max(point_features, 0),
+                "polygon_features": polygon_features,
+                "buffer_geometries": buffer_count,
+                "buffer_area_m2": round(buffer_area, 2),
+            }
+        )
+        return {"type": "FeatureCollection", "features": features}, metrics
 
     return {"type": "FeatureCollection", "features": features}
