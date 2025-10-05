@@ -11,7 +11,7 @@ from typing import Any, Dict, Mapping, MutableMapping, Optional
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
+from django.contrib.gis.measure import D, Distance as MeasureDistance
 from django.utils import timezone
 
 from ..models import GeoRequestCache
@@ -127,7 +127,13 @@ class GeoRequestCacheService:
 
         GeoRequestCache.objects.filter(pk=entry.pk).update(last_accessed_at=now)
         payload = entry.response_data
-        distance_m = float(getattr(entry, "distance", 0.0))
+        distance_value = getattr(entry, "distance", None)
+        if isinstance(distance_value, MeasureDistance):
+            distance_m = float(distance_value.m)
+        elif distance_value is None:
+            distance_m = 0.0
+        else:
+            distance_m = float(distance_value)
         return CacheHit(payload=payload, distance_m=distance_m, entry_id=entry.pk, created_at=entry.created_at)
 
     def store_response(
