@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.gis.db import models as gis_models
 
 class Agency(models.Model):
@@ -83,3 +84,26 @@ class Frequency(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
     headway_secs = models.IntegerField()
+
+
+class GeoRequestCache(models.Model):
+    """Persisted cache entries for reachability requests."""
+
+    request_timestamp = models.DateTimeField(default=timezone.now)
+    location = gis_models.PointField(geography=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    request_parameters = models.JSONField(default=dict)
+    request_signature = models.CharField(max_length=128, db_index=True)
+    response_data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_accessed_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_signature", "created_at"]),
+        ]
+        ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"CacheEntry #{self.pk} ({self.latitude}, {self.longitude})"
