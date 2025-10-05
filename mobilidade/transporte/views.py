@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from .algorithms.calcular_raio_csa import calcular_raio
+from .cache import GeoRequestCacheService
 
 logger = logging.getLogger("transporte.debug")
 if settings.DEBUG:
@@ -47,6 +48,9 @@ def _log_debug(metrics: Dict[str, Any]) -> None:
     )
 
 
+cache_service = GeoRequestCacheService()
+
+
 @csrf_exempt
 def raio_de_alcance_view(request):
     if request.method != "POST":
@@ -73,18 +77,44 @@ def raio_de_alcance_view(request):
         dia_semana = agora.strftime("%A").lower()
         hora_inicio = 18 * 60
 
-        algo_start = time.perf_counter()
-        geojson = calcular_raio(
-            lat,
-            lon,
-            tempo,
-            dia_semana,
-            hora_inicio,
-            debug_callback=(lambda data: debug_metrics.update(data))
-            if settings.DEBUG
-            else None,
+        cache_params = {
+            "tempo": tempo,
+            "dia_semana": dia_semana,
+            "hora_inicio": hora_inicio,
+        }
+
+        cache_hit = False
+        cache_distance_m = None
+
+        cache_result = cache_service.get_cached_response(
+            latitude=lat, longitude=lon, request_params=cache_params
         )
-        algo_duration_ms = (time.perf_counter() - algo_start) * 1000
+
+        if cache_result is not None:
+            geojson = cache_result.payload
+            algo_duration_ms = 0.0
+            cache_hit = True
+            cache_distance_m = cache_result.distance_m
+        else:
+            algo_start = time.perf_counter()
+            geojson = calcular_raio(
+                lat,
+                lon,
+                tempo,
+                dia_semana,
+                hora_inicio,
+                debug_callback=(lambda data: debug_metrics.update(data))
+                if settings.DEBUG
+                else None,
+            )
+            algo_duration_ms = (time.perf_counter() - algo_start) * 1000
+            cache_service.store_response(
+                latitude=lat,
+                longitude=lon,
+                request_params=cache_params,
+                response_payload=geojson,
+                request_timestamp=request_started_at,
+            )
 
         if settings.DEBUG:
             request_duration_ms = (time.perf_counter() - request_timer) * 1000
@@ -97,7 +127,10 @@ def raio_de_alcance_view(request):
                 "request_started_at": request_started_at.isoformat(),
                 "request_duration_ms": round(request_duration_ms, 2),
                 "algorithm_duration_ms": round(algo_duration_ms, 2),
+                "cache_hit": cache_hit,
             }
+            if cache_distance_m is not None:
+                metrics["cache_distance_m"] = round(cache_distance_m, 2)
             metrics.update(debug_metrics)
             metrics.setdefault("features_total", len(geojson.get("features", [])))
             metrics.setdefault(
