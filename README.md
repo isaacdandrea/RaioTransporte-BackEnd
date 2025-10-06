@@ -48,6 +48,23 @@ this header using the values configured in `API_SHARED_SECRET`/`API_SHARED_SECRE
 The production image can be run locally to replicate the Cloud Run deployment. The Django
 container expects a PostGIS database and a handful of environment variables.
 
+### Codex / Codespaces environment scripts
+
+If you are using GitHub Codex/Codespaces, two helper scripts streamline provisioning and
+maintenance without touching your database:
+
+```bash
+# Run inside a brand-new container after cloning the repository
+./scripts/codex/setup.sh
+
+# Run after resuming a cached container to refresh dependencies
+./scripts/codex/maintain.sh
+```
+
+Both scripts install the GeoDjango system packages (`gdal`, `proj`, `libpq`), create or reuse a
+`.venv`, install `mobilidade/requirements.txt`, and copy `.env.example` to `.env` when missing. No
+database migrations or destructive operations are executed.
+
 1. **Start PostGIS (once):**
 
    ```bash
