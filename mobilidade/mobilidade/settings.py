@@ -22,6 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "unsafe-development-secret"),
+    API_SHARED_SECRET=(str, ""),
 )
 
 env_file = BASE_DIR / ".env"
@@ -36,6 +37,9 @@ SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
+
+# Shared secret for stateless API authentication with client applications.
+API_SHARED_SECRET = env("API_SHARED_SECRET")
 
 
 def _list_setting(var_name: str, default: List[str]) -> List[str]:
@@ -92,7 +96,7 @@ CORS_ALLOW_ALL_ORIGINS = env.bool(
     default=DEBUG and not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES),
 )
 CORS_ALLOW_METHODS = list(default_methods)
-CORS_ALLOW_HEADERS = list(default_headers)
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-api-key"]
 CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=[])
 if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = [
@@ -176,3 +180,13 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "transporte.authentication.StaticKeyAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}

@@ -1,6 +1,9 @@
 from datetime import date, time
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from rest_framework.test import APIClient
+from unittest.mock import patch
 
 from transporte.algorithms.raio_alcance import carregar_conexoes
 from transporte.models import Calendar, Frequency, Route, Stop, StopTime, Trip
@@ -106,3 +109,55 @@ class ConnectionBuilderTests(TestCase):
             if c.dep_stop == self.stop_a.stop_id and c.dep_min >= 540
         ]
         self.assertTrue(headway_departures)
+
+
+@override_settings(API_SHARED_SECRET="test-key")
+class RaioDeAlcanceAuthTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse("raio-alcance")
+
+        self.patcher_cache_get = patch(
+            "transporte.views.cache_service.get_cached_response",
+            return_value=None,
+        )
+        self.patcher_cache_store = patch(
+            "transporte.views.cache_service.store_response",
+            return_value=None,
+        )
+        self.patcher_algorithm = patch(
+            "transporte.views.calcular_raio", return_value={"features": []}
+        )
+
+        self.mock_cache_get = self.patcher_cache_get.start()
+        self.mock_cache_store = self.patcher_cache_store.start()
+        self.mock_algorithm = self.patcher_algorithm.start()
+
+    def tearDown(self):
+        patch.stopall()
+
+    def test_missing_api_key_returns_unauthorized(self):
+        response = self.client.post(
+            self.url,
+            {"lat": -23.0, "lon": -46.0, "tempo": 15},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_valid_api_key_allows_access(self):
+        response = self.client.post(
+            self.url,
+            {
+                "lat": -23.0,
+                "lon": -46.0,
+                "tempo": 15,
+                "presetsDia": "DEFAULT",
+            },
+            format="json",
+            HTTP_X_API_KEY="test-key",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"features": []})
+        self.mock_algorithm.assert_called_once()

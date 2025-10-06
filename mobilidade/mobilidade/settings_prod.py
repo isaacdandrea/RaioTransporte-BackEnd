@@ -8,6 +8,9 @@ DEBUG = False
 if not SECRET_KEY or SECRET_KEY == "unsafe-development-secret":
     raise ImproperlyConfigured("SECRET_KEY must be set for production environments.")
 
+if not API_SHARED_SECRET:
+    raise ImproperlyConfigured("API_SHARED_SECRET must be configured for production.")
+
 ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=[])
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS must include at least one host in production.")
