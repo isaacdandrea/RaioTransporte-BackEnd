@@ -25,6 +25,14 @@ class HostsFromOriginsTests(SimpleTestCase):
             ["api.example.com", "api.example.com", "valid.example"],
         )
 
+    def test_strips_paths_and_trailing_slashes(self):
+        origins = ["https://service.example.com/api/", "http://191.9.114.117:8080/v1"]
+
+        self.assertEqual(
+            hosts_from_origins(origins),
+            ["service.example.com", "191.9.114.117"],
+        )
+
 
 class ExtendAllowedHostsTests(SimpleTestCase):
     def test_extends_hosts_when_wildcard_missing(self):

@@ -12,6 +12,7 @@ running on Google Cloud Run with horizontal autoscaling.
 | `DJANGO_SETTINGS_MODULE` | Django settings module. | `mobilidade.settings_prod` |
 | `DATABASE_URL` | Database connection string (PostGIS). | `postgis://postgres:postgres@localhost:5432/postgres` |
 | `ALLOWED_HOSTS` | Comma separated list of allowed hosts. | _required in production_ |
+| `SERVICE_BASE_URL`/`SERVICE_BASE_URLS` | Public origin(s) clients use to reach the API. Hosts are auto-added to `ALLOWED_HOSTS`. | empty |
 | `API_SHARED_SECRET` | Primary API key shared with trusted clients. | empty |
 | `API_SHARED_SECRETS` | Optional comma separated list of API keys (for key rotation). | empty |
 | `CORS_ALLOWED_ORIGINS` | Comma separated list of CORS origins. | empty |
@@ -24,10 +25,11 @@ running on Google Cloud Run with horizontal autoscaling.
 | `GUNICORN_WORKER_CLASS` | Gunicorn worker class. | `gthread` |
 
 > ℹ️  When deploying to Cloud Run make sure to set `SECRET_KEY`, `API_SHARED_SECRET` (or
-> `API_SHARED_SECRETS`), `ALLOWED_HOSTS`, and `DATABASE_URL` through Cloud Run service variables or
-> a Secret Manager reference. Any hostnames listed in `CORS_ALLOWED_ORIGINS` or
-> `CSRF_TRUSTED_ORIGINS` are automatically merged into `ALLOWED_HOSTS`, which helps when you only
-> have the public URL handy.
+> `API_SHARED_SECRETS`), and either populate `ALLOWED_HOSTS` directly or provide
+> `SERVICE_BASE_URL`/`SERVICE_BASE_URLS` with the public URL. Any hostnames listed in
+> `CORS_ALLOWED_ORIGINS` or `CSRF_TRUSTED_ORIGINS` are also merged into `ALLOWED_HOSTS`, which helps
+> when you only have the public URL handy. Leave `DATABASE_URL` blank if you prefer configuring the
+> connection via the individual `DB_*` variables.
 
 ### API authentication
 

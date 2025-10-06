@@ -26,6 +26,8 @@ env = environ.Env(
     SECRET_KEY=(str, "unsafe-development-secret"),
     API_SHARED_SECRET=(str, ""),
     API_SHARED_SECRETS=(list, []),
+    SERVICE_BASE_URL=(str, ""),
+    SERVICE_BASE_URLS=(list, []),
 )
 
 env_file = BASE_DIR / ".env"
@@ -57,6 +59,11 @@ API_SHARED_SECRETS = [
 if API_SHARED_SECRETS and not API_SHARED_SECRET:
     API_SHARED_SECRET = API_SHARED_SECRETS[0]
 
+SERVICE_BASE_URL = env("SERVICE_BASE_URL").strip()
+SERVICE_BASE_URLS = [value.strip() for value in env.list("SERVICE_BASE_URLS") if value]
+if SERVICE_BASE_URL:
+    SERVICE_BASE_URLS.append(SERVICE_BASE_URL)
+
 
 def _list_setting(var_name: str, default: List[str]) -> List[str]:
     """Return a list setting parsed from environment."""
@@ -66,6 +73,8 @@ def _list_setting(var_name: str, default: List[str]) -> List[str]:
 
 
 ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
+if SERVICE_BASE_URLS:
+    ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, SERVICE_BASE_URLS)
 
 
 # Application definition
@@ -147,13 +156,25 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DEFAULT_DB_URL = (
-    f"postgis://{env('DB_USER', default='postgres')}:{env('DB_PASSWORD', default='postgres')}"
-    f"@{env('DB_HOST', default='localhost')}:{env('DB_PORT', default='5432')}/{env('DB_NAME', default='postgres')}"
-)
-DATABASES = {
-    "default": env.db("DATABASE_URL", default=DEFAULT_DB_URL),
+DEFAULT_DB_CONFIG = {
+    "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
+    "NAME": env("DB_NAME", default="postgres"),
+    "USER": env("DB_USER", default="postgres"),
+    "PASSWORD": env("DB_PASSWORD", default="postgres"),
+    "HOST": env("DB_HOST", default="localhost"),
+    "PORT": env("DB_PORT", default="5432"),
 }
+
+database_url = env("DATABASE_URL", default="").strip()
+if database_url:
+    try:
+        default_db = environ.Env.db_url_config(database_url)
+    except AttributeError:  # pragma: no cover - compatibility fallback
+        default_db = environ.Env().db_url_config(database_url)
+else:
+    default_db = DEFAULT_DB_CONFIG
+
+DATABASES = {"default": default_db}
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 
 
