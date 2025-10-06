@@ -23,6 +23,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "unsafe-development-secret"),
     API_SHARED_SECRET=(str, ""),
+    API_SHARED_SECRETS=(list, []),
 )
 
 env_file = BASE_DIR / ".env"
@@ -38,8 +39,21 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-# Shared secret for stateless API authentication with client applications.
+# Shared secret(s) for stateless API authentication with client applications.
+# ``API_SHARED_SECRET`` remains available for backwards compatibility with
+# existing deployments that rely on a single secret value. When multiple
+# secrets are required (for key rotation or different client cohorts), the
+# ``API_SHARED_SECRETS`` environment variable accepts a comma separated list.
 API_SHARED_SECRET = env("API_SHARED_SECRET")
+API_SHARED_SECRETS = [
+    secret
+    for secret in (
+        env.list("API_SHARED_SECRETS") or ([API_SHARED_SECRET] if API_SHARED_SECRET else [])
+    )
+    if secret
+]
+if API_SHARED_SECRETS and not API_SHARED_SECRET:
+    API_SHARED_SECRET = API_SHARED_SECRETS[0]
 
 
 def _list_setting(var_name: str, default: List[str]) -> List[str]:
@@ -185,6 +199,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "transporte.authentication.StaticKeyAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",

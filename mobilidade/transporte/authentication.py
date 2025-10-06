@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Iterable, Optional, Tuple
 
 from django.conf import settings
 from django.utils.crypto import constant_time_compare
@@ -29,21 +29,30 @@ class StaticKeyUser:
 
 
 class StaticKeyAuthentication(authentication.BaseAuthentication):
-    """Authenticates requests using a shared static API key header."""
+    """Authenticates requests using one of the configured static API keys."""
 
     header_name = "X-API-Key"
 
+    def _expected_keys(self) -> Iterable[str]:
+        secrets = getattr(settings, "API_SHARED_SECRETS", None)
+        if secrets:
+            yield from secrets
+        single_secret = getattr(settings, "API_SHARED_SECRET", "")
+        if single_secret:
+            yield single_secret
+
     def authenticate(self, request) -> Optional[Tuple[StaticKeyUser, None]]:
-        expected_key = getattr(settings, "API_SHARED_SECRET", "")
-        if not expected_key:
+        expected_keys = list(dict.fromkeys(self._expected_keys()))
+        if not expected_keys:
             # No key configured, skip authentication to allow other strategies.
             return None
 
         provided_key = request.headers.get(self.header_name)
         if not provided_key:
-            raise exceptions.AuthenticationFailed("Missing API key header.")
+            return None
 
-        if not constant_time_compare(provided_key, expected_key):
-            raise exceptions.AuthenticationFailed("Invalid API key.")
+        for expected_key in expected_keys:
+            if constant_time_compare(provided_key, expected_key):
+                return StaticKeyUser(api_key=provided_key), None
 
-        return StaticKeyUser(api_key=provided_key), None
+        raise exceptions.AuthenticationFailed("Invalid API key.")

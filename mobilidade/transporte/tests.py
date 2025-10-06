@@ -111,7 +111,7 @@ class ConnectionBuilderTests(TestCase):
         self.assertTrue(headway_departures)
 
 
-@override_settings(API_SHARED_SECRET="test-key")
+@override_settings(API_SHARED_SECRETS=["test-key", "rotating-key"], API_SHARED_SECRET="")
 class RaioDeAlcanceAuthTests(TestCase):
     def setUp(self):
         self.client = APIClient()
@@ -144,6 +144,7 @@ class RaioDeAlcanceAuthTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 401)
+        self.mock_algorithm.assert_not_called()
 
     def test_valid_api_key_allows_access(self):
         response = self.client.post(
@@ -161,3 +162,32 @@ class RaioDeAlcanceAuthTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"features": []})
         self.mock_algorithm.assert_called_once()
+
+    def test_secondary_api_key_is_accepted(self):
+        response = self.client.post(
+            self.url,
+            {
+                "lat": -23.0,
+                "lon": -46.0,
+                "tempo": 15,
+            },
+            format="json",
+            HTTP_X_API_KEY="rotating-key",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_invalid_api_key_is_rejected(self):
+        response = self.client.post(
+            self.url,
+            {
+                "lat": -23.0,
+                "lon": -46.0,
+                "tempo": 15,
+            },
+            format="json",
+            HTTP_X_API_KEY="wrong",
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.mock_algorithm.assert_not_called()
