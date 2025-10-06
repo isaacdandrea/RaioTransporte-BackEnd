@@ -1,6 +1,5 @@
 """Views for the transporte app."""
 
-import json
 import logging
 import time
 from datetime import datetime, time as dtime, timedelta
@@ -8,9 +7,11 @@ from typing import Any, Dict, Tuple
 
 import pytz
 from django.conf import settings
-from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .algorithms.calcular_raio_csa import calcular_raio
 from .cache import GeoRequestCacheService
@@ -67,135 +68,139 @@ WEEKDAY_NAME_TO_ISO = {
     "sunday": 7,
 }
 
+class RaioDeAlcanceView(APIView):
+    permission_classes = [IsAuthenticated]
 
-@csrf_exempt
-def raio_de_alcance_view(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Método não permitido"}, status=405)
+    def post(self, request):
+        request_started_at = timezone.now()
+        request_timer = time.perf_counter()
+        debug_metrics: Dict[str, Any] = {}
 
-    request_started_at = timezone.now()
-    request_timer = time.perf_counter()
-    debug_metrics: Dict[str, Any] = {}
+        try:
+            dados = request.data
+            lat = float(dados["lat"])
+            lon = float(dados["lon"])
+            tempo = int(dados["tempo"])
 
-    try:
-        dados = json.loads(request.body)
-        lat = float(dados["lat"])
-        lon = float(dados["lon"])
-        tempo = int(dados["tempo"])
+            tz = pytz.timezone("America/Sao_Paulo")
 
-        tz = pytz.timezone("America/Sao_Paulo")
-
-        preset_raw = dados.get("presetsDia")
-        preset_key = (
-            preset_raw.strip().upper()
-            if isinstance(preset_raw, str)
-            else "DEFAULT"
-        )
-        dia_alvo, hora_alvo = PRESET_CONFIGS.get(preset_key, PRESET_CONFIGS["DEFAULT"])
-
-        hoje = datetime.now(tz).date()
-        dia_atual_num = hoje.isoweekday()
-        dia_alvo_num = WEEKDAY_NAME_TO_ISO[dia_alvo]
-        dias_ate_alvo = (dia_alvo_num - dia_atual_num) % 7
-        data_alvo = hoje + timedelta(days=dias_ate_alvo)
-
-        agora = tz.localize(datetime.combine(data_alvo, hora_alvo))
-
-        dia_semana = dia_alvo
-        hora_inicio = hora_alvo.hour * 60 + hora_alvo.minute
-
-        cache_params = {
-            "tempo": tempo,
-            "dia_semana": dia_semana,
-            "hora_inicio": hora_inicio,
-        }
-
-        cache_hit = False
-        cache_distance_m = None
-
-        cache_result = cache_service.get_cached_response(
-            latitude=lat, longitude=lon, request_params=cache_params
-        )
-
-        if cache_result is not None:
-            geojson = cache_result.payload
-            algo_duration_ms = 0.0
-            cache_hit = True
-            cache_distance_m = cache_result.distance_m
-        else:
-            algo_start = time.perf_counter()
-            geojson = calcular_raio(
-                lat,
-                lon,
-                tempo,
-                dia_semana,
-                hora_inicio,
-                debug_callback=(lambda data: debug_metrics.update(data))
-                if settings.DEBUG
-                else None,
+            preset_raw = dados.get("presetsDia")
+            preset_key = (
+                preset_raw.strip().upper()
+                if isinstance(preset_raw, str)
+                else "DEFAULT"
             )
-            algo_duration_ms = (time.perf_counter() - algo_start) * 1000
-            cache_service.store_response(
-                latitude=lat,
-                longitude=lon,
-                request_params=cache_params,
-                response_payload=geojson,
-                request_timestamp=request_started_at,
+            dia_alvo, hora_alvo = PRESET_CONFIGS.get(
+                preset_key, PRESET_CONFIGS["DEFAULT"]
             )
 
-        if settings.DEBUG:
-            request_duration_ms = (time.perf_counter() - request_timer) * 1000
-            metrics: Dict[str, Any] = {
-                "method": request.method,
-                "path": request.get_full_path(),
-                "lat": lat,
-                "lon": lon,
-                "tempo_min": tempo,
-                "request_started_at": request_started_at.isoformat(),
-                "request_duration_ms": round(request_duration_ms, 2),
-                "algorithm_duration_ms": round(algo_duration_ms, 2),
-                "cache_hit": cache_hit,
+            hoje = datetime.now(tz).date()
+            dia_atual_num = hoje.isoweekday()
+            dia_alvo_num = WEEKDAY_NAME_TO_ISO[dia_alvo]
+            dias_ate_alvo = (dia_alvo_num - dia_atual_num) % 7
+            data_alvo = hoje + timedelta(days=dias_ate_alvo)
+
+            dia_semana = dia_alvo
+            hora_inicio = hora_alvo.hour * 60 + hora_alvo.minute
+
+            cache_params = {
+                "tempo": tempo,
+                "dia_semana": dia_semana,
+                "hora_inicio": hora_inicio,
             }
-            if cache_distance_m is not None:
-                metrics["cache_distance_m"] = round(cache_distance_m, 2)
-            metrics.update(debug_metrics)
-            metrics.setdefault("features_total", len(geojson.get("features", [])))
-            metrics.setdefault(
-                "point_features",
-                sum(
-                    1
-                    for f in geojson.get("features", [])
-                    if f.get("geometry", {}).get("type") == "Point"
-                ),
-            )
-            metrics.setdefault(
-                "polygon_features",
-                sum(
-                    1
-                    for f in geojson.get("features", [])
-                    if f.get("geometry", {}).get("type") in {"Polygon", "MultiPolygon"}
-                ),
-            )
-            metrics.setdefault("walking_network_computed", False)
-            metrics.setdefault("reachable_nodes", 0)
-            metrics.setdefault("reachable_within_horizon", 0)
-            metrics.setdefault("buffers_generated", 0)
-            metrics.setdefault("stops_total", 0)
-            metrics.setdefault("initial_walk_stops", 0)
-            metrics.setdefault("connections_loaded", 0)
-            metrics.setdefault("expanded_nodes", 0)
-            metrics.setdefault("walking_relaxations", 0)
-            metrics.setdefault("connection_relaxations", 0)
-            metrics.setdefault("union_geometry_type", None)
-            _log_debug(metrics)
 
-        return JsonResponse(geojson, safe=False)
+            cache_hit = False
+            cache_distance_m = None
 
-    except (KeyError, ValueError) as e:
-        if settings.DEBUG:
-            logger.exception("Invalid request payload: %s", e)
-        return JsonResponse({"error": f"Entrada inválida: {e}"}, status=400)
-    except Exception as e:
-        if settings.DEBUG:
-            logger.exception("Unhandled error while processing request: %s", e)
-        return JsonResponse({"error": f"Erro interno: {e}"}, status=500)
+            cache_result = cache_service.get_cached_response(
+                latitude=lat, longitude=lon, request_params=cache_params
+            )
+
+            if cache_result is not None:
+                geojson = cache_result.payload
+                algo_duration_ms = 0.0
+                cache_hit = True
+                cache_distance_m = cache_result.distance_m
+            else:
+                algo_start = time.perf_counter()
+                geojson = calcular_raio(
+                    lat,
+                    lon,
+                    tempo,
+                    dia_semana,
+                    hora_inicio,
+                    debug_callback=(lambda data: debug_metrics.update(data))
+                    if settings.DEBUG
+                    else None,
+                )
+                algo_duration_ms = (time.perf_counter() - algo_start) * 1000
+                cache_service.store_response(
+                    latitude=lat,
+                    longitude=lon,
+                    request_params=cache_params,
+                    response_payload=geojson,
+                    request_timestamp=request_started_at,
+                )
+
+            if settings.DEBUG:
+                request_duration_ms = (time.perf_counter() - request_timer) * 1000
+                metrics: Dict[str, Any] = {
+                    "method": request.method,
+                    "path": request.get_full_path(),
+                    "lat": lat,
+                    "lon": lon,
+                    "tempo_min": tempo,
+                    "request_started_at": request_started_at.isoformat(),
+                    "request_duration_ms": round(request_duration_ms, 2),
+                    "algorithm_duration_ms": round(algo_duration_ms, 2),
+                    "cache_hit": cache_hit,
+                }
+                if cache_distance_m is not None:
+                    metrics["cache_distance_m"] = round(cache_distance_m, 2)
+                metrics.update(debug_metrics)
+                metrics.setdefault("features_total", len(geojson.get("features", [])))
+                metrics.setdefault(
+                    "point_features",
+                    sum(
+                        1
+                        for f in geojson.get("features", [])
+                        if f.get("geometry", {}).get("type") == "Point"
+                    ),
+                )
+                metrics.setdefault(
+                    "polygon_features",
+                    sum(
+                        1
+                        for f in geojson.get("features", [])
+                        if f.get("geometry", {}).get("type") in {"Polygon", "MultiPolygon"}
+                    ),
+                )
+                metrics.setdefault("walking_network_computed", False)
+                metrics.setdefault("reachable_nodes", 0)
+                metrics.setdefault("reachable_within_horizon", 0)
+                metrics.setdefault("buffers_generated", 0)
+                metrics.setdefault("stops_total", 0)
+                metrics.setdefault("initial_walk_stops", 0)
+                metrics.setdefault("connections_loaded", 0)
+                metrics.setdefault("expanded_nodes", 0)
+                metrics.setdefault("walking_relaxations", 0)
+                metrics.setdefault("connection_relaxations", 0)
+                metrics.setdefault("union_geometry_type", None)
+                _log_debug(metrics)
+
+            return Response(geojson)
+
+        except (KeyError, ValueError, TypeError) as e:
+            if settings.DEBUG:
+                logger.exception("Invalid request payload: %s", e)
+            return Response(
+                {"error": f"Entrada inválida: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:  # pragma: no cover - defensive
+            if settings.DEBUG:
+                logger.exception("Unhandled error while processing request: %s", e)
+            return Response(
+                {"error": "Erro interno ao processar a solicitação."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

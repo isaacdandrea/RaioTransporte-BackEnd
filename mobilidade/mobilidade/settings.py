@@ -16,12 +16,18 @@ from typing import List
 import environ
 from corsheaders.defaults import default_headers, default_methods
 
+from .config_utils import extend_allowed_hosts
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "unsafe-development-secret"),
+    API_SHARED_SECRET=(str, ""),
+    API_SHARED_SECRETS=(list, []),
+    SERVICE_BASE_URL=(str, ""),
+    SERVICE_BASE_URLS=(list, []),
 )
 
 env_file = BASE_DIR / ".env"
@@ -37,6 +43,27 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
+# Shared secret(s) for stateless API authentication with client applications.
+# ``API_SHARED_SECRET`` remains available for backwards compatibility with
+# existing deployments that rely on a single secret value. When multiple
+# secrets are required (for key rotation or different client cohorts), the
+# ``API_SHARED_SECRETS`` environment variable accepts a comma separated list.
+API_SHARED_SECRET = env("API_SHARED_SECRET")
+API_SHARED_SECRETS = [
+    secret
+    for secret in (
+        env.list("API_SHARED_SECRETS") or ([API_SHARED_SECRET] if API_SHARED_SECRET else [])
+    )
+    if secret
+]
+if API_SHARED_SECRETS and not API_SHARED_SECRET:
+    API_SHARED_SECRET = API_SHARED_SECRETS[0]
+
+SERVICE_BASE_URL = env("SERVICE_BASE_URL").strip()
+SERVICE_BASE_URLS = [value.strip() for value in env.list("SERVICE_BASE_URLS") if value]
+if SERVICE_BASE_URL:
+    SERVICE_BASE_URLS.append(SERVICE_BASE_URL)
+
 
 def _list_setting(var_name: str, default: List[str]) -> List[str]:
     """Return a list setting parsed from environment."""
@@ -46,6 +73,8 @@ def _list_setting(var_name: str, default: List[str]) -> List[str]:
 
 
 ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
+if SERVICE_BASE_URLS:
+    ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, SERVICE_BASE_URLS)
 
 
 # Application definition
@@ -87,17 +116,20 @@ CORS_ALLOWED_ORIGINS = _list_setting(
     "CORS_ALLOWED_ORIGINS", default=_DEFAULT_LOCAL_CORS_ORIGINS if DEBUG else []
 )
 CORS_ALLOWED_ORIGIN_REGEXES = _list_setting("CORS_ALLOWED_ORIGIN_REGEXES", default=[])
+CORS_ALLOWED_ORIGINS = [origin.rstrip("/") for origin in CORS_ALLOWED_ORIGINS]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS)
 CORS_ALLOW_ALL_ORIGINS = env.bool(
     "CORS_ALLOW_ALL_ORIGINS",
     default=DEBUG and not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES),
 )
 CORS_ALLOW_METHODS = list(default_methods)
-CORS_ALLOW_HEADERS = list(default_headers)
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-api-key"]
 CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=[])
 if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = [
         f"https://{host}" for host in ALLOWED_HOSTS if host not in {"*", "localhost", "127.0.0.1"}
     ]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 
@@ -124,13 +156,25 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DEFAULT_DB_URL = (
-    f"postgis://{env('DB_USER', default='postgres')}:{env('DB_PASSWORD', default='postgres')}"
-    f"@{env('DB_HOST', default='localhost')}:{env('DB_PORT', default='5432')}/{env('DB_NAME', default='postgres')}"
-)
-DATABASES = {
-    "default": env.db("DATABASE_URL", default=DEFAULT_DB_URL),
+DEFAULT_DB_CONFIG = {
+    "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
+    "NAME": env("DB_NAME", default="postgres"),
+    "USER": env("DB_USER", default="postgres"),
+    "PASSWORD": env("DB_PASSWORD", default="postgres"),
+    "HOST": env("DB_HOST", default="localhost"),
+    "PORT": env("DB_PORT", default="5432"),
 }
+
+database_url = env("DATABASE_URL", default="").strip()
+if database_url:
+    try:
+        default_db = environ.Env.db_url_config(database_url)
+    except AttributeError:  # pragma: no cover - compatibility fallback
+        default_db = environ.Env().db_url_config(database_url)
+else:
+    default_db = DEFAULT_DB_CONFIG
+
+DATABASES = {"default": default_db}
 DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 
 
@@ -176,3 +220,15 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "transporte.authentication.StaticKeyAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}

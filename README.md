@@ -12,6 +12,9 @@ running on Google Cloud Run with horizontal autoscaling.
 | `DJANGO_SETTINGS_MODULE` | Django settings module. | `mobilidade.settings_prod` |
 | `DATABASE_URL` | Database connection string (PostGIS). | `postgis://postgres:postgres@localhost:5432/postgres` |
 | `ALLOWED_HOSTS` | Comma separated list of allowed hosts. | _required in production_ |
+| `SERVICE_BASE_URL`/`SERVICE_BASE_URLS` | Public origin(s) clients use to reach the API. Hosts are auto-added to `ALLOWED_HOSTS`. | empty |
+| `API_SHARED_SECRET` | Primary API key shared with trusted clients. | empty |
+| `API_SHARED_SECRETS` | Optional comma separated list of API keys (for key rotation). | empty |
 | `CORS_ALLOWED_ORIGINS` | Comma separated list of CORS origins. | empty |
 | `CSRF_TRUSTED_ORIGINS` | Comma separated list of CSRF trusted origins. | derived from hosts |
 | `DB_CONN_MAX_AGE` | Persistent DB connection age in seconds. | `60` |
@@ -21,8 +24,24 @@ running on Google Cloud Run with horizontal autoscaling.
 | `GUNICORN_TIMEOUT` | Worker timeout in seconds. | `120` |
 | `GUNICORN_WORKER_CLASS` | Gunicorn worker class. | `gthread` |
 
-> ℹ️  When deploying to Cloud Run make sure to set `SECRET_KEY`, `ALLOWED_HOSTS`, and `DATABASE_URL`
-> through Cloud Run service variables or a Secret Manager reference.
+> ℹ️  When deploying to Cloud Run make sure to set `SECRET_KEY`, `API_SHARED_SECRET` (or
+> `API_SHARED_SECRETS`), and either populate `ALLOWED_HOSTS` directly or provide
+> `SERVICE_BASE_URL`/`SERVICE_BASE_URLS` with the public URL. Any hostnames listed in
+> `CORS_ALLOWED_ORIGINS` or `CSRF_TRUSTED_ORIGINS` are also merged into `ALLOWED_HOSTS`, which helps
+> when you only have the public URL handy. Leave `DATABASE_URL` blank if you prefer configuring the
+> connection via the individual `DB_*` variables.
+
+### API authentication
+
+The Flutter client authenticates every request by sending the `X-API-Key` header. Django validates
+this header using the values configured in `API_SHARED_SECRET`/`API_SHARED_SECRETS`:
+
+- Set a **long, random** secret for production. The example Cloud Build pipeline (below) expects the
+  value to come from Secret Manager.
+- Provide multiple comma separated values via `API_SHARED_SECRETS` when rotating keys. The backend
+  accepts any configured value, while the Flutter app can be updated to a new key at build time.
+- Requests without the header still fall back to standard Django authentication (sessions/basic), so
+  the Django admin remains accessible during local development.
 
 ## Local Development
 
@@ -107,10 +126,11 @@ the domain(s) you configure here. If the app sends authenticated requests, keep
 3. Trigger Cloud Build (manually or via GitHub triggers). The provided `cloudbuild.yaml` will:
    - Build the container using `mobilidade/Dockerfile`.
    - Push the image to Artifact Registry (`${_IMAGE}`).
-   - Deploy to Cloud Run using the substitutions defined at the top of `cloudbuild.yaml`.
-4. Configure required environment variables (`SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, optional
-   CORS/CSRF values) on the Cloud Run service. Enable the Cloud SQL Auth Proxy or VPC Connector if
-   required for database connectivity.
+   - Deploy to Cloud Run using the substitutions defined at the top of `cloudbuild.yaml`, injecting
+     the Django secret key and API shared secret from Secret Manager.
+4. Configure remaining environment variables (`DATABASE_URL`, optional CORS/CSRF values) on the
+   Cloud Run service. Enable the Cloud SQL Auth Proxy or VPC Connector if required for database
+   connectivity.
 
 ## Horizontal Scalability
 
