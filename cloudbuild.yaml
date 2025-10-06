@@ -1,0 +1,40 @@
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitution_option: ALLOW_LOOSE
+
+substitutions:
+  _REGION: us-central1
+  _SERVICE_NAME: raio-transporte-api
+  _IMAGE: us-central1-docker.pkg.dev/$PROJECT_ID/raio-transporte/api:latest
+  _MIN_INSTANCES: '0'
+  _MAX_INSTANCES: '4'
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      ["build", "-t", "${_IMAGE}", "-f", "mobilidade/Dockerfile", "mobilidade"]
+  - name: gcr.io/cloud-builders/docker
+    args: ["push", "${_IMAGE}"]
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      [
+        "run",
+        "deploy",
+        "${_SERVICE_NAME}",
+        "--image",
+        "${_IMAGE}",
+        "--region",
+        "${_REGION}",
+        "--platform",
+        "managed",
+        "--allow-unauthenticated",
+        "--port",
+        "8080",
+        "--min-instances",
+        "${_MIN_INSTANCES}",
+        "--max-instances",
+        "${_MAX_INSTANCES}"
+      ]
+images:
+  - ${_IMAGE}

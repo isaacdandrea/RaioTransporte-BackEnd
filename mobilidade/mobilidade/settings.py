@@ -11,26 +11,40 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from typing import List
+
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
-    DEBUG=(bool, False),          # default DEBUG=False
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, "unsafe-development-secret"),
 )
-environ.Env.read_env(BASE_DIR / ".env")
+
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    environ.Env.read_env(str(env_file))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "cwoOXKIzRaOY4YrtlhHCiucDXU9jSzCnEEf4a9S0MG8pL3yaLXnaM48iK0ilYJhX"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["*"]
+
+def _list_setting(var_name: str, default: List[str]) -> List[str]:
+    """Return a list setting parsed from environment."""
+
+    value = env.list(var_name, default=default)
+    return [item for item in value if item]
+
+
+ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
 
 
 # Application definition
@@ -41,6 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     'rest_framework',
     'transporte',
@@ -58,7 +73,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = _list_setting("CORS_ALLOWED_ORIGINS", default=[])
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=not CORS_ALLOWED_ORIGINS)
+CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=[])
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host}" for host in ALLOWED_HOSTS if host not in {"*", "localhost", "127.0.0.1"}
+    ]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 ROOT_URLCONF = "mobilidade.urls"
 
@@ -83,16 +107,14 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DEFAULT_DB_URL = (
+    f"postgis://{env('DB_USER', default='postgres')}:{env('DB_PASSWORD', default='postgres')}"
+    f"@{env('DB_HOST', default='localhost')}:{env('DB_PORT', default='5432')}/{env('DB_NAME', default='postgres')}"
+)
 DATABASES = {
-    "default": {
-        "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
-        "NAME":   env("DB_NAME"),
-        "USER":   env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST":   env("DB_HOST", default="localhost"),
-        "PORT":   env("DB_PORT", default="5432"),
-    }
+    "default": env.db("DATABASE_URL", default=DEFAULT_DB_URL),
 }
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 
 
 # Password validation
@@ -130,6 +152,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
