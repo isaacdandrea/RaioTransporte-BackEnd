@@ -11,26 +11,70 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from typing import List
+
 import environ
+from corsheaders.defaults import default_headers, default_methods
+
+from .config_utils import extend_allowed_hosts
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
-    DEBUG=(bool, False),          # default DEBUG=False
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, "unsafe-development-secret"),
+    API_SHARED_SECRET=(str, ""),
+    API_SHARED_SECRETS=(list, []),
+    SERVICE_BASE_URL=(str, ""),
+    SERVICE_BASE_URLS=(list, []),
 )
-environ.Env.read_env(BASE_DIR / ".env")
+
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    environ.Env.read_env(str(env_file))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "cwoOXKIzRaOY4YrtlhHCiucDXU9jSzCnEEf4a9S0MG8pL3yaLXnaM48iK0ilYJhX"
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["*"]
+# Shared secret(s) for stateless API authentication with client applications.
+# ``API_SHARED_SECRET`` remains available for backwards compatibility with
+# existing deployments that rely on a single secret value. When multiple
+# secrets are required (for key rotation or different client cohorts), the
+# ``API_SHARED_SECRETS`` environment variable accepts a comma separated list.
+API_SHARED_SECRET = env("API_SHARED_SECRET")
+API_SHARED_SECRETS = [
+    secret
+    for secret in (
+        env.list("API_SHARED_SECRETS") or ([API_SHARED_SECRET] if API_SHARED_SECRET else [])
+    )
+    if secret
+]
+if API_SHARED_SECRETS and not API_SHARED_SECRET:
+    API_SHARED_SECRET = API_SHARED_SECRETS[0]
+
+SERVICE_BASE_URL = env("SERVICE_BASE_URL").strip()
+SERVICE_BASE_URLS = [value.strip() for value in env.list("SERVICE_BASE_URLS") if value]
+if SERVICE_BASE_URL:
+    SERVICE_BASE_URLS.append(SERVICE_BASE_URL)
+
+
+def _list_setting(var_name: str, default: List[str]) -> List[str]:
+    """Return a list setting parsed from environment."""
+
+    value = env.list(var_name, default=default)
+    return [item for item in value if item]
+
+
+ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
+if SERVICE_BASE_URLS:
+    ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, SERVICE_BASE_URLS)
 
 
 # Application definition
@@ -41,6 +85,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     'rest_framework',
     'transporte',
@@ -58,7 +103,35 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+_DEFAULT_LOCAL_CORS_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    "http://10.0.2.2:8080",  # Android emulator loopback
+]
+
+CORS_ALLOWED_ORIGINS = _list_setting(
+    "CORS_ALLOWED_ORIGINS", default=_DEFAULT_LOCAL_CORS_ORIGINS if DEBUG else []
+)
+CORS_ALLOWED_ORIGIN_REGEXES = _list_setting("CORS_ALLOWED_ORIGIN_REGEXES", default=[])
+CORS_ALLOWED_ORIGINS = [origin.rstrip("/") for origin in CORS_ALLOWED_ORIGINS]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS)
+CORS_ALLOW_ALL_ORIGINS = env.bool(
+    "CORS_ALLOW_ALL_ORIGINS",
+    default=DEBUG and not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES),
+)
+CORS_ALLOW_METHODS = list(default_methods)
+CORS_ALLOW_HEADERS = list(default_headers) + ["x-api-key"]
+CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=[])
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://{host}" for host in ALLOWED_HOSTS if host not in {"*", "localhost", "127.0.0.1"}
+    ]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 ROOT_URLCONF = "mobilidade.urls"
 
@@ -83,16 +156,26 @@ WSGI_APPLICATION = "mobilidade.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
-        "NAME":   env("DB_NAME"),
-        "USER":   env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST":   env("DB_HOST", default="localhost"),
-        "PORT":   env("DB_PORT", default="5432"),
-    }
+DEFAULT_DB_CONFIG = {
+    "ENGINE": env("DB_ENGINE", default="django.contrib.gis.db.backends.postgis"),
+    "NAME": env("DB_NAME", default="postgres"),
+    "USER": env("DB_USER", default="postgres"),
+    "PASSWORD": env("DB_PASSWORD", default="postgres"),
+    "HOST": env("DB_HOST", default="localhost"),
+    "PORT": env("DB_PORT", default="5432"),
 }
+
+database_url = env("DATABASE_URL", default="").strip()
+if database_url:
+    try:
+        default_db = environ.Env.db_url_config(database_url)
+    except AttributeError:  # pragma: no cover - compatibility fallback
+        default_db = environ.Env().db_url_config(database_url)
+else:
+    default_db = DEFAULT_DB_CONFIG
+
+DATABASES = {"default": default_db}
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
 
 
 # Password validation
@@ -130,8 +213,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "transporte.authentication.StaticKeyAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+}
