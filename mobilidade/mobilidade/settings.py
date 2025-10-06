@@ -16,6 +16,8 @@ from typing import List
 import environ
 from corsheaders.defaults import default_headers, default_methods
 
+from .config_utils import extend_allowed_hosts
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -105,6 +107,8 @@ CORS_ALLOWED_ORIGINS = _list_setting(
     "CORS_ALLOWED_ORIGINS", default=_DEFAULT_LOCAL_CORS_ORIGINS if DEBUG else []
 )
 CORS_ALLOWED_ORIGIN_REGEXES = _list_setting("CORS_ALLOWED_ORIGIN_REGEXES", default=[])
+CORS_ALLOWED_ORIGINS = [origin.rstrip("/") for origin in CORS_ALLOWED_ORIGINS]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS)
 CORS_ALLOW_ALL_ORIGINS = env.bool(
     "CORS_ALLOW_ALL_ORIGINS",
     default=DEBUG and not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES),
@@ -116,6 +120,7 @@ if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = [
         f"https://{host}" for host in ALLOWED_HOSTS if host not in {"*", "localhost", "127.0.0.1"}
     ]
+ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = True
 

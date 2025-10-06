@@ -25,7 +25,9 @@ running on Google Cloud Run with horizontal autoscaling.
 
 > ℹ️  When deploying to Cloud Run make sure to set `SECRET_KEY`, `API_SHARED_SECRET` (or
 > `API_SHARED_SECRETS`), `ALLOWED_HOSTS`, and `DATABASE_URL` through Cloud Run service variables or
-> a Secret Manager reference.
+> a Secret Manager reference. Any hostnames listed in `CORS_ALLOWED_ORIGINS` or
+> `CSRF_TRUSTED_ORIGINS` are automatically merged into `ALLOWED_HOSTS`, which helps when you only
+> have the public URL handy.
 
 ### API authentication
 
