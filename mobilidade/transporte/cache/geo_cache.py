@@ -44,7 +44,7 @@ class CacheConfig:
     distance_threshold_m: float = 100.0
     reuse_time_window: timedelta = timedelta(hours=24)
     max_entry_age: timedelta = timedelta(days=7)
-    max_entries: int = 500
+    max_entries: int = 5000
     cleanup_interval: timedelta = timedelta(minutes=5)
 
     @classmethod
@@ -109,12 +109,12 @@ class GeoRequestCacheService:
         signature = self._build_signature(normalized_params)
         point = Point(float(longitude), float(latitude), srid=4326)
         now = timezone.now()
-        reuse_cutoff = now - self.config.reuse_time_window
+        # reuse_cutoff = now - self.config.reuse_time_window
 
         queryset = (
             GeoRequestCache.objects.filter(
                 request_signature=signature,
-                created_at__gte=reuse_cutoff,
+                # created_at__gte=reuse_cutoff,
                 location__distance_lte=(point, D(m=self.config.distance_threshold_m)),
             )
             .annotate(distance=Distance("location", point))
@@ -172,8 +172,8 @@ class GeoRequestCacheService:
         ):
             return
 
-        cutoff = now - self.config.max_entry_age
-        GeoRequestCache.objects.filter(created_at__lt=cutoff).delete()
+        # cutoff = now - self.config.max_entry_age
+        # GeoRequestCache.objects.filter(created_at__lt=cutoff).delete()
 
         if self.config.max_entries > 0:
             total = GeoRequestCache.objects.count()
