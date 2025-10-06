@@ -13,6 +13,8 @@ running on Google Cloud Run with horizontal autoscaling.
 | `DATABASE_URL` | Database connection string (PostGIS). | `postgis://postgres:postgres@localhost:5432/postgres` |
 | `ALLOWED_HOSTS` | Comma separated list of allowed hosts. | _required in production_ |
 | `CORS_ALLOWED_ORIGINS` | Comma separated list of CORS origins. | empty |
+| `CORS_ALLOWED_ORIGIN_REGEXES` | Comma separated list of regex origins (e.g. `^https://.+\.a\.run\.app$`). | empty |
+| `CORS_ALLOW_CREDENTIALS` | Enable CORS requests with cookies/authorization headers. | `false` |
 | `CSRF_TRUSTED_ORIGINS` | Comma separated list of CSRF trusted origins. | derived from hosts |
 | `DB_CONN_MAX_AGE` | Persistent DB connection age in seconds. | `60` |
 | `PORT` | Port exposed by Gunicorn. | `8080` |
@@ -24,20 +26,70 @@ running on Google Cloud Run with horizontal autoscaling.
 > ℹ️  When deploying to Cloud Run make sure to set `SECRET_KEY`, `ALLOWED_HOSTS`, and `DATABASE_URL`
 > through Cloud Run service variables or a Secret Manager reference.
 
-## Local Development
+## Local Container Workflow
 
-```bash
-# Build the production image locally
-cd mobilidade
-docker build -t raio-transporte:latest .
+1. **Start a PostGIS database (once):**
+   ```bash
+   cd mobilidade
+   docker compose up -d db
+   ```
+   This launches a reusable PostGIS container that listens on `localhost:5433`.
 
-# Run the container (requires an accessible PostGIS instance)
-docker run --rm -p 8080:8080 \
-  -e SECRET_KEY="change-me" \
-  -e DATABASE_URL="postgis://user:pass@host:5432/db" \
-  -e ALLOWED_HOSTS="localhost" \
-  raio-transporte:latest
+2. **Build the API image:**
+   ```bash
+   docker build -t raio-transporte:latest .
+   ```
+   Docker Compose creates a network named `mobilidade_default`; the next steps attach the API
+   container to that network so it can reach the database at the hostname `db`.
+
+3. **Run database migrations inside the container (first run or after model changes):**
+   ```bash
+   docker run --rm \
+     --network mobilidade_default \
+     -e SECRET_KEY="change-me" \
+     -e DATABASE_URL="postgis://mobilidade:eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z@db:5432/mobilidade" \
+     -e ALLOWED_HOSTS="localhost" \
+     raio-transporte:latest \
+     python manage.py migrate
+   ```
+   Replace the database URL if you change the credentials defined in `docker-compose.yml`.
+
+4. **Run the API locally:**
+   ```bash
+   docker run --rm -p 8080:8080 \
+     --network mobilidade_default \
+     -e SECRET_KEY="change-me" \
+     -e DATABASE_URL="postgis://mobilidade:eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z@db:5432/mobilidade" \
+     -e ALLOWED_HOSTS="localhost" \
+     -e CORS_ALLOWED_ORIGINS="http://localhost:8080,http://10.0.2.2:8080" \
+     raio-transporte:latest
+   ```
+   The additional CORS origins allow Android emulators (`10.0.2.2`) and local browsers to reach the container.
+
+5. **Point your Flutter app to `http://10.0.2.2:8080` (Android emulator) or `http://localhost:8080` (Flutter desktop/web)** to call the API.
+
+Stop the database when finished with `docker compose down`.
+
+## Configuring CORS for Cloud Run & Flutter
+
+When deploying to Cloud Run, set the following service variables to follow least-privilege CORS
+practices:
+
+```text
+CORS_ALLOWED_ORIGINS=https://your-flutter-web-domain.app
+CORS_ALLOWED_ORIGIN_REGEXES=^https://.+\.a\.run\.app$
+CORS_ALLOW_CREDENTIALS=true   # only if you rely on cookies/authorization headers
+CSRF_TRUSTED_ORIGINS=https://your-flutter-web-domain.app
+ALLOWED_HOSTS=your-service-uc.a.run.app,your-custom-domain.com
 ```
+
+* Use exact origins for known Flutter web or mobile proxy domains whenever possible.
+* Prefer regexes (`CORS_ALLOWED_ORIGIN_REGEXES`) to cover the auto-generated Cloud Run host while
+  keeping the wildcard narrowly scoped to the `.a.run.app` domain.
+* Leave `CORS_ALLOW_ALL_ORIGINS` unset so the service never falls back to `*`.
+
+After updating variables, redeploy or trigger a new revision in Cloud Run for the settings to take
+effect.
 
 ## Cloud Build & Cloud Run Deployment
 
