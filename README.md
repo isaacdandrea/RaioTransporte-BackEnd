@@ -26,18 +26,79 @@ running on Google Cloud Run with horizontal autoscaling.
 
 ## Local Development
 
-```bash
-# Build the production image locally
-cd mobilidade
-docker build -t raio-transporte:latest .
+The production image can be run locally to replicate the Cloud Run deployment. The Django
+container expects a PostGIS database and a handful of environment variables.
 
-# Run the container (requires an accessible PostGIS instance)
-docker run --rm -p 8080:8080 \
-  -e SECRET_KEY="change-me" \
-  -e DATABASE_URL="postgis://user:pass@host:5432/db" \
-  -e ALLOWED_HOSTS="localhost" \
-  raio-transporte:latest
-```
+1. **Start PostGIS (once):**
+
+   ```bash
+   cd mobilidade
+   docker compose up -d db
+   ```
+
+   The database will be exposed on `localhost:5433` with the credentials defined in
+   `docker-compose.yml`.
+
+2. **Build the application image:**
+
+   ```bash
+   docker build -t raio-transporte:latest .
+   ```
+
+3. **Run the container:**
+
+   ```bash
+   docker run --rm -p 8080:8080 \
+     --name raio-transporte-api \
+     --env DEBUG=1 \
+     --env SECRET_KEY="change-me" \
+     --env DJANGO_SETTINGS_MODULE="mobilidade.settings" \
+     --env DATABASE_URL="postgis://mobilidade:eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z@host.docker.internal:5433/mobilidade" \
+     --env ALLOWED_HOSTS="localhost,127.0.0.1" \
+     raio-transporte:latest
+   ```
+
+   On macOS/Windows Docker Desktop, `host.docker.internal` resolves to the host machine. On Linux
+   you can export the gateway IP once (e.g. `DB_HOST=$(ip route | awk 'NR==1 {print $3}')`) and use
+   it instead of `host.docker.internal`.
+
+4. **Point the Flutter app to the API:**
+
+   - Android emulator: use `http://10.0.2.2:8080`.
+   - Physical device on the same network: use the host IP address (e.g. `http://192.168.x.x:8080`).
+   - Web build: `http://localhost:8080`.
+
+   The default development CORS configuration allows the origins above, so no extra Django changes
+   are required.
+
+5. **Shut everything down:**
+
+   ```bash
+   docker stop raio-transporte-api
+   docker compose down
+   ```
+
+   The `pgdata` volume is preserved between runs. Remove it with
+   `docker volume rm mobilidade_pgdata` when you need a fresh database.
+
+## Configuring CORS for Flutter & Cloud Run
+
+`django-cors-headers` is pre-configured with security-conscious defaults:
+
+- **Development:** when `DEBUG=True`, the API automatically allows requests from
+  `localhost`, `127.0.0.1`, and `10.0.2.2` on ports `8000` and `8080`, which covers Flutter web
+  previews, Android emulators, and most local testing setups.
+- **Production / Cloud Run:** define one (or more) of the following environment variables on the
+  Cloud Run service:
+  - `CORS_ALLOWED_ORIGINS=https://api.example.com,https://app.example.com`
+  - `CORS_ALLOWED_ORIGIN_REGEXES=^https://[\w-]+-a\.run\.app$` (useful while using the default Cloud
+    Run domain before a custom domain is ready)
+  - `CORS_ALLOW_ALL_ORIGINS=true` (only if you intentionally want to expose the API publicly)
+
+The production settings enforce that at least one of the variables above is configured, following
+Google's recommendation to explicitly list trusted origins. Align your Flutter app's base URL with
+the domain(s) you configure here. If the app sends authenticated requests, keep
+`CORS_ALLOW_ALL_ORIGINS=false` and list each trusted domain explicitly.
 
 ## Cloud Build & Cloud Run Deployment
 

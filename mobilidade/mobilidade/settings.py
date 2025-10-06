@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List
 
 import environ
+from corsheaders.defaults import default_headers, default_methods
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -74,8 +75,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CORS_ALLOWED_ORIGINS = _list_setting("CORS_ALLOWED_ORIGINS", default=[])
-CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=not CORS_ALLOWED_ORIGINS)
+_DEFAULT_LOCAL_CORS_ORIGINS = [
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    "http://10.0.2.2:8080",  # Android emulator loopback
+]
+
+CORS_ALLOWED_ORIGINS = _list_setting(
+    "CORS_ALLOWED_ORIGINS", default=_DEFAULT_LOCAL_CORS_ORIGINS if DEBUG else []
+)
+CORS_ALLOWED_ORIGIN_REGEXES = _list_setting("CORS_ALLOWED_ORIGIN_REGEXES", default=[])
+CORS_ALLOW_ALL_ORIGINS = env.bool(
+    "CORS_ALLOW_ALL_ORIGINS",
+    default=DEBUG and not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES),
+)
+CORS_ALLOW_METHODS = list(default_methods)
+CORS_ALLOW_HEADERS = list(default_headers)
 CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=[])
 if not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = [

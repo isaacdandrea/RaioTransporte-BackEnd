@@ -12,7 +12,16 @@ if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("ALLOWED_HOSTS must include at least one host in production.")
 
 CORS_ALLOWED_ORIGINS = _list_setting("CORS_ALLOWED_ORIGINS", default=[])
-CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=not CORS_ALLOWED_ORIGINS)
+CORS_ALLOWED_ORIGIN_REGEXES = _list_setting(
+    "CORS_ALLOWED_ORIGIN_REGEXES", default=CORS_ALLOWED_ORIGIN_REGEXES
+)
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=False)
+
+if not (CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES or CORS_ALLOW_ALL_ORIGINS):
+    raise ImproperlyConfigured(
+        "Configure at least one of CORS_ALLOWED_ORIGINS, CORS_ALLOWED_ORIGIN_REGEXES, "
+        "or explicitly enable CORS_ALLOW_ALL_ORIGINS for production."
+    )
 
 CSRF_TRUSTED_ORIGINS = _list_setting("CSRF_TRUSTED_ORIGINS", default=CSRF_TRUSTED_ORIGINS)
 if not CSRF_TRUSTED_ORIGINS:
