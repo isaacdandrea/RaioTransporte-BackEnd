@@ -45,7 +45,7 @@ class CacheConfig:
     reuse_time_window: timedelta = timedelta(hours=24)
     max_entry_age: timedelta = timedelta(days=7)
     max_entries: int = 5000
-    cleanup_interval: timedelta = timedelta(minutes=5)
+    cleanup_interval: timedelta = timedelta(hours=12)
 
     @classmethod
     def from_dict(cls, data: Optional[Mapping[str, Any]]) -> "CacheConfig":
