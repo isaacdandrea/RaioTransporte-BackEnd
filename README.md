@@ -117,6 +117,31 @@ database migrations or destructive operations are executed.
    The `pgdata` volume is preserved between runs. Remove it with
    `docker volume rm mobilidade_pgdata` when you need a fresh database.
 
+## Preparing the local PostGIS container for logical replication
+
+When migrating the `mobilidadenew` database to Google Cloud SQL using Database
+Migration Service, the source instance must expose the `pglogical` extension and
+have `wal_level` set to `logical`. The helper script below performs the required
+steps against the PostGIS container defined in `mobilidade/docker-compose.yml`:
+
+```bash
+./scripts/configure_pglogical.sh
+```
+
+The script will:
+
+1. Install the `postgresql-15-pglogical` package inside the running
+   `mobilidade_postgis` container.
+2. Ensure the `mobilidadenew` database exists (creating it with owner
+   `mobilidade` if missing).
+3. Enable the `pglogical` extension inside `mobilidadenew`.
+4. Switch `wal_level` to `logical` and restart the container so the change takes
+   effect.
+
+After the restart, the script prints the current `wal_level` as well as the
+installed state of the `pglogical` extension so you can confirm the migration
+prerequisites.
+
 ## Configuring CORS for Flutter & Cloud Run
 
 `django-cors-headers` is pre-configured with security-conscious defaults:
