@@ -2,8 +2,8 @@
 
 This repository contains the production-ready container definition for the RaioTransporte back-end.
 The application exposes Django REST APIs only (no Django templates/front-end) and is optimised for
-running on Google Cloud Run, AWS Lambda (via the Lambda Web Adapter), and AWS App Runner with
-horizontal autoscaling.
+running on Google Cloud Run, Azure Container Apps, AWS Lambda (via the Lambda Web Adapter), and AWS
+App Runner with horizontal autoscaling.
 
 ## Runtime Environment Variables
 
@@ -180,6 +180,30 @@ the domain(s) you configure here. If the app sends authenticated requests, keep
 The same container image can be promoted to AWS services without code changes thanks to the
 multi-stage Dockerfile, the `.dockerignore` that trims development artefacts from the build context,
 and the bundled AWS Lambda Web Adapter.
+
+## Azure Container Apps Deployment
+
+Azure Container Apps provides the closest feature set to Google Cloud Run on Microsoft Azure (HTTP
+autoscaling, revision management, scale-to-zero). The repository includes a production-ready
+pipeline at `.github/workflows/azure-container-apps.yml` that:
+
+- Builds the container from `mobilidade/Dockerfile` using Docker Buildx and the optimised
+  `.dockerignore`.
+- Pushes the image to Azure Container Registry (ACR) with build cache layers.
+- Creates or updates an Azure Container App with external ingress on port `8080`, revision suffixes,
+  and autoscaling boundaries (`minReplicas=0`, `maxReplicas` configurable via repository variables and
+  defaulting to `2` to fit within the free tier).
+- Requests lightweight resources by default (`0.25 vCPU`, `0.5 GiB`) and can be scaled up later
+  through repository variables when additional budget or sustained load appears.
+- Injects Django settings through environment variables and securely stores secrets (`SECRET_KEY`,
+  `API_SHARED_SECRET`, `DATABASE_URL`) using Container App secret references.
+
+To get started, configure the Azure/GitHub secrets listed in
+[`AZURE_CONTAINER_APPS_DEPLOYMENT_GUIDE.md`](AZURE_CONTAINER_APPS_DEPLOYMENT_GUIDE.md) and trigger the
+workflow manually or by pushing to `main`. The guide also covers networking, secret rotation, and
+horizontal scaling recommendations for Azure Container Apps. Because the Django service is stateless
+and depends only on external storage (PostGIS), it scales horizontally across multiple replicas on all
+three cloud providers without code changes.
 
 ### Publish to Amazon ECR
 

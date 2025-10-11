@@ -1,0 +1,186 @@
+name: Build and Deploy to Azure Container Apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      image-tag:
+        description: Optional image tag override (defaults to commit SHA)
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - 'mobilidade/**'
+      - '.github/workflows/azure-container-apps.yml'
+      - 'requirements.txt'
+      - 'cloudbuild.yaml'
+
+env:
+  IMAGE_NAME: raio-transporte-api
+  DOCKERFILE_PATH: mobilidade/Dockerfile
+  BUILD_CONTEXT: mobilidade
+
+jobs:
+  build-and-deploy:
+    name: Build container and deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Determine image tag
+        id: meta
+        run: |
+          if [ -n "${{ github.event.inputs.image-tag }}" ]; then
+            IMAGE_TAG="${{ github.event.inputs.image-tag }}"
+          else
+            IMAGE_TAG="${GITHUB_SHA::12}"
+          fi
+          echo "tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.BUILD_CONTEXT }}
+          file: ${{ env.DOCKERFILE_PATH }}
+          push: true
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
+          cache-from: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+      - name: Deploy revision to Azure Container Apps
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            set -euo pipefail
+
+            IMAGE="${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}"
+
+            az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+
+            MIN_REPLICAS="${MIN_REPLICAS:-0}"
+            MAX_REPLICAS="${MAX_REPLICAS:-5}"
+            CPU_REQUEST="${CPU:-0.5}"
+            MEMORY_REQUEST="${MEMORY:-1.0Gi}"
+            WEB_CONCURRENCY="${WEB_CONCURRENCY:-4}"
+            GUNICORN_THREADS="${GUNICORN_THREADS:-4}"
+
+            CREATE_ARGS=(
+              --name "$CONTAINERAPP_NAME"
+              --resource-group "$RESOURCE_GROUP"
+              --environment "$CONTAINERAPPS_ENVIRONMENT"
+              --image "$IMAGE"
+              --target-port 8080
+              --ingress external
+              --transport http2
+              --min-replicas "$MIN_REPLICAS"
+              --max-replicas "$MAX_REPLICAS"
+              --cpu "$CPU_REQUEST"
+              --memory "$MEMORY_REQUEST"
+              --registry-server "${{ secrets.ACR_LOGIN_SERVER }}"
+              --registry-username "${{ secrets.ACR_USERNAME }}"
+              --registry-password "${{ secrets.ACR_PASSWORD }}"
+              --revision-suffix "${REVISION_SUFFIX}"
+              --env-vars
+                DJANGO_SETTINGS_MODULE=mobilidade.settings_prod
+                PORT=8080
+                WEB_CONCURRENCY=$WEB_CONCURRENCY
+                GUNICORN_THREADS=$GUNICORN_THREADS
+            )
+
+            UPDATE_ENV_VARS=(
+              DJANGO_SETTINGS_MODULE=mobilidade.settings_prod
+              PORT=8080
+              WEB_CONCURRENCY=$WEB_CONCURRENCY
+              GUNICORN_THREADS=$GUNICORN_THREADS
+            )
+
+            SECRET_ARGS=()
+            ENV_SECRET_ARGS=()
+
+            if [ -n "${DATABASE_URL_SECRET_NAME:-}" ] && [ -n "${DATABASE_URL_SECRET_VALUE:-}" ]; then
+              SECRET_ARGS+=("${DATABASE_URL_SECRET_NAME}=${DATABASE_URL_SECRET_VALUE}")
+              CREATE_ARGS+=(DATABASE_URL=secretref:${DATABASE_URL_SECRET_NAME})
+              ENV_SECRET_ARGS+=(DATABASE_URL=secretref:${DATABASE_URL_SECRET_NAME})
+            fi
+
+            if [ -n "${SECRET_KEY_NAME:-}" ] && [ -n "${SECRET_KEY_VALUE:-}" ]; then
+              SECRET_ARGS+=("${SECRET_KEY_NAME}=${SECRET_KEY_VALUE}")
+              CREATE_ARGS+=(SECRET_KEY=secretref:${SECRET_KEY_NAME})
+              ENV_SECRET_ARGS+=(SECRET_KEY=secretref:${SECRET_KEY_NAME})
+            fi
+
+            if [ -n "${API_SHARED_SECRET_NAME:-}" ] && [ -n "${API_SHARED_SECRET_VALUE:-}" ]; then
+              SECRET_ARGS+=("${API_SHARED_SECRET_NAME}=${API_SHARED_SECRET_VALUE}")
+              CREATE_ARGS+=(API_SHARED_SECRET=secretref:${API_SHARED_SECRET_NAME})
+              ENV_SECRET_ARGS+=(API_SHARED_SECRET=secretref:${API_SHARED_SECRET_NAME})
+            fi
+
+            if az containerapp show --name "$CONTAINERAPP_NAME" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
+              if [ ${#SECRET_ARGS[@]} -gt 0 ]; then
+                az containerapp secret set \
+                  --name "$CONTAINERAPP_NAME" \
+                  --resource-group "$RESOURCE_GROUP" \
+                  --secrets "${SECRET_ARGS[@]}"
+              fi
+
+              az containerapp update \
+                --name "$CONTAINERAPP_NAME" \
+                --resource-group "$RESOURCE_GROUP" \
+                --image "$IMAGE" \
+                --revision-suffix "${REVISION_SUFFIX}" \
+                --min-replicas "$MIN_REPLICAS" \
+                --max-replicas "$MAX_REPLICAS" \
+                --set-env-vars "${UPDATE_ENV_VARS[@]}"
+
+              if [ ${#ENV_SECRET_ARGS[@]} -gt 0 ]; then
+                az containerapp update \
+                  --name "$CONTAINERAPP_NAME" \
+                  --resource-group "$RESOURCE_GROUP" \
+                  --set-env-vars "${ENV_SECRET_ARGS[@]}"
+              fi
+            else
+              if [ ${#SECRET_ARGS[@]} -gt 0 ]; then
+                CREATE_ARGS+=(--secrets)
+                CREATE_ARGS+=("${SECRET_ARGS[@]}")
+              fi
+
+              az containerapp create "${CREATE_ARGS[@]}"
+            fi
+        env:
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          CONTAINERAPP_NAME: ${{ secrets.AZURE_CONTAINERAPP_NAME }}
+          CONTAINERAPPS_ENVIRONMENT: ${{ secrets.AZURE_CONTAINERAPPS_ENVIRONMENT }}
+          MIN_REPLICAS: ${{ vars.AZURE_MIN_REPLICAS || '0' }}
+          MAX_REPLICAS: ${{ vars.AZURE_MAX_REPLICAS || '2' }}
+          CPU: ${{ vars.AZURE_CONTAINERAPP_CPU || '0.25' }}
+          MEMORY: ${{ vars.AZURE_CONTAINERAPP_MEMORY || '0.5Gi' }}
+          WEB_CONCURRENCY: ${{ vars.WEB_CONCURRENCY || '2' }}
+          GUNICORN_THREADS: ${{ vars.GUNICORN_THREADS || '2' }}
+          DATABASE_URL_SECRET_NAME: ${{ secrets.AZURE_DATABASE_URL_SECRET_NAME }}
+          DATABASE_URL_SECRET_VALUE: ${{ secrets.AZURE_DATABASE_URL }}
+          SECRET_KEY_NAME: ${{ secrets.AZURE_SECRET_KEY_NAME }}
+          SECRET_KEY_VALUE: ${{ secrets.DJANGO_SECRET_KEY }}
+          API_SHARED_SECRET_NAME: ${{ secrets.AZURE_API_SHARED_SECRET_NAME }}
+          API_SHARED_SECRET_VALUE: ${{ secrets.API_SHARED_SECRET }}
+          REVISION_SUFFIX: ${{ github.run_number }}
