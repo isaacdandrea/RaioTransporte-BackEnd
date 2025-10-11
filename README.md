@@ -191,7 +191,10 @@ pipeline at `.github/workflows/azure-container-apps.yml` that:
   `.dockerignore`.
 - Pushes the image to Azure Container Registry (ACR) with build cache layers.
 - Creates or updates an Azure Container App with external ingress on port `8080`, revision suffixes,
-  and autoscaling boundaries (`minReplicas=0`, `maxReplicas` configurable via repository variables).
+  and autoscaling boundaries (`minReplicas=0`, `maxReplicas` configurable via repository variables and
+  defaulting to `2` to fit within the free tier).
+- Requests lightweight resources by default (`0.25 vCPU`, `0.5 GiB`) and can be scaled up later
+  through repository variables when additional budget or sustained load appears.
 - Injects Django settings through environment variables and securely stores secrets (`SECRET_KEY`,
   `API_SHARED_SECRET`, `DATABASE_URL`) using Container App secret references.
 

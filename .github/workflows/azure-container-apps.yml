@@ -172,11 +172,11 @@ jobs:
           CONTAINERAPP_NAME: ${{ secrets.AZURE_CONTAINERAPP_NAME }}
           CONTAINERAPPS_ENVIRONMENT: ${{ secrets.AZURE_CONTAINERAPPS_ENVIRONMENT }}
           MIN_REPLICAS: ${{ vars.AZURE_MIN_REPLICAS || '0' }}
-          MAX_REPLICAS: ${{ vars.AZURE_MAX_REPLICAS || '5' }}
-          CPU: ${{ vars.AZURE_CONTAINERAPP_CPU || '0.5' }}
-          MEMORY: ${{ vars.AZURE_CONTAINERAPP_MEMORY || '1.0Gi' }}
-          WEB_CONCURRENCY: ${{ vars.WEB_CONCURRENCY || '4' }}
-          GUNICORN_THREADS: ${{ vars.GUNICORN_THREADS || '4' }}
+          MAX_REPLICAS: ${{ vars.AZURE_MAX_REPLICAS || '2' }}
+          CPU: ${{ vars.AZURE_CONTAINERAPP_CPU || '0.25' }}
+          MEMORY: ${{ vars.AZURE_CONTAINERAPP_MEMORY || '0.5Gi' }}
+          WEB_CONCURRENCY: ${{ vars.WEB_CONCURRENCY || '2' }}
+          GUNICORN_THREADS: ${{ vars.GUNICORN_THREADS || '2' }}
           DATABASE_URL_SECRET_NAME: ${{ secrets.AZURE_DATABASE_URL_SECRET_NAME }}
           DATABASE_URL_SECRET_VALUE: ${{ secrets.AZURE_DATABASE_URL }}
           SECRET_KEY_NAME: ${{ secrets.AZURE_SECRET_KEY_NAME }}

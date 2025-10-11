@@ -49,8 +49,8 @@ to `main` or manually via *workflow_dispatch*), the workflow:
 2. Pushes the image to Azure Container Registry with content cache layers for faster rebuilds.
 3. Creates or updates the Azure Container App:
    - Configures **external ingress on port 8080** with HTTP/2 and revision-based deployments.
-   - Applies CPU/memory requests (`0.5 CPU`, `1.0 GiB` by default—override via repository variables).
-   - Sets **`minReplicas=0`** (scale to zero) and **`maxReplicas=5`** (override via variables).
+   - Applies CPU/memory requests (`0.25 CPU`, `0.5 GiB` by default to stay within the free tier—override via repository variables).
+   - Sets **`minReplicas=0`** (scale to zero) and **`maxReplicas=2`** (override via variables).
    - Injects the Django configuration via environment variables and secret references.
    - Uploads secrets (`SECRET_KEY`, `API_SHARED_SECRET`, `DATABASE_URL`) securely to the Container App.
    - Ensures Gunicorn concurrency is configurable (`WEB_CONCURRENCY`, `GUNICORN_THREADS`).
@@ -61,6 +61,11 @@ environment variables (for resource sizing) and secrets (for sensitive data).
 > ℹ️  The workflow is idempotent: if the Container App does not exist it will be created; otherwise a
 > new revision is published with the updated image and configuration. Each run attaches a distinct
 > revision suffix based on the GitHub run number so you can roll back if needed.
+
+> 💰  The defaults above stay within the Azure Container Apps **free monthly grant** (180,000 vCPU-seconds
+> and 360,000 GiB-seconds) when the service only scales out briefly. Keep `maxReplicas` at `1` or `2`
+> while operating on credits or the free tier, and raise the limit once steady traffic justifies the
+> additional spend.
 
 To run manually, open **Actions → Build and Deploy to Azure Container Apps → Run workflow** and
 optionally provide a custom image tag. The default tag is the short commit SHA.
@@ -89,11 +94,12 @@ storage, static assets are served from immutable `collectstatic` output bundled 
 PostGIS database runs externally. Gunicorn workers read configuration from environment variables and
 share no filesystem state. As a result:
 
-- **Azure Container Apps** can safely scale out to multiple replicas. Set `maxReplicas` to match your
-  expected peak load and monitor CPU/memory usage through Log Analytics.
+- **Azure Container Apps** can safely scale out to multiple replicas. Begin with `maxReplicas=2` to
+  stay within the free allowance, then raise the limit as traffic and available credits increase while
+  monitoring CPU/memory usage through Log Analytics.
 - **Request concurrency** is controlled via the `WEB_CONCURRENCY` and `GUNICORN_THREADS` environment
   variables. Tune these values according to CPU and memory allocations per replica. Start with the
-  defaults (4 workers × 4 threads) and adjust after observing p95 response times.
+  low-cost defaults (2 workers × 2 threads) and adjust after observing p95 response times.
 - **Database connections** reuse a connection pool thanks to Django's `CONN_MAX_AGE` setting. Ensure
   your managed database allows enough connections for the number of replicas (`workers × threads ×
   replicas`). Azure Database for PostgreSQL Flexible Server supports autoscale storage and connection
@@ -147,14 +153,14 @@ az containerapp up \
   --target-port 8080 \
   --ingress external \
   --min-replicas 0 \
-  --max-replicas 5 \
-  --cpu 0.5 \
-  --memory 1.0Gi \
+  --max-replicas 2 \
+  --cpu 0.25 \
+  --memory 0.5Gi \
   --env-vars \
     DJANGO_SETTINGS_MODULE=mobilidade.settings_prod \
     PORT=8080 \
-    WEB_CONCURRENCY=4 \
-    GUNICORN_THREADS=4 \
+    WEB_CONCURRENCY=2 \
+    GUNICORN_THREADS=2 \
     DATABASE_URL=secretref:database-url \
     SECRET_KEY=secretref:django-secret \
     API_SHARED_SECRET=secretref:api-shared-secret \
