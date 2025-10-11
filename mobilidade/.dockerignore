@@ -1,20 +1,38 @@
-**/__pycache__/
-**/*.py[cod]
-**/*.pyo
-**/*.so
-
-# Local development artefacts
-.env
-*.sqlite3
-cache/
-Dockerfile.local
-*.log
-
-# Tooling not needed in the image
+# Ignore Git metadata and local development files
 .git
 .gitignore
-README.md
-notes*
+.gitattributes
+
+# Python cache / bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment & secrets
+.env
+.env.*
+*.sqlite3
+
+# Editor / OS junk
+*.swp
+.DS_Store
+Thumbs.db
+
+# Development tooling not required inside the image
 docker-compose.yml
 environment.yml
+scripts/
+
+# Local testing utilities and visualisation artefacts
+**/tests/
+**/test_*.py
+transporte/utils/testar_raio_visual.py
+transporte/utils/testar_raio_visual_externo.py
+transporte/utils/baixar_osm.py
+transporte/utils/extrair_sao_paulo.py
+transporte/utils/geojsonParaGrafo.py
+transporte/utils/setGDALPath.py
+transporte/utils/verificar_duplicatas.py
+transporte/utils/*.html
+
 testar_algoritmo.py

@@ -1,8 +1,9 @@
-# RaioTransporte Back-end (Cloud Run Ready)
+# RaioTransporte Back-end (Cloud Run & AWS Ready)
 
 This repository contains the production-ready container definition for the RaioTransporte back-end.
 The application exposes Django REST APIs only (no Django templates/front-end) and is optimised for
-running on Google Cloud Run with horizontal autoscaling.
+running on Google Cloud Run, AWS Lambda (via the Lambda Web Adapter), and AWS App Runner with
+horizontal autoscaling.
 
 ## Runtime Environment Variables
 
@@ -13,7 +14,7 @@ running on Google Cloud Run with horizontal autoscaling.
 | `DATABASE_URL` | Database connection string (PostGIS). | `postgis://postgres:postgres@localhost:5432/postgres` |
 | `ALLOWED_HOSTS` | Comma separated list of allowed hosts. | _required in production_ |
 | `SERVICE_BASE_URL`/`SERVICE_BASE_URLS` | Public origin(s) clients use to reach the API. Hosts are auto-added to `ALLOWED_HOSTS`. | empty |
-| `API_SHARED_SECRET` | Primary API key shared with trusted clients. | empty |
+| `API_SHARED_SECRET` | Primary API key shared with trusted clients. | `dummy-api-shared-secret` |
 | `API_SHARED_SECRETS` | Optional comma separated list of API keys (for key rotation). | empty |
 | `CORS_ALLOWED_ORIGINS` | Comma separated list of CORS origins. | empty |
 | `CSRF_TRUSTED_ORIGINS` | Comma separated list of CSRF trusted origins. | derived from hosts |
@@ -174,6 +175,54 @@ the domain(s) you configure here. If the app sends authenticated requests, keep
    Cloud Run service. Enable the Cloud SQL Auth Proxy or VPC Connector if required for database
    connectivity.
 
+## AWS Deployment
+
+The same container image can be promoted to AWS services without code changes thanks to the
+multi-stage Dockerfile, the `.dockerignore` that trims development artefacts from the build context,
+and the bundled AWS Lambda Web Adapter.
+
+### Publish to Amazon ECR
+
+1. Authenticate Docker with ECR:
+
+   ```bash
+   aws ecr get-login-password --region <region> | \
+     docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+   ```
+
+2. Build and tag the image (the Cloud Build pipeline already does this when running on GCP):
+
+   ```bash
+   docker build -t raio-transporte:latest mobilidade
+   docker tag raio-transporte:latest <aws_account_id>.dkr.ecr.<region>.amazonaws.com/raio-transporte:latest
+   ```
+
+3. Push the image:
+
+   ```bash
+   docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/raio-transporte:latest
+   ```
+
+### AWS App Runner
+
+1. Create (or reuse) a connection to the ECR repository above.
+2. Provision a new App Runner service pointing at the container image. Set the port to `8080` and
+   copy the environment variables from the table above (remember to override `SECRET_KEY`,
+   `API_SHARED_SECRET`/`API_SHARED_SECRETS`, and the CORS/host configuration).
+3. App Runner keeps at least one provisioned instance but scales out automatically based on request
+   volume. Increase the concurrency limits or request scaling policies as needed.
+
+### AWS Lambda + API Gateway
+
+The runtime image embeds the [AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter)
+and an entrypoint that activates it automatically when the Lambda runtime injects the
+`AWS_LAMBDA_RUNTIME_API` environment variable. Build a Lambda function from the same container image
+and expose it through API Gateway to obtain true scale-to-zero behaviour.
+
+- Set the handler to `unused` (the adapter takes over the bootstrap process).
+- Configure the `PORT` environment variable if you change Gunicorn's default (`8080`).
+- Provision the same secrets and CORS/host variables as in Cloud Run/App Runner.
+
 ## Horizontal Scalability
 
 The container image is stateless, runs the Gunicorn process as an unprivileged `django` user, and
@@ -186,5 +235,8 @@ relies on managed services for persistence:
 - Static assets are collected at build time and served by WhiteNoise within each instance, avoiding
   shared storage.
 
-Cloud Run can automatically scale the service to multiple instances based on request load. Update
+Cloud Run automatically scales the service to multiple instances based on request load. Update
 `_MAX_INSTANCES` in `cloudbuild.yaml` or override via deployment flags to cap scaling as needed.
+AWS App Runner performs similar HTTP-based autoscaling (maintaining at least one warm instance),
+while AWS Lambda + API Gateway scales to zero and provisions instances per request through the web
+adapter bundled in the image.
