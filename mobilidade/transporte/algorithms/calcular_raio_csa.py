@@ -151,6 +151,21 @@ def carregar_conexoes(dia_sem, horizon):
 
 # ------------- Algoritmo principal -------------
 
+def _emit_progress(
+    callback: Optional[Callable[[Dict[str, object]], None]],
+    payload: Dict[str, object],
+) -> None:
+    """Safely emit progress updates when a callback is available."""
+
+    if not callback:
+        return
+    try:
+        callback(payload)
+    except Exception:
+        # Progress reporting must never break the core algorithm execution.
+        pass
+
+
 def calcular_raio(
     lat,
     lon,
@@ -158,9 +173,15 @@ def calcular_raio(
     dia_sem,
     hora_ini_min,
     debug_callback: Optional[Callable[[Dict[str, object]], None]] = None,
+    progress_callback: Optional[Callable[[Dict[str, object]], None]] = None,
 ):
     debug_data: Optional[Dict[str, object]] = {} if debug_callback else None
     # Stops & spatial index
+    _emit_progress(
+        progress_callback,
+        {"event": "status", "stage": "initializing", "message": "Carregando paradas"},
+    )
+
     stop_queryset = Stop.objects.filter(stop_lat__isnull=False, stop_lon__isnull=False)
     stops_list = list(stop_queryset)
     stops = {s.stop_id: s for s in stops_list}
@@ -168,6 +189,15 @@ def calcular_raio(
         debug_data.update({
             "stops_total": len(stops_list),
         })
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "status",
+            "stage": "stops_loaded",
+            "stops": len(stops_list),
+            "message": "Paradas carregadas",
+        },
+    )
     if not stops:
         if debug_data is not None:
             debug_data.update(
@@ -180,7 +210,8 @@ def calcular_raio(
                     "polygon_features": 0,
                 }
             )
-            debug_callback(debug_data)
+            if debug_callback:
+                debug_callback(debug_data)
         return {"type": "FeatureCollection", "features": []}
 
     coords = [(s.stop_lat, s.stop_lon) for s in stops_list]
@@ -188,6 +219,16 @@ def calcular_raio(
     index_by_stop = {sid: idx for idx, sid in enumerate(ids)}
     tree = KDTree(coords)
     deg_walk = CAMINHADA_MAX_METROS / 111_320
+
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "status",
+            "stage": "spatial_index",
+            "message": "Índice espacial construído",
+            "walk_radius_m": CAMINHADA_MAX_METROS,
+        },
+    )
 
     # CSA connections
     horizon_abs = hora_ini_min + max_min + BUFFER_HORIZONTE_MIN
@@ -201,6 +242,15 @@ def calcular_raio(
     if debug_data is not None:
         debug_data["initial_walk_stops"] = len(initial_walk_stops)
 
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "initial_walk",
+            "count": len(initial_walk_stops),
+            "message": "Paradas alcançáveis a pé identificadas",
+        },
+    )
+
     for i in initial_walk_stops:
         sid = ids[i]
         arr = hora_ini_min + tempo_caminhada(haversine_m(lat, lon, *coords[i]))
@@ -210,6 +260,8 @@ def calcular_raio(
     expanded_nodes = 0
     walking_relaxations = 0
     connection_relaxations = 0
+    emitted_progress = 0
+
     while pq:
         t_cur, sid = heapq.heappop(pq)
         if t_cur > eat[sid] or t_cur - hora_ini_min > max_min:
@@ -241,6 +293,18 @@ def calcular_raio(
                 eat[c.arr_stop] = c.arr_min
                 heapq.heappush(pq, (c.arr_min, c.arr_stop))
 
+        if progress_callback and expanded_nodes - emitted_progress >= 100:
+            emitted_progress = expanded_nodes
+            _emit_progress(
+                progress_callback,
+                {
+                    "event": "progress",
+                    "expanded_nodes": expanded_nodes,
+                    "queue_size": len(pq),
+                    "message": "Explorando rede de transporte",
+                },
+            )
+
     # ----------- Build walking buffers -----------
     if debug_data is not None:
         debug_data.update(
@@ -265,13 +329,23 @@ def calcular_raio(
                     "polygon_features": 0,
                 }
             )
-            debug_callback(debug_data)
+            if debug_callback:
+                debug_callback(debug_data)
         return {"type": "FeatureCollection", "features": []}
 
     transformer_to_m = Transformer.from_crs("epsg:4326", "epsg:3857", always_xy=True)
     transformer_to_deg = Transformer.from_crs("epsg:3857", "epsg:4326", always_xy=True)
 
     buffers = []
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "status",
+            "stage": "buffering",
+            "message": "Gerando buffers de caminhada",
+            "reachable_nodes": len(eat),
+        },
+    )
     for sid, arr in eat.items():
         delta = arr - hora_ini_min
         if delta > max_min:
@@ -285,7 +359,34 @@ def calcular_raio(
         if not stop:
             continue
         x, y = transformer_to_m.transform(stop.stop_lon, stop.stop_lat)
-        buffers.append(ShpPoint(x, y).buffer(dist_m))
+        buffer_geom_m = ShpPoint(x, y).buffer(dist_m)
+        buffers.append(buffer_geom_m)
+        if progress_callback:
+            buffer_geojson = mapping(
+                shp_transform(
+                    lambda x, y, z=None: transformer_to_deg.transform(x, y),
+                    buffer_geom_m,
+                )
+            )
+            _emit_progress(
+                progress_callback,
+                {
+                    "event": "buffer",
+                    "stop_id": sid,
+                    "remaining_minutes": round(restante, 2),
+                    "geometry": buffer_geojson,
+                },
+            )
+
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "status",
+            "stage": "union",
+            "message": "Unificando geometrias",
+            "buffers": len(buffers),
+        },
+    )
 
     area_union_m = unary_union(buffers) if buffers else None
 
@@ -314,23 +415,38 @@ def calcular_raio(
 
     # Pontos opcionais para debug/visualização
     reachable_within_horizon = 0
+    point_batch: List[Dict[str, object]] = []
+    batch_size = 50
     for sid, arr in eat.items():
         if arr - hora_ini_min <= max_min:
             reachable_within_horizon += 1
             s = stops.get(sid)
             if not s:
                 continue
-            features.append(
-                {
-                    "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [s.stop_lon, s.stop_lat]},
-                    "properties": {
-                        "stop_id": sid,
-                        "stop_name": s.stop_name,
-                        "tempo_min": round(arr - hora_ini_min, 1),
-                    },
-                }
-            )
+            point_feature = {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [s.stop_lon, s.stop_lat]},
+                "properties": {
+                    "stop_id": sid,
+                    "stop_name": s.stop_name,
+                    "tempo_min": round(arr - hora_ini_min, 1),
+                },
+            }
+            features.append(point_feature)
+            if progress_callback:
+                point_batch.append(point_feature)
+                if len(point_batch) >= batch_size:
+                    _emit_progress(
+                        progress_callback,
+                        {
+                            "event": "points",
+                            "features": point_batch.copy(),
+                        },
+                    )
+                    point_batch.clear()
+
+    if progress_callback and point_batch:
+        _emit_progress(progress_callback, {"event": "points", "features": point_batch.copy()})
 
     if debug_data is not None:
         point_features = sum(
@@ -355,6 +471,18 @@ def calcular_raio(
                 "union_geometry_type": area_union_deg.geom_type if area_union_deg else None,
             }
         )
-        debug_callback(debug_data)
+        if debug_callback:
+            debug_callback(debug_data)
 
-    return {"type": "FeatureCollection", "features": features}
+    result = {"type": "FeatureCollection", "features": features}
+
+    _emit_progress(
+        progress_callback,
+        {
+            "event": "complete",
+            "geojson": result,
+            "message": "Cálculo concluído",
+        },
+    )
+
+    return result

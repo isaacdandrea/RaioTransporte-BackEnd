@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Monitoramento em Tempo Real - Raio de Alcance</title>
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha512-sA+e2ZKpK1iD7xE+nobBOhtSGcVwqDAVBBusZT6F4LmSpaV0Uy1Ik5+pUvNbK/CtYQgQki71RkVQUNBM8bY+AA=="
+        crossorigin=""
+    />
+    <style>
+        body {
+            font-family: "Inter", "Segoe UI", sans-serif;
+            margin: 0;
+            background: #0f172a;
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            padding: 1.5rem 2rem 1rem;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(6px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 0;
+        }
+        .control-panel {
+            background: rgba(15, 23, 42, 0.9);
+            border-right: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        label {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.85rem;
+            color: #cbd5f5;
+            gap: 0.4rem;
+        }
+        input,
+        select {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+        button {
+            background: linear-gradient(135deg, #38bdf8, #6366f1);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.25);
+        }
+        .status {
+            min-height: 3.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .status strong {
+            color: #38bdf8;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+        }
+        .metrics {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            display: grid;
+            gap: 0.4rem;
+        }
+        .metrics .value {
+            font-weight: 600;
+            color: #f97316;
+        }
+        .layer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+        .layer-toggle input {
+            width: auto;
+        }
+        @media (max-width: 960px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            .control-panel {
+                border-right: none;
+                border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+            }
+            #map {
+                min-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Monitoramento do Raio de Alcance em Tempo Real</h1>
+        <p>Observe em tempo real o cálculo da isócrona e o avanço do algoritmo de mobilidade.</p>
+    </header>
+    <main>
+        <section class="control-panel">
+            <form id="raio-form">
+                <label>
+                    Latitude
+                    <input type="number" step="any" id="lat" name="lat" required value="-23.5505" />
+                </label>
+                <label>
+                    Longitude
+                    <input type="number" step="any" id="lon" name="lon" required value="-46.6333" />
+                </label>
+                <label>
+                    Tempo máximo (minutos)
+                    <input type="number" min="5" max="180" id="tempo" name="tempo" value="30" required />
+                </label>
+                <label>
+                    Preset de dia/horário
+                    <select id="preset" name="presetsDia">
+                        <option value="DEFAULT">Padrão (terça-feira 15h)</option>
+                        <option value="DIA_SEMANA_TRAFEGO">Dia útil em horário de pico</option>
+                        <option value="FINAL_DE_SEMANA">Final de semana</option>
+                    </select>
+                </label>
+                <label>
+                    Chave de API (opcional)
+                    <input type="text" id="api-key" name="apiKey" placeholder="X-API-Key" autocomplete="off" />
+                </label>
+                <div class="layer-toggle">
+                    <input type="checkbox" id="show-points" checked />
+                    <label for="show-points">Exibir pontos de parada acessíveis</label>
+                </div>
+                <button type="submit">Iniciar monitoramento</button>
+            </form>
+            <div class="status" id="status">Pronto para iniciar o cálculo.</div>
+            <div class="metrics" id="metrics">
+                <div>Paradas avaliadas: <span class="value" id="metric-expanded">0</span></div>
+                <div>Buffers gerados: <span class="value" id="metric-buffers">0</span></div>
+                <div>Paradas acessíveis: <span class="value" id="metric-points">0</span></div>
+            </div>
+            <div class="status" id="cache-indicator" style="display: none;">
+                O resultado foi entregue a partir do cache. Animação em tempo real desativada.
+            </div>
+        </section>
+        <section id="map"></section>
+    </main>
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha512-vRM2E1GONb5wlt3F4iAfDdc/K1Ji/7luWGINuDhcE7PK5EONosFVJeFt3LEMhQPzN0pG1JyP3Lr3GLT6rYb3yg=="
+        crossorigin=""
+    ></script>
+    <script>
+        const form = document.getElementById('raio-form');
+        const statusBox = document.getElementById('status');
+        const cacheIndicator = document.getElementById('cache-indicator');
+        const expandedMetric = document.getElementById('metric-expanded');
+        const buffersMetric = document.getElementById('metric-buffers');
+        const pointsMetric = document.getElementById('metric-points');
+        const showPointsToggle = document.getElementById('show-points');
+
+        const streamEndpoint = "{{ stream_endpoint }}";
+        const apiEndpoint = "{{ api_endpoint }}";
+
+        const map = L.map('map', {
+            center: [-23.5505, -46.6333],
+            zoom: 12,
+            zoomControl: true,
+        });
+
+        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores'
+        });
+        tileLayer.addTo(map);
+
+        const bufferLayer = L.geoJSON([], {
+            style: {
+                color: '#38bdf8',
+                weight: 2,
+                fillOpacity: 0.2,
+            }
+        }).addTo(map);
+
+        const unionLayer = L.geoJSON([], {
+            style: {
+                color: '#6366f1',
+                weight: 2,
+                fillOpacity: 0.25,
+            },
+            filter: function (feature) {
+                const type = feature?.geometry?.type;
+                return type === 'Polygon' || type === 'MultiPolygon';
+            }
+        }).addTo(map);
+
+        const pointsLayer = L.geoJSON([], {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, {
+                    radius: 4,
+                    fillColor: '#f97316',
+                    color: '#f97316',
+                    weight: 1,
+                    fillOpacity: 0.85,
+                }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`);
+            }
+        }).addTo(map);
+
+        showPointsToggle.addEventListener('change', () => {
+            if (showPointsToggle.checked) {
+                map.addLayer(pointsLayer);
+            } else {
+                map.removeLayer(pointsLayer);
+            }
+        });
+
+        function resetLayers() {
+            bufferLayer.clearLayers();
+            unionLayer.clearLayers();
+            pointsLayer.clearLayers();
+            expandedMetric.textContent = '0';
+            buffersMetric.textContent = '0';
+            pointsMetric.textContent = '0';
+        }
+
+        function updateStatus(message) {
+            statusBox.innerHTML = message;
+        }
+
+        function handleBufferEvent(event) {
+            if (event.geometry) {
+                buffersMetric.textContent = Number(buffersMetric.textContent) + 1;
+                bufferLayer.addData(event.geometry);
+                const bounds = bufferLayer.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds.pad(0.25));
+                }
+            }
+        }
+
+        function handlePointsEvent(event) {
+            if (!Array.isArray(event.features)) {
+                return;
+            }
+            pointsMetric.textContent = Number(pointsMetric.textContent) + event.features.length;
+            if (showPointsToggle.checked) {
+                pointsLayer.addData(event.features);
+            }
+        }
+
+        function handleCompleteEvent(event) {
+            if (event.geojson) {
+                bufferLayer.clearLayers();
+                unionLayer.clearLayers();
+                pointsLayer.clearLayers();
+
+                unionLayer.addData(event.geojson);
+                const pointFeatures = (event.geojson.features || []).filter(
+                    (feature) => feature?.geometry?.type === 'Point'
+                );
+                if (pointFeatures.length && showPointsToggle.checked) {
+                    pointsLayer.addData(pointFeatures);
+                }
+                pointsMetric.textContent = pointFeatures.length.toString();
+                const polygonCount = (event.geojson.features || []).filter(
+                    (feature) => {
+                        const type = feature?.geometry?.type;
+                        return type === 'Polygon' || type === 'MultiPolygon';
+                    }
+                ).length;
+                buffersMetric.textContent = polygonCount.toString();
+
+                const bounds = unionLayer.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds.pad(0.2));
+                }
+            }
+            updateStatus('<strong>Processo concluído.</strong> Resultado final renderizado.');
+        }
+
+        function parseStream(reader) {
+            const decoder = new TextDecoder();
+            let buffered = '';
+
+            function readChunk() {
+                return reader.read().then(({ value, done }) => {
+                    if (done) {
+                        if (buffered.trim()) {
+                            processLine(buffered);
+                        }
+                        return;
+                    }
+                    buffered += decoder.decode(value, { stream: true });
+                    const lines = buffered.split('\n');
+                    buffered = lines.pop();
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            processLine(line.trim());
+                        }
+                    }
+                    return readChunk();
+                });
+            }
+
+            function processLine(line) {
+                try {
+                    const event = JSON.parse(line);
+                    if (event.event === 'status') {
+                        const stage = event.stage ? ` <small style="color:#94a3b8">(${event.stage})</small>` : '';
+                        updateStatus(`<strong>${event.message || 'Atualizando'}</strong>${stage}`);
+                    } else if (event.event === 'progress') {
+                        if (typeof event.expanded_nodes === 'number') {
+                            expandedMetric.textContent = event.expanded_nodes.toString();
+                        }
+                        updateStatus(`Exploração em andamento — nós expandidos: <strong>${event.expanded_nodes}</strong>`);
+                    } else if (event.event === 'initial_walk') {
+                        updateStatus(`Paradas acessíveis a pé: <strong>${event.count}</strong>`);
+                    } else if (event.event === 'buffer') {
+                        handleBufferEvent(event);
+                    } else if (event.event === 'points') {
+                        handlePointsEvent(event);
+                    } else if (event.event === 'complete') {
+                        handleCompleteEvent(event);
+                    } else if (event.event === 'error') {
+                        updateStatus(`<strong>Erro:</strong> ${event.message || 'Falha inesperada.'}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao interpretar evento do stream', error, line);
+                }
+            }
+
+            return readChunk();
+        }
+
+        async function fetchStream(payload, headers) {
+            const response = await fetch(streamEndpoint, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                throw new Error(errorBody.error || 'Falha ao iniciar stream.');
+            }
+
+            const contentType = response.headers.get('Content-Type') || '';
+            if (!contentType.includes('application/x-ndjson')) {
+                // Provavelmente veio do cache.
+                const data = await response.json();
+                cacheIndicator.style.display = 'block';
+                if (data.payload) {
+                    handleCompleteEvent({ geojson: data.payload });
+                    updateStatus('<strong>Resultado recuperado do cache.</strong> Sem animação em tempo real.');
+                }
+                return;
+            }
+
+            cacheIndicator.style.display = 'none';
+            await parseStream(response.body.getReader());
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            resetLayers();
+            updateStatus('Iniciando cálculo...');
+            cacheIndicator.style.display = 'none';
+
+            const payload = {
+                lat: parseFloat(document.getElementById('lat').value),
+                lon: parseFloat(document.getElementById('lon').value),
+                tempo: parseInt(document.getElementById('tempo').value, 10),
+                presetsDia: document.getElementById('preset').value,
+            };
+
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            const apiKey = document.getElementById('api-key').value.trim();
+            if (apiKey) {
+                headers['X-API-Key'] = apiKey;
+                localStorage.setItem('raioMonitorApiKey', apiKey);
+            }
+
+            try {
+                await fetchStream(payload, headers);
+            } catch (error) {
+                updateStatus(`<strong>Erro:</strong> ${error.message}`);
+                console.error(error);
+            }
+        });
+
+        // Restaurar API key salva anteriormente.
+        const savedKey = localStorage.getItem('raioMonitorApiKey');
+        if (savedKey) {
+            document.getElementById('api-key').value = savedKey;
+        }
+    </script>
+</body>
+</html>
