@@ -72,7 +72,11 @@ def _list_setting(var_name: str, default: List[str]) -> List[str]:
     return [item for item in value if item]
 
 
-ALLOWED_HOSTS = _list_setting("ALLOWED_HOSTS", default=["*"] if DEBUG else [])
+_DEFAULT_ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = _list_setting(
+    "ALLOWED_HOSTS",
+    default=["*"] if DEBUG else _DEFAULT_ALLOWED_HOSTS,
+)
 if SERVICE_BASE_URLS:
     ALLOWED_HOSTS = extend_allowed_hosts(ALLOWED_HOSTS, SERVICE_BASE_URLS)
 
