@@ -26,25 +26,16 @@
             }
 
             header {
-                padding: 1.25rem 2rem 1rem;
+                padding: 1.75rem 2rem;
                 background: rgba(11, 18, 32, 0.9);
                 border-bottom: 1px solid rgba(148, 163, 184, 0.25);
                 backdrop-filter: blur(8px);
                 position: sticky;
                 top: 0;
                 z-index: 10;
-            }
-
-            header h1 {
-                margin: 0 0 0.35rem;
-                font-size: 1.5rem;
-                font-weight: 600;
-            }
-
-            header p {
-                margin: 0;
-                font-size: 0.95rem;
-                color: #94a3b8;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
 
             main {
@@ -78,8 +69,15 @@
             }
 
             .status-box {
-                font-size: 0.95rem;
+                font-size: 1.05rem;
                 line-height: 1.45;
+            }
+
+            .header-status {
+                padding: 1.35rem 1.75rem;
+                text-align: center;
+                font-size: 1.1rem;
+                max-width: min(720px, 100%);
             }
 
             .status-box strong {
@@ -206,19 +204,13 @@
     </head>
     <body>
         <header>
-            <h1>Painel de Visualização em Tempo Real</h1>
-            <p>
-                Acompanhe execuções do cálculo de raio em tempo real. Inclua
-                <code>isMapVisualizer=true</code> nos requests para transmitir os
-                eventos.
-            </p>
+            <div class="card status-box idle header-status" id="status">
+                Aguardando execução com <strong>isMapVisualizer=true</strong>.
+            </div>
         </header>
         <main>
             <div id="map"></div>
             <aside class="hud">
-                <div class="card status-box idle" id="status">
-                    Aguardando execução com <strong>isMapVisualizer=true</strong>.
-                </div>
                 <div class="card">
                     <div class="controls">
                         <div class="indicator" id="connection-indicator" data-state="closed">
@@ -320,11 +312,11 @@
             const pointsLayer = L.geoJSON([], {
                 pointToLayer: (feature, latlng) =>
                     L.circleMarker(latlng, {
-                        radius: 4,
+                        radius: 2,
                         fillColor: '#f97316',
                         color: '#f97316',
-                        weight: 1,
-                        fillOpacity: 0.85,
+                        weight: 0.75,
+                        fillOpacity: 0.75,
                     }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`),
             }).addTo(map);
 
