@@ -25,35 +25,13 @@
                 flex-direction: column;
             }
 
-            header {
-                padding: 1.25rem 2rem 1rem;
-                background: rgba(11, 18, 32, 0.9);
-                border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-                backdrop-filter: blur(8px);
-                position: sticky;
-                top: 0;
-                z-index: 10;
-            }
-
-            header h1 {
-                margin: 0 0 0.35rem;
-                font-size: 1.5rem;
-                font-weight: 600;
-            }
-
-            header p {
-                margin: 0;
-                font-size: 0.95rem;
-                color: #94a3b8;
-            }
-
             main {
                 flex: 1;
                 position: relative;
             }
 
             #map {
-                height: calc(100vh - 90px);
+                height: 100vh;
                 width: 100%;
             }
 
@@ -78,8 +56,24 @@
             }
 
             .status-box {
-                font-size: 0.95rem;
+                font-size: 1.05rem;
                 line-height: 1.45;
+            }
+
+            .status-overlay {
+                position: absolute;
+                top: 1.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 410;
+                display: flex;
+                justify-content: center;
+                width: min(720px, 95vw);
+                pointer-events: none;
+            }
+
+            .status-overlay .status-box {
+                pointer-events: auto;
             }
 
             .status-box strong {
@@ -189,12 +183,9 @@
             }
 
             @media (max-width: 768px) {
-                header {
-                    padding: 1rem 1.25rem;
-                }
-
-                #map {
-                    height: calc(100vh - 140px);
+                .status-overlay {
+                    top: 1rem;
+                    width: calc(100% - 2.5rem);
                 }
 
                 .hud {
@@ -205,20 +196,14 @@
         </style>
     </head>
     <body>
-        <header>
-            <h1>Painel de Visualização em Tempo Real</h1>
-            <p>
-                Acompanhe execuções do cálculo de raio em tempo real. Inclua
-                <code>isMapVisualizer=true</code> nos requests para transmitir os
-                eventos.
-            </p>
-        </header>
         <main>
             <div id="map"></div>
-            <aside class="hud">
+            <div class="status-overlay">
                 <div class="card status-box idle" id="status">
                     Aguardando execução com <strong>isMapVisualizer=true</strong>.
                 </div>
+            </div>
+            <aside class="hud">
                 <div class="card">
                     <div class="controls">
                         <div class="indicator" id="connection-indicator" data-state="closed">
@@ -293,9 +278,10 @@
             const durationMetric = document.getElementById('metric-duration');
             const showPointsToggle = document.getElementById('show-points');
 
+            const MIN_POINTS_ZOOM = 13;
             const map = L.map('map', {
                 center: [-23.5505, -46.6333],
-                zoom: 12,
+                zoom: 14,
                 zoomControl: true,
             });
 
@@ -319,24 +305,35 @@
 
             const pointsLayer = L.geoJSON([], {
                 pointToLayer: (feature, latlng) =>
-                    L.circleMarker(latlng, {
-                        radius: 4,
+                    L.circle(latlng, {
+                        radius: 25,
                         fillColor: '#f97316',
                         color: '#f97316',
-                        weight: 1,
-                        fillOpacity: 0.85,
+                        weight: 0.8,
+                        opacity: 0.75,
+                        fillOpacity: 0.75,
                     }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`),
-            }).addTo(map);
+            });
 
             const originLayer = L.layerGroup().addTo(map);
 
-            showPointsToggle.addEventListener('change', () => {
-                if (showPointsToggle.checked) {
-                    map.addLayer(pointsLayer);
-                } else {
+            function shouldDisplayPoints() {
+                return showPointsToggle.checked && map.getZoom() >= MIN_POINTS_ZOOM;
+            }
+
+            function updatePointsVisibility() {
+                if (shouldDisplayPoints()) {
+                    if (!map.hasLayer(pointsLayer)) {
+                        map.addLayer(pointsLayer);
+                    }
+                } else if (map.hasLayer(pointsLayer)) {
                     map.removeLayer(pointsLayer);
                 }
-            });
+            }
+
+            showPointsToggle.addEventListener('change', updatePointsVisibility);
+            map.on('zoomend', updatePointsVisibility);
+            updatePointsVisibility();
 
             let currentRunId = null;
             let reconnectDelay = 1500;
@@ -354,6 +351,7 @@
                 buffersMetric.textContent = '0';
                 pointsMetric.textContent = '0';
                 durationMetric.textContent = '–';
+                updatePointsVisibility();
             }
 
             function updateStatus(message, variant = 'default') {
@@ -386,7 +384,10 @@
                         fillOpacity: 0.2,
                     }).bindPopup('Origem da requisição');
                     originLayer.addLayer(marker);
-                    map.setView([event.lat, event.lon], 13);
+                    map.flyTo([event.lat, event.lon], 15, {
+                        animate: true,
+                        duration: 0.6,
+                    });
                 } else {
                     metadataLat.textContent = '–';
                     metadataLon.textContent = '–';
@@ -468,9 +469,8 @@
                 pointsMetric.textContent = (
                     Number(pointsMetric.textContent) + event.features.length
                 ).toString();
-                if (showPointsToggle.checked) {
-                    pointsLayer.addData(event.features);
-                }
+                pointsLayer.addData(event.features);
+                updatePointsVisibility();
             }
 
             function handleCompleteEvent(event) {
@@ -483,8 +483,9 @@
                 const pointFeatures = (event.geojson.features || []).filter(
                     (feature) => feature?.geometry?.type === 'Point'
                 );
-                if (pointFeatures.length && showPointsToggle.checked) {
+                if (pointFeatures.length) {
                     pointsLayer.addData(pointFeatures);
+                    updatePointsVisibility();
                 }
                 pointsMetric.textContent = pointFeatures.length.toString();
                 const polygonCount = countPolygonGeometries(event.geojson);
@@ -609,32 +610,42 @@
 
                 if (!clipping || typeof clipping.union !== 'function') {
                     console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
-                    let adjusted = false;
+                    let fittedBounds = null;
+
+                    function updateView(bounds) {
+                        if (!bounds || !bounds.isValid()) {
+                            return;
+                        }
+                        const padded = bounds.pad(fitPadding);
+                        if (!padded.isValid()) {
+                            return;
+                        }
+                        if (fittedBounds && fittedBounds.contains(padded)) {
+                            return;
+                        }
+                        fittedBounds = padded;
+                        map.flyToBounds(padded, {
+                            animate: true,
+                            duration: 0.75,
+                            easeLinearity: 0.25,
+                        });
+                    }
+
                     return {
                         enqueue: (geometry) => {
                             unionLayer.addData(geometry);
-                            if (!adjusted) {
-                                const bounds = unionLayer.getBounds();
-                                if (bounds.isValid()) {
-                                    map.fitBounds(bounds.pad(fitPadding));
-                                    adjusted = true;
-                                }
-                            }
+                            updateView(unionLayer.getBounds());
                         },
                         reset: () => {
-                            adjusted = false;
+                            fittedBounds = null;
                             unionLayer.clearLayers();
                         },
                         replaceWithGeometry: (geojson) => {
-                            adjusted = false;
+                            fittedBounds = null;
                             unionLayer.clearLayers();
                             if (geojson) {
                                 unionLayer.addData(geojson);
-                                const bounds = unionLayer.getBounds();
-                                if (bounds.isValid()) {
-                                    map.fitBounds(bounds.pad(fitPadding));
-                                    adjusted = true;
-                                }
+                                updateView(unionLayer.getBounds());
                             }
                         },
                     };
@@ -644,9 +655,28 @@
                 let queue = [];
                 let queueIndex = 0;
                 let scheduled = false;
-                let hasAdjustedView = false;
+                let fittedBounds = null;
                 const MAX_BATCH = 50;
                 const MAX_TIME_MS = 12;
+
+                function updateView(bounds) {
+                    if (!bounds || !bounds.isValid()) {
+                        return;
+                    }
+                    const padded = bounds.pad(fitPadding);
+                    if (!padded.isValid()) {
+                        return;
+                    }
+                    if (fittedBounds && fittedBounds.contains(padded)) {
+                        return;
+                    }
+                    fittedBounds = padded;
+                    map.flyToBounds(padded, {
+                        animate: true,
+                        duration: 0.75,
+                        easeLinearity: 0.25,
+                    });
+                }
 
                 function combinePolygons(base, addition) {
                     if (!addition) {
@@ -731,13 +761,7 @@
                         return;
                     }
                     unionLayer.addData(feature);
-                    if (!hasAdjustedView) {
-                        const bounds = unionLayer.getBounds();
-                        if (bounds.isValid()) {
-                            map.fitBounds(bounds.pad(fitPadding));
-                            hasAdjustedView = true;
-                        }
-                    }
+                    updateView(unionLayer.getBounds());
                 }
 
                 return {
@@ -754,7 +778,7 @@
                         queue = [];
                         queueIndex = 0;
                         scheduled = false;
-                        hasAdjustedView = false;
+                        fittedBounds = null;
                         unionLayer.clearLayers();
                     },
                     replaceWithGeometry: (geojson) => {
@@ -762,7 +786,7 @@
                         queue = [];
                         queueIndex = 0;
                         scheduled = false;
-                        hasAdjustedView = false;
+                        fittedBounds = null;
                         unionLayer.clearLayers();
                         if (geojson) {
                             const polygons = flattenToPolygons(geojson);
