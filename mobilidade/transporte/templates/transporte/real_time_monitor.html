@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Visualizador de Cálculo em Tempo Real</title>
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+            crossorigin="anonymous"
+        />
+        <style>
+            :root {
+                color-scheme: dark;
+                font-family: "Inter", "Segoe UI", sans-serif;
+            }
+
+            body {
+                margin: 0;
+                background: #0b1220;
+                color: #e2e8f0;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            main {
+                flex: 1;
+                position: relative;
+            }
+
+            #map {
+                height: 100vh;
+                width: 100%;
+            }
+
+            .hud {
+                position: absolute;
+                top: 1.5rem;
+                right: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                z-index: 400;
+                max-width: min(420px, 90vw);
+            }
+
+            .card {
+                background: rgba(15, 23, 42, 0.88);
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                border-radius: 14px;
+                padding: 1rem 1.1rem;
+                box-shadow: 0 24px 40px rgba(15, 23, 42, 0.32);
+                backdrop-filter: blur(12px);
+            }
+
+            .status-box {
+                font-size: 1.05rem;
+                line-height: 1.45;
+            }
+
+            .status-overlay {
+                position: absolute;
+                top: 1.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 410;
+                display: flex;
+                justify-content: center;
+                width: min(720px, 95vw);
+                pointer-events: none;
+            }
+
+            .status-overlay .status-box {
+                pointer-events: auto;
+            }
+
+            .status-box strong {
+                color: #38bdf8;
+            }
+
+            .status-box.error strong {
+                color: #f87171;
+            }
+
+            .status-box.cache strong {
+                color: #facc15;
+            }
+
+            .status-box.idle {
+                color: #94a3b8;
+            }
+
+            .indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #94a3b8;
+            }
+
+            .indicator::before {
+                content: "";
+                width: 0.55rem;
+                height: 0.55rem;
+                border-radius: 999px;
+                background: #94a3b8;
+                box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+            }
+
+            .indicator[data-state="open"]::before {
+                background: #34d399;
+                box-shadow: 0 0 18px rgba(52, 211, 153, 0.4);
+            }
+
+            .indicator[data-state="connecting"]::before {
+                background: #facc15;
+            }
+
+            .indicator[data-state="error"]::before,
+            .indicator[data-state="closed"]::before {
+                background: #f87171;
+            }
+
+            .meta-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem 0.9rem;
+                font-size: 0.85rem;
+                color: #cbd5f5;
+            }
+
+            .meta-grid span {
+                display: block;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #64748b;
+                margin-bottom: 0.15rem;
+            }
+
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+
+            .metric {
+                display: flex;
+                flex-direction: column;
+                gap: 0.15rem;
+                font-size: 0.8rem;
+                color: #94a3b8;
+            }
+
+            .metric .value {
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: #f97316;
+            }
+
+            .controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+
+            .toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                font-size: 0.8rem;
+                color: #94a3b8;
+            }
+
+            .toggle input {
+                width: auto;
+            }
+
+            @media (max-width: 768px) {
+                .status-overlay {
+                    top: 1rem;
+                    width: calc(100% - 2.5rem);
+                }
+
+                .hud {
+                    position: static;
+                    padding: 1.25rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div id="map"></div>
+            <div class="status-overlay">
+                <div class="card status-box idle" id="status">
+                    Aguardando execução com <strong>isMapVisualizer=true</strong>.
+                </div>
+            </div>
+            <aside class="hud">
+                <div class="card">
+                    <div class="controls">
+                        <div class="indicator" id="connection-indicator" data-state="closed">
+                            desconectado
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="show-points" checked />
+                            Exibir paradas acessíveis
+                        </label>
+                    </div>
+                    <div class="meta-grid" id="run-metadata">
+                        <div>
+                            <span>Latitude</span>
+                            <strong id="meta-lat">–</strong>
+                        </div>
+                        <div>
+                            <span>Longitude</span>
+                            <strong id="meta-lon">–</strong>
+                        </div>
+                        <div>
+                            <span>Horizonte (min)</span>
+                            <strong id="meta-horizon">–</strong>
+                        </div>
+                        <div>
+                            <span>Dia / horário</span>
+                            <strong id="meta-dia">–</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span>Paradas avaliadas</span>
+                            <div class="value" id="metric-expanded">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Buffers gerados</span>
+                            <div class="value" id="metric-buffers">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Paradas acessíveis</span>
+                            <div class="value" id="metric-points">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Duração algoritmo</span>
+                            <div class="value" id="metric-duration">–</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        <script
+            src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://unpkg.com/martinez-polygon-clipping@0.7.1/dist/martinez.min.js"
+            crossorigin="anonymous"
+        ></script>
+        <script>
+            const streamEndpoint = "{{ visualizer_stream_endpoint }}";
+            const statusBox = document.getElementById('status');
+            const connectionIndicator = document.getElementById('connection-indicator');
+            const metadataLat = document.getElementById('meta-lat');
+            const metadataLon = document.getElementById('meta-lon');
+            const metadataHorizon = document.getElementById('meta-horizon');
+            const metadataDia = document.getElementById('meta-dia');
+            const expandedMetric = document.getElementById('metric-expanded');
+            const buffersMetric = document.getElementById('metric-buffers');
+            const pointsMetric = document.getElementById('metric-points');
+            const durationMetric = document.getElementById('metric-duration');
+            const showPointsToggle = document.getElementById('show-points');
+
+            const MIN_POINTS_ZOOM = 13;
+            const map = L.map('map', {
+                center: [-23.5505, -46.6333],
+                zoom: 14,
+                zoomControl: true,
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores',
+            }).addTo(map);
+
+            const unionLayer = L.geoJSON([], {
+                style: {
+                    color: '#38bdf8',
+                    weight: 2,
+                    fillOpacity: 0.22,
+                },
+                filter: (feature) => {
+                    const type = feature?.geometry?.type;
+                    return type === 'Polygon' || type === 'MultiPolygon';
+                },
+            }).addTo(map);
+
+            const bufferUnionManager = createBufferUnionManager({ unionLayer, map });
+
+            const pointsLayer = L.geoJSON([], {
+                pointToLayer: (feature, latlng) =>
+                    L.circle(latlng, {
+                        radius: 25,
+                        fillColor: '#f97316',
+                        color: '#f97316',
+                        weight: 0.8,
+                        opacity: 0.75,
+                        fillOpacity: 0.75,
+                    }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`),
+            });
+
+            const originLayer = L.layerGroup().addTo(map);
+
+            function shouldDisplayPoints() {
+                return showPointsToggle.checked && map.getZoom() >= MIN_POINTS_ZOOM;
+            }
+
+            function updatePointsVisibility() {
+                if (shouldDisplayPoints()) {
+                    if (!map.hasLayer(pointsLayer)) {
+                        map.addLayer(pointsLayer);
+                    }
+                } else if (map.hasLayer(pointsLayer)) {
+                    map.removeLayer(pointsLayer);
+                }
+            }
+
+            showPointsToggle.addEventListener('change', updatePointsVisibility);
+            map.on('zoomend', updatePointsVisibility);
+            updatePointsVisibility();
+
+            let currentRunId = null;
+            let reconnectDelay = 1500;
+
+            function setConnectionState(state, label) {
+                connectionIndicator.dataset.state = state;
+                connectionIndicator.textContent = label;
+            }
+
+            function resetMap() {
+                bufferUnionManager.reset();
+                pointsLayer.clearLayers();
+                originLayer.clearLayers();
+                expandedMetric.textContent = '0';
+                buffersMetric.textContent = '0';
+                pointsMetric.textContent = '0';
+                durationMetric.textContent = '–';
+                updatePointsVisibility();
+            }
+
+            function updateStatus(message, variant = 'default') {
+                statusBox.classList.remove('error', 'cache', 'idle');
+                if (variant === 'error') {
+                    statusBox.classList.add('error');
+                } else if (variant === 'cache') {
+                    statusBox.classList.add('cache');
+                } else if (variant === 'idle') {
+                    statusBox.classList.add('idle');
+                }
+                statusBox.innerHTML = message;
+            }
+
+            function clearMetadata() {
+                metadataLat.textContent = '–';
+                metadataLon.textContent = '–';
+                metadataHorizon.textContent = '–';
+                metadataDia.textContent = '–';
+            }
+
+            function updateMetadata(event) {
+                if (typeof event.lat === 'number' && typeof event.lon === 'number') {
+                    metadataLat.textContent = event.lat.toFixed(6);
+                    metadataLon.textContent = event.lon.toFixed(6);
+                    const marker = L.circleMarker([event.lat, event.lon], {
+                        radius: 6,
+                        weight: 2,
+                        color: '#38bdf8',
+                        fillOpacity: 0.2,
+                    }).bindPopup('Origem da requisição');
+                    originLayer.addLayer(marker);
+                    map.flyTo([event.lat, event.lon], 15, {
+                        animate: true,
+                        duration: 0.6,
+                    });
+                } else {
+                    metadataLat.textContent = '–';
+                    metadataLon.textContent = '–';
+                }
+                if (typeof event.tempo_min === 'number') {
+                    metadataHorizon.textContent = event.tempo_min.toString();
+                } else {
+                    metadataHorizon.textContent = '–';
+                }
+                if (event.dia_semana && event.hora_inicio_min !== undefined) {
+                    const horas = Math.floor(event.hora_inicio_min / 60)
+                        .toString()
+                        .padStart(2, '0');
+                    const minutos = (event.hora_inicio_min % 60)
+                        .toString()
+                        .padStart(2, '0');
+                    metadataDia.textContent = `${event.dia_semana} às ${horas}h${minutos}`;
+                } else {
+                    metadataDia.textContent = '–';
+                }
+            }
+
+            function countPolygonGeometries(geometry) {
+                let count = 0;
+
+                function traverse(node) {
+                    if (!node) {
+                        return;
+                    }
+                    if (Array.isArray(node)) {
+                        node.forEach(traverse);
+                        return;
+                    }
+                    switch (node.type) {
+                        case 'FeatureCollection':
+                            traverse(node.features || []);
+                            break;
+                        case 'Feature':
+                            traverse(node.geometry);
+                            break;
+                        case 'GeometryCollection':
+                            traverse(node.geometries || []);
+                            break;
+                        case 'Polygon':
+                            count += 1;
+                            break;
+                        case 'MultiPolygon':
+                            if (Array.isArray(node.coordinates)) {
+                                count += node.coordinates.length;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                traverse(geometry);
+                return count;
+            }
+
+            function handleBufferEvent(event) {
+                if (!event.geometry) {
+                    return;
+                }
+                const polygonsCount = countPolygonGeometries(event.geometry);
+                if (polygonsCount === 0) {
+                    return;
+                }
+                buffersMetric.textContent = (
+                    Number(buffersMetric.textContent) + polygonsCount
+                ).toString();
+                bufferUnionManager.enqueue(event.geometry);
+            }
+
+            function handlePointsEvent(event) {
+                if (!Array.isArray(event.features)) {
+                    return;
+                }
+                pointsMetric.textContent = (
+                    Number(pointsMetric.textContent) + event.features.length
+                ).toString();
+                pointsLayer.addData(event.features);
+                updatePointsVisibility();
+            }
+
+            function handleCompleteEvent(event) {
+                if (!event.geojson) {
+                    return;
+                }
+                bufferUnionManager.replaceWithGeometry(event.geojson);
+                pointsLayer.clearLayers();
+
+                const pointFeatures = (event.geojson.features || []).filter(
+                    (feature) => feature?.geometry?.type === 'Point'
+                );
+                if (pointFeatures.length) {
+                    pointsLayer.addData(pointFeatures);
+                    updatePointsVisibility();
+                }
+                pointsMetric.textContent = pointFeatures.length.toString();
+                const polygonCount = countPolygonGeometries(event.geojson);
+                buffersMetric.textContent = polygonCount.toString();
+            }
+
+            function flattenToPolygons(geometry) {
+                const polygons = [];
+
+                function sanitizePoint(point) {
+                    if (!Array.isArray(point) || point.length < 2) {
+                        return null;
+                    }
+                    const [x, y] = point;
+                    const nx = Number(x);
+                    const ny = Number(y);
+                    const isFiniteNumber = Number.isFinite || ((value) => isFinite(value));
+                    if (!isFiniteNumber(nx) || !isFiniteNumber(ny)) {
+                        return null;
+                    }
+                    return [nx, ny];
+                }
+
+                function clonePolygon(polygon) {
+                    if (!Array.isArray(polygon)) {
+                        return null;
+                    }
+                    const rings = polygon
+                        .map((ring) => {
+                            if (!Array.isArray(ring)) {
+                                return null;
+                            }
+                            const points = ring
+                                .map(sanitizePoint)
+                                .filter((point) => Array.isArray(point));
+                            if (points.length < 4) {
+                                return null;
+                            }
+                            const first = points[0];
+                            const last = points[points.length - 1];
+                            if (first && last && (first[0] !== last[0] || first[1] !== last[1])) {
+                                points.push([first[0], first[1]]);
+                            }
+                            return points.length >= 4 ? points : null;
+                        })
+                        .filter(Boolean);
+                    return rings.length ? rings : null;
+                }
+
+                function traverse(node) {
+                    if (!node) {
+                        return;
+                    }
+                    if (Array.isArray(node)) {
+                        node.forEach(traverse);
+                        return;
+                    }
+                    switch (node.type) {
+                        case 'FeatureCollection':
+                            traverse(node.features || []);
+                            break;
+                        case 'Feature':
+                            traverse(node.geometry);
+                            break;
+                        case 'GeometryCollection':
+                            traverse(node.geometries || []);
+                            break;
+                        case 'Polygon':
+                            if (Array.isArray(node.coordinates)) {
+                                const cloned = clonePolygon(node.coordinates);
+                                if (cloned && cloned.length) {
+                                    polygons.push(cloned);
+                                }
+                            }
+                            break;
+                        case 'MultiPolygon':
+                            if (Array.isArray(node.coordinates)) {
+                                node.coordinates.forEach((poly) => {
+                                    const cloned = clonePolygon(poly);
+                                    if (cloned && cloned.length) {
+                                        polygons.push(cloned);
+                                    }
+                                });
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                traverse(geometry);
+                return polygons;
+            }
+
+            function clipResultToFeature(result) {
+                if (!Array.isArray(result) || !result.length) {
+                    return null;
+                }
+                if (result.length === 1) {
+                    return {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: result[0],
+                        },
+                    };
+                }
+                return {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'MultiPolygon',
+                        coordinates: result,
+                    },
+                };
+            }
+
+            function createBufferUnionManager({ unionLayer, map, fitPadding = 0.25 }) {
+                const clipping =
+                    (typeof window !== 'undefined' && (window.polygonClipping || window.martinez)) || null;
+
+                if (!clipping || typeof clipping.union !== 'function') {
+                    console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
+                    let fittedBounds = null;
+                    let pendingFitBounds = null;
+                    let fitTimeoutId = null;
+
+                    function scheduleFit() {
+                        if (fitTimeoutId) {
+                            return;
+                        }
+                        fitTimeoutId = setTimeout(() => {
+                            fitTimeoutId = null;
+                            if (!pendingFitBounds) {
+                                return;
+                            }
+                            const targetBounds = pendingFitBounds;
+                            pendingFitBounds = null;
+                            fittedBounds = targetBounds;
+                            map.flyToBounds(targetBounds, {
+                                animate: true,
+                                duration: 0.75,
+                                easeLinearity: 0.25,
+                            });
+                        }, 1000);
+                    }
+
+                    function updateView(bounds) {
+                        if (!bounds || !bounds.isValid()) {
+                            return;
+                        }
+                        const padded = bounds.pad(fitPadding);
+                        if (!padded.isValid()) {
+                            return;
+                        }
+                        if (fittedBounds && fittedBounds.contains(padded)) {
+                            return;
+                        }
+                        pendingFitBounds = padded;
+                        scheduleFit();
+                    }
+
+                    return {
+                        enqueue: (geometry) => {
+                            unionLayer.addData(geometry);
+                            updateView(unionLayer.getBounds());
+                        },
+                        reset: () => {
+                            fittedBounds = null;
+                            pendingFitBounds = null;
+                            if (fitTimeoutId) {
+                                clearTimeout(fitTimeoutId);
+                                fitTimeoutId = null;
+                            }
+                            unionLayer.clearLayers();
+                        },
+                        replaceWithGeometry: (geojson) => {
+                            fittedBounds = null;
+                            pendingFitBounds = null;
+                            if (fitTimeoutId) {
+                                clearTimeout(fitTimeoutId);
+                                fitTimeoutId = null;
+                            }
+                            unionLayer.clearLayers();
+                            if (geojson) {
+                                unionLayer.addData(geojson);
+                                updateView(unionLayer.getBounds());
+                            }
+                        },
+                    };
+                }
+
+                let unionState = null;
+                let queue = [];
+                let queueIndex = 0;
+                let scheduled = false;
+                let fittedBounds = null;
+                let pendingFitBounds = null;
+                let fitTimeoutId = null;
+                const MAX_BATCH = 50;
+                const MAX_TIME_MS = 12;
+
+                function updateView(bounds) {
+                    if (!bounds || !bounds.isValid()) {
+                        return;
+                    }
+                    const padded = bounds.pad(fitPadding);
+                    if (!padded.isValid()) {
+                        return;
+                    }
+                    if (fittedBounds && fittedBounds.contains(padded)) {
+                        return;
+                    }
+                    pendingFitBounds = padded;
+                    if (fitTimeoutId) {
+                        return;
+                    }
+                    fitTimeoutId = setTimeout(() => {
+                        fitTimeoutId = null;
+                        if (!pendingFitBounds) {
+                            return;
+                        }
+                        const targetBounds = pendingFitBounds;
+                        pendingFitBounds = null;
+                        fittedBounds = targetBounds;
+                        map.flyToBounds(targetBounds, {
+                            animate: true,
+                            duration: 0.75,
+                            easeLinearity: 0.25,
+                        });
+                    }, 1000);
+                }
+
+                function combinePolygons(base, addition) {
+                    if (!addition) {
+                        return base;
+                    }
+                    if (!base) {
+                        return addition;
+                    }
+                    try {
+                        return clipping.union(base, addition);
+                    } catch (error) {
+                        console.error('Falha ao unir buffers', error);
+                        return base;
+                    }
+                }
+
+                function scheduleProcess() {
+                    if (scheduled) {
+                        return;
+                    }
+                    scheduled = true;
+                    const scheduler =
+                        window.requestIdleCallback ||
+                        ((callback) => window.requestAnimationFrame(() => callback())) ||
+                        ((callback) => setTimeout(() => callback(), 16));
+                    scheduler(processQueue);
+                }
+
+                function processQueue(deadline) {
+                    scheduled = false;
+                    const start = performance.now();
+                    let processed = 0;
+
+                    while (queueIndex < queue.length) {
+                        const startIndex = queueIndex;
+                        const end = Math.min(queueIndex + MAX_BATCH, queue.length);
+                        const batchUnion = mergeBatch(startIndex, end);
+                        queueIndex = end;
+                        unionState = combinePolygons(unionState, batchUnion);
+                        processed += end - startIndex;
+
+                        if (deadline && typeof deadline.timeRemaining === 'function') {
+                            if (deadline.timeRemaining() <= 1) {
+                                break;
+                            }
+                        } else if (performance.now() - start > MAX_TIME_MS) {
+                            break;
+                        }
+                    }
+
+                    if (processed > 0) {
+                        renderUnion();
+                    }
+
+                    if (queueIndex < queue.length) {
+                        scheduleProcess();
+                    } else if (queueIndex) {
+                        queue = [];
+                        queueIndex = 0;
+                    }
+                }
+
+                function mergeBatch(start, end) {
+                    let batchUnion = null;
+                    for (let i = start; i < end; i += 1) {
+                        const polygon = queue[i];
+                        if (!polygon) {
+                            continue;
+                        }
+                        batchUnion = combinePolygons(batchUnion, [polygon]);
+                    }
+                    return batchUnion;
+                }
+
+                function renderUnion() {
+                    unionLayer.clearLayers();
+                    if (!unionState || !unionState.length) {
+                        return;
+                    }
+                    const feature = clipResultToFeature(unionState);
+                    if (!feature) {
+                        return;
+                    }
+                    unionLayer.addData(feature);
+                    updateView(unionLayer.getBounds());
+                }
+
+                return {
+                    enqueue: (geometry) => {
+                        const polygons = flattenToPolygons(geometry);
+                        if (!polygons.length) {
+                            return;
+                        }
+                        queue.push(...polygons);
+                        scheduleProcess();
+                    },
+                    reset: () => {
+                        unionState = null;
+                        queue = [];
+                        queueIndex = 0;
+                        scheduled = false;
+                        fittedBounds = null;
+                        pendingFitBounds = null;
+                        if (fitTimeoutId) {
+                            clearTimeout(fitTimeoutId);
+                            fitTimeoutId = null;
+                        }
+                        unionLayer.clearLayers();
+                    },
+                    replaceWithGeometry: (geojson) => {
+                        unionState = null;
+                        queue = [];
+                        queueIndex = 0;
+                        scheduled = false;
+                        fittedBounds = null;
+                        pendingFitBounds = null;
+                        if (fitTimeoutId) {
+                            clearTimeout(fitTimeoutId);
+                            fitTimeoutId = null;
+                        }
+                        unionLayer.clearLayers();
+                        if (geojson) {
+                            const polygons = flattenToPolygons(geojson);
+                            if (polygons.length) {
+                                unionState = polygons.length === 1 ? [polygons[0]] : polygons.map((poly) => poly);
+                                renderUnion();
+                            }
+                        }
+                    },
+                };
+            }
+
+            function handleRunStart(event) {
+                currentRunId = event.runId || null;
+                resetMap();
+                updateMetadata(event);
+                updateStatus('<strong>Execução iniciada.</strong> Aguardando eventos...');
+            }
+
+            function handleRunEnd(event) {
+                if (event.status === 'success') {
+                    updateStatus('<strong>Processo concluído.</strong> Resultado final disponível.');
+                } else {
+                    const message = event.message
+                        ? `<strong>Falha:</strong> ${event.message}`
+                        : '<strong>Execução finalizada com erros.</strong>';
+                    updateStatus(message, 'error');
+                }
+                if (typeof event.algorithm_duration_ms === 'number') {
+                    durationMetric.textContent = `${event.algorithm_duration_ms.toFixed(0)} ms`;
+                } else {
+                    durationMetric.textContent = '–';
+                }
+                currentRunId = null;
+            }
+
+            function handleCacheHit(event) {
+                resetMap();
+                updateMetadata(event);
+                updateStatus(
+                    '<strong>Resultado servido a partir do cache.</strong> Nenhuma animação em tempo real disponível.',
+                    'cache'
+                );
+                if (event.distance_m !== undefined && event.distance_m !== null) {
+                    durationMetric.textContent = `cache Δ ${Number(event.distance_m).toFixed(0)} m`;
+                } else {
+                    durationMetric.textContent = '–';
+                }
+                currentRunId = null;
+            }
+
+            function processEvent(event) {
+                if (event.runId && currentRunId && event.runId !== currentRunId) {
+                    return;
+                }
+
+                switch (event.event) {
+                    case 'run_start':
+                        handleRunStart(event);
+                        break;
+                    case 'status':
+                        updateStatus(
+                            `<strong>${event.message || 'Atualizando'}</strong>` +
+                                (event.stage ? ` <small style="color:#94a3b8">(${event.stage})</small>` : '')
+                        );
+                        break;
+                    case 'progress':
+                        if (typeof event.expanded_nodes === 'number') {
+                            expandedMetric.textContent = event.expanded_nodes.toString();
+                            updateStatus(
+                                `Exploração em andamento — nós expandidos: <strong>${event.expanded_nodes}</strong>`
+                            );
+                        }
+                        break;
+                    case 'initial_walk':
+                        updateStatus(`Paradas acessíveis a pé: <strong>${event.count}</strong>`);
+                        break;
+                    case 'buffer':
+                        handleBufferEvent(event);
+                        break;
+                    case 'points':
+                        handlePointsEvent(event);
+                        break;
+                    case 'complete':
+                        handleCompleteEvent(event);
+                        break;
+                    case 'error':
+                        updateStatus(`<strong>Erro:</strong> ${event.message || 'Falha inesperada.'}`, 'error');
+                        break;
+                    case 'run_end':
+                        handleRunEnd(event);
+                        break;
+                    case 'cache_hit':
+                        handleCacheHit(event);
+                        break;
+                    case 'idle':
+                        updateStatus(
+                            'Aguardando execução com <strong>isMapVisualizer=true</strong>.',
+                            'idle'
+                        );
+                        resetMap();
+                        clearMetadata();
+                        currentRunId = null;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            function parseStream(reader) {
+                const decoder = new TextDecoder();
+                let buffered = '';
+
+                function readChunk() {
+                    return reader.read().then(({ value, done }) => {
+                        if (done) {
+                            if (buffered.trim()) {
+                                processLine(buffered);
+                            }
+                            return;
+                        }
+                        buffered += decoder.decode(value, { stream: true });
+                        const lines = buffered.split('\n');
+                        buffered = lines.pop();
+                        for (const line of lines) {
+                            if (line.trim()) {
+                                processLine(line.trim());
+                            }
+                        }
+                        return readChunk();
+                    });
+                }
+
+                function processLine(line) {
+                    try {
+                        const event = JSON.parse(line);
+                        processEvent(event);
+                    } catch (error) {
+                        console.error('Falha ao interpretar evento', error, line);
+                    }
+                }
+
+                return readChunk();
+            }
+
+            async function connectToStream() {
+                setConnectionState('connecting', 'conectando...');
+                try {
+                    const response = await fetch(streamEndpoint, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            Accept: 'application/x-ndjson',
+                        },
+                        cache: 'no-store',
+                    });
+
+                    if (!response.ok || !response.body) {
+                        throw new Error('Falha ao conectar ao stream');
+                    }
+
+                    setConnectionState('open', 'conectado');
+                    reconnectDelay = 1500;
+                    await parseStream(response.body.getReader());
+                    setConnectionState('closed', 'reconectando...');
+                } catch (error) {
+                    console.error('Erro na conexão do stream', error);
+                    setConnectionState('error', 'erro de conexão');
+                } finally {
+                    setTimeout(connectToStream, reconnectDelay);
+                    reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
+                }
+            }
+
+            connectToStream();
+        </script>
+    </body>
+</html>

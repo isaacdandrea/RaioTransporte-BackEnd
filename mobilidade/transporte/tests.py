@@ -1,4 +1,6 @@
+import json
 from datetime import date, time
+from types import SimpleNamespace
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -191,3 +193,73 @@ class RaioDeAlcanceAuthTests(TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.mock_algorithm.assert_not_called()
+
+
+@override_settings(API_SHARED_SECRETS=["test-key"], API_SHARED_SECRET="")
+class RaioDeAlcanceStreamingTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse("raio-alcance-stream")
+
+    def _payload(self):
+        return {
+            "lat": -23.0,
+            "lon": -46.0,
+            "tempo": 15,
+            "presetsDia": "DEFAULT",
+        }
+
+    def test_cache_hit_returns_json_response(self):
+        cached = SimpleNamespace(payload={"features": []}, distance_m=12.5)
+        with patch(
+            "transporte.views.cache_service.get_cached_response", return_value=cached
+        ):
+            response = self.client.post(
+                self.url,
+                self._payload(),
+                format="json",
+                HTTP_X_API_KEY="test-key",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["cache_hit"], True)
+
+    def test_streaming_response_emits_events(self):
+        def fake_calcular_raio(
+            lat,
+            lon,
+            tempo,
+            dia_semana,
+            hora_inicio,
+            debug_callback=None,
+            progress_callback=None,
+        ):
+            if debug_callback:
+                debug_callback({"features_total": 0})
+            if progress_callback:
+                progress_callback({"event": "status", "message": "start"})
+                progress_callback(
+                    {
+                        "event": "complete",
+                        "geojson": {"type": "FeatureCollection", "features": []},
+                    }
+                )
+            return {"type": "FeatureCollection", "features": []}
+
+        with patch("transporte.views.cache_service.get_cached_response", return_value=None), patch(
+            "transporte.views.cache_service.store_response", return_value=None
+        ), patch("transporte.views.calcular_raio", side_effect=fake_calcular_raio):
+            response = self.client.post(
+                self.url,
+                self._payload(),
+                format="json",
+                HTTP_X_API_KEY="test-key",
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn("application/x-ndjson", response["Content-Type"])
+            chunks = b"".join(response.streaming_content)
+            events = [json.loads(line) for line in chunks.decode().strip().splitlines() if line.strip()]
+            event_types = {event.get("event") for event in events}
+            self.assertIn("status", event_types)
+            self.assertIn("complete", event_types)
