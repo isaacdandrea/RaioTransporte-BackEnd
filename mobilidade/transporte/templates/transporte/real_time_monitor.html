@@ -272,8 +272,12 @@
         </main>
         <script
             src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-             crossorigin="anonymous"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://unpkg.com/martinez-polygon-clipping@0.7.1/dist/martinez.min.js"
+            crossorigin="anonymous"
         ></script>
         <script>
             const streamEndpoint = "{{ visualizer_stream_endpoint }}";
@@ -299,25 +303,19 @@
                 attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores',
             }).addTo(map);
 
-            const bufferLayer = L.geoJSON([], {
+            const unionLayer = L.geoJSON([], {
                 style: {
                     color: '#38bdf8',
                     weight: 2,
-                    fillOpacity: 0.2,
-                },
-            }).addTo(map);
-
-            const unionLayer = L.geoJSON([], {
-                style: {
-                    color: '#6366f1',
-                    weight: 2,
-                    fillOpacity: 0.25,
+                    fillOpacity: 0.22,
                 },
                 filter: (feature) => {
                     const type = feature?.geometry?.type;
                     return type === 'Polygon' || type === 'MultiPolygon';
                 },
             }).addTo(map);
+
+            const bufferUnionManager = createBufferUnionManager({ unionLayer, map });
 
             const pointsLayer = L.geoJSON([], {
                 pointToLayer: (feature, latlng) =>
@@ -349,8 +347,7 @@
             }
 
             function resetMap() {
-                bufferLayer.clearLayers();
-                unionLayer.clearLayers();
+                bufferUnionManager.reset();
                 pointsLayer.clearLayers();
                 originLayer.clearLayers();
                 expandedMetric.textContent = '0';
@@ -412,16 +409,56 @@
                 }
             }
 
+            function countPolygonGeometries(geometry) {
+                let count = 0;
+
+                function traverse(node) {
+                    if (!node) {
+                        return;
+                    }
+                    if (Array.isArray(node)) {
+                        node.forEach(traverse);
+                        return;
+                    }
+                    switch (node.type) {
+                        case 'FeatureCollection':
+                            traverse(node.features || []);
+                            break;
+                        case 'Feature':
+                            traverse(node.geometry);
+                            break;
+                        case 'GeometryCollection':
+                            traverse(node.geometries || []);
+                            break;
+                        case 'Polygon':
+                            count += 1;
+                            break;
+                        case 'MultiPolygon':
+                            if (Array.isArray(node.coordinates)) {
+                                count += node.coordinates.length;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                traverse(geometry);
+                return count;
+            }
+
             function handleBufferEvent(event) {
                 if (!event.geometry) {
                     return;
                 }
-                buffersMetric.textContent = (Number(buffersMetric.textContent) + 1).toString();
-                bufferLayer.addData(event.geometry);
-                const bounds = bufferLayer.getBounds();
-                if (bounds.isValid()) {
-                    map.fitBounds(bounds.pad(0.25));
+                const polygonsCount = countPolygonGeometries(event.geometry);
+                if (polygonsCount === 0) {
+                    return;
                 }
+                buffersMetric.textContent = (
+                    Number(buffersMetric.textContent) + polygonsCount
+                ).toString();
+                bufferUnionManager.enqueue(event.geometry);
             }
 
             function handlePointsEvent(event) {
@@ -440,11 +477,9 @@
                 if (!event.geojson) {
                     return;
                 }
-                bufferLayer.clearLayers();
-                unionLayer.clearLayers();
+                bufferUnionManager.replaceWithGeometry(event.geojson);
                 pointsLayer.clearLayers();
 
-                unionLayer.addData(event.geojson);
                 const pointFeatures = (event.geojson.features || []).filter(
                     (feature) => feature?.geometry?.type === 'Point'
                 );
@@ -452,16 +487,292 @@
                     pointsLayer.addData(pointFeatures);
                 }
                 pointsMetric.textContent = pointFeatures.length.toString();
-                const polygonCount = (event.geojson.features || []).filter((feature) => {
-                    const type = feature?.geometry?.type;
-                    return type === 'Polygon' || type === 'MultiPolygon';
-                }).length;
+                const polygonCount = countPolygonGeometries(event.geojson);
                 buffersMetric.textContent = polygonCount.toString();
+            }
 
-                const bounds = unionLayer.getBounds();
-                if (bounds.isValid()) {
-                    map.fitBounds(bounds.pad(0.2));
+            function flattenToPolygons(geometry) {
+                const polygons = [];
+
+                function sanitizePoint(point) {
+                    if (!Array.isArray(point) || point.length < 2) {
+                        return null;
+                    }
+                    const [x, y] = point;
+                    const nx = Number(x);
+                    const ny = Number(y);
+                    const isFiniteNumber = Number.isFinite || ((value) => isFinite(value));
+                    if (!isFiniteNumber(nx) || !isFiniteNumber(ny)) {
+                        return null;
+                    }
+                    return [nx, ny];
                 }
+
+                function clonePolygon(polygon) {
+                    if (!Array.isArray(polygon)) {
+                        return null;
+                    }
+                    const rings = polygon
+                        .map((ring) => {
+                            if (!Array.isArray(ring)) {
+                                return null;
+                            }
+                            const points = ring
+                                .map(sanitizePoint)
+                                .filter((point) => Array.isArray(point));
+                            if (points.length < 4) {
+                                return null;
+                            }
+                            const first = points[0];
+                            const last = points[points.length - 1];
+                            if (first && last && (first[0] !== last[0] || first[1] !== last[1])) {
+                                points.push([first[0], first[1]]);
+                            }
+                            return points.length >= 4 ? points : null;
+                        })
+                        .filter(Boolean);
+                    return rings.length ? rings : null;
+                }
+
+                function traverse(node) {
+                    if (!node) {
+                        return;
+                    }
+                    if (Array.isArray(node)) {
+                        node.forEach(traverse);
+                        return;
+                    }
+                    switch (node.type) {
+                        case 'FeatureCollection':
+                            traverse(node.features || []);
+                            break;
+                        case 'Feature':
+                            traverse(node.geometry);
+                            break;
+                        case 'GeometryCollection':
+                            traverse(node.geometries || []);
+                            break;
+                        case 'Polygon':
+                            if (Array.isArray(node.coordinates)) {
+                                const cloned = clonePolygon(node.coordinates);
+                                if (cloned && cloned.length) {
+                                    polygons.push(cloned);
+                                }
+                            }
+                            break;
+                        case 'MultiPolygon':
+                            if (Array.isArray(node.coordinates)) {
+                                node.coordinates.forEach((poly) => {
+                                    const cloned = clonePolygon(poly);
+                                    if (cloned && cloned.length) {
+                                        polygons.push(cloned);
+                                    }
+                                });
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                traverse(geometry);
+                return polygons;
+            }
+
+            function clipResultToFeature(result) {
+                if (!Array.isArray(result) || !result.length) {
+                    return null;
+                }
+                if (result.length === 1) {
+                    return {
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Polygon',
+                            coordinates: result[0],
+                        },
+                    };
+                }
+                return {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {
+                        type: 'MultiPolygon',
+                        coordinates: result,
+                    },
+                };
+            }
+
+            function createBufferUnionManager({ unionLayer, map, fitPadding = 0.25 }) {
+                const clipping =
+                    (typeof window !== 'undefined' && (window.polygonClipping || window.martinez)) || null;
+
+                if (!clipping || typeof clipping.union !== 'function') {
+                    console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
+                    let adjusted = false;
+                    return {
+                        enqueue: (geometry) => {
+                            unionLayer.addData(geometry);
+                            if (!adjusted) {
+                                const bounds = unionLayer.getBounds();
+                                if (bounds.isValid()) {
+                                    map.fitBounds(bounds.pad(fitPadding));
+                                    adjusted = true;
+                                }
+                            }
+                        },
+                        reset: () => {
+                            adjusted = false;
+                            unionLayer.clearLayers();
+                        },
+                        replaceWithGeometry: (geojson) => {
+                            adjusted = false;
+                            unionLayer.clearLayers();
+                            if (geojson) {
+                                unionLayer.addData(geojson);
+                                const bounds = unionLayer.getBounds();
+                                if (bounds.isValid()) {
+                                    map.fitBounds(bounds.pad(fitPadding));
+                                    adjusted = true;
+                                }
+                            }
+                        },
+                    };
+                }
+
+                let unionState = null;
+                let queue = [];
+                let queueIndex = 0;
+                let scheduled = false;
+                let hasAdjustedView = false;
+                const MAX_BATCH = 50;
+                const MAX_TIME_MS = 12;
+
+                function combinePolygons(base, addition) {
+                    if (!addition) {
+                        return base;
+                    }
+                    if (!base) {
+                        return addition;
+                    }
+                    try {
+                        return clipping.union(base, addition);
+                    } catch (error) {
+                        console.error('Falha ao unir buffers', error);
+                        return base;
+                    }
+                }
+
+                function scheduleProcess() {
+                    if (scheduled) {
+                        return;
+                    }
+                    scheduled = true;
+                    const scheduler =
+                        window.requestIdleCallback ||
+                        ((callback) => window.requestAnimationFrame(() => callback())) ||
+                        ((callback) => setTimeout(() => callback(), 16));
+                    scheduler(processQueue);
+                }
+
+                function processQueue(deadline) {
+                    scheduled = false;
+                    const start = performance.now();
+                    let processed = 0;
+
+                    while (queueIndex < queue.length) {
+                        const startIndex = queueIndex;
+                        const end = Math.min(queueIndex + MAX_BATCH, queue.length);
+                        const batchUnion = mergeBatch(startIndex, end);
+                        queueIndex = end;
+                        unionState = combinePolygons(unionState, batchUnion);
+                        processed += end - startIndex;
+
+                        if (deadline && typeof deadline.timeRemaining === 'function') {
+                            if (deadline.timeRemaining() <= 1) {
+                                break;
+                            }
+                        } else if (performance.now() - start > MAX_TIME_MS) {
+                            break;
+                        }
+                    }
+
+                    if (processed > 0) {
+                        renderUnion();
+                    }
+
+                    if (queueIndex < queue.length) {
+                        scheduleProcess();
+                    } else if (queueIndex) {
+                        queue = [];
+                        queueIndex = 0;
+                    }
+                }
+
+                function mergeBatch(start, end) {
+                    let batchUnion = null;
+                    for (let i = start; i < end; i += 1) {
+                        const polygon = queue[i];
+                        if (!polygon) {
+                            continue;
+                        }
+                        batchUnion = combinePolygons(batchUnion, [polygon]);
+                    }
+                    return batchUnion;
+                }
+
+                function renderUnion() {
+                    unionLayer.clearLayers();
+                    if (!unionState || !unionState.length) {
+                        return;
+                    }
+                    const feature = clipResultToFeature(unionState);
+                    if (!feature) {
+                        return;
+                    }
+                    unionLayer.addData(feature);
+                    if (!hasAdjustedView) {
+                        const bounds = unionLayer.getBounds();
+                        if (bounds.isValid()) {
+                            map.fitBounds(bounds.pad(fitPadding));
+                            hasAdjustedView = true;
+                        }
+                    }
+                }
+
+                return {
+                    enqueue: (geometry) => {
+                        const polygons = flattenToPolygons(geometry);
+                        if (!polygons.length) {
+                            return;
+                        }
+                        queue.push(...polygons);
+                        scheduleProcess();
+                    },
+                    reset: () => {
+                        unionState = null;
+                        queue = [];
+                        queueIndex = 0;
+                        scheduled = false;
+                        hasAdjustedView = false;
+                        unionLayer.clearLayers();
+                    },
+                    replaceWithGeometry: (geojson) => {
+                        unionState = null;
+                        queue = [];
+                        queueIndex = 0;
+                        scheduled = false;
+                        hasAdjustedView = false;
+                        unionLayer.clearLayers();
+                        if (geojson) {
+                            const polygons = flattenToPolygons(geojson);
+                            if (polygons.length) {
+                                unionState = polygons.length === 1 ? [polygons[0]] : polygons.map((poly) => poly);
+                                renderUnion();
+                            }
+                        }
+                    },
+                };
             }
 
             function handleRunStart(event) {
