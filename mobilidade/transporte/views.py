@@ -6,7 +6,7 @@ import queue
 import threading
 import time
 from datetime import datetime, time as dtime, timedelta
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import pytz
 from django.conf import settings
@@ -16,12 +16,14 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import TemplateView
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BaseRenderer
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .algorithms.calcular_raio_csa import calcular_raio
 from .cache import GeoRequestCacheService
+from .visualization import visualization_hub
 
 logger = logging.getLogger("transporte.debug")
 if settings.DEBUG:
@@ -59,6 +61,21 @@ def _log_debug(metrics: Dict[str, Any]) -> None:
 cache_service = GeoRequestCacheService()
 
 
+class NDJSONRenderer(BaseRenderer):
+    media_type = "application/x-ndjson"
+    format = "ndjson"
+    charset = "utf-8"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):  # type: ignore[override]
+        if data is None:
+            return b""
+        if isinstance(data, (bytes, bytearray)):
+            return bytes(data)
+        if isinstance(data, str):
+            return data.encode(self.charset)
+        return json.dumps(data).encode(self.charset)
+
+
 PRESET_CONFIGS: Dict[str, Tuple[str, dtime]] = {
     "DEFAULT": ("tuesday", dtime(15, 0)),
     "DIA_SEMANA_TRAFEGO": ("thursday", dtime(18, 30)),
@@ -74,6 +91,22 @@ WEEKDAY_NAME_TO_ISO = {
     "saturday": 6,
     "sunday": 7,
 }
+
+
+def _coerce_bool(value: Any, default: bool = False) -> bool:
+    """Best-effort conversion of API payloads to boolean values."""
+
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "sim", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "nao", "off"}:
+            return False
+    return default
 
 
 def _resolve_raio_params(data: Dict[str, Any]) -> Tuple[float, float, int, str, int, str]:
@@ -114,6 +147,7 @@ class RaioDeAlcanceView(APIView):
         request_started_at = timezone.now()
         request_timer = time.perf_counter()
         debug_metrics: Dict[str, Any] = {}
+        visualization_run_id: Optional[str] = None
 
         try:
             dados = request.data
@@ -134,6 +168,16 @@ class RaioDeAlcanceView(APIView):
 
             cache_hit = False
             cache_distance_m = None
+            is_visualizer = _coerce_bool(dados.get("isMapVisualizer", False))
+            visualization_metadata = {
+                "source": "api",
+                "lat": lat,
+                "lon": lon,
+                "tempo_min": tempo,
+                "dia_semana": dia_semana,
+                "hora_inicio_min": hora_inicio,
+                "requested_at": request_started_at.isoformat(),
+            }
 
             cache_result = cache_service.get_cached_response(
                 latitude=lat, longitude=lon, request_params=cache_params
@@ -144,8 +188,27 @@ class RaioDeAlcanceView(APIView):
                 algo_duration_ms = 0.0
                 cache_hit = True
                 cache_distance_m = cache_result.distance_m
+                if is_visualizer:
+                    visualization_hub.cache_hit(
+                        {
+                            **visualization_metadata,
+                            "distance_m": cache_distance_m,
+                        }
+                    )
             else:
                 algo_start = time.perf_counter()
+
+                progress_callback = None
+                if is_visualizer:
+                    visualization_run_id = visualization_hub.start_run(
+                        visualization_metadata
+                    )
+
+                    def forward_progress(event: Dict[str, Any]) -> None:
+                        visualization_hub.publish(event)
+
+                    progress_callback = forward_progress
+
                 geojson = calcular_raio(
                     lat,
                     lon,
@@ -155,6 +218,7 @@ class RaioDeAlcanceView(APIView):
                     debug_callback=(lambda data: debug_metrics.update(data))
                     if settings.DEBUG
                     else None,
+                    progress_callback=progress_callback,
                 )
                 algo_duration_ms = (time.perf_counter() - algo_start) * 1000
                 cache_service.store_response(
@@ -164,6 +228,12 @@ class RaioDeAlcanceView(APIView):
                     response_payload=geojson,
                     request_timestamp=request_started_at,
                 )
+                if visualization_run_id:
+                    visualization_hub.end_run(
+                        "success",
+                        {"algorithm_duration_ms": round(algo_duration_ms, 2)},
+                    )
+                    visualization_run_id = None
 
             if settings.DEBUG:
                 request_duration_ms = (time.perf_counter() - request_timer) * 1000
@@ -216,6 +286,11 @@ class RaioDeAlcanceView(APIView):
         except (KeyError, ValueError, TypeError) as e:
             if settings.DEBUG:
                 logger.exception("Invalid request payload: %s", e)
+            if visualization_run_id:
+                visualization_hub.end_run(
+                    "error", {"message": f"Entrada inválida: {e}"}
+                )
+                visualization_run_id = None
             return Response(
                 {"error": f"Entrada inválida: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -223,6 +298,9 @@ class RaioDeAlcanceView(APIView):
         except Exception as e:  # pragma: no cover - defensive
             if settings.DEBUG:
                 logger.exception("Unhandled error while processing request: %s", e)
+            if visualization_run_id:
+                visualization_hub.end_run("error", {"message": str(e)})
+                visualization_run_id = None
             return Response(
                 {"error": "Erro interno ao processar a solicitação."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -231,11 +309,13 @@ class RaioDeAlcanceView(APIView):
 
 class RaioDeAlcanceStreamView(APIView):
     permission_classes = [IsAuthenticated]
+    renderer_classes = [NDJSONRenderer]
 
     def post(self, request):
         request_started_at = timezone.now()
         request_timer = time.perf_counter()
         debug_metrics: Dict[str, Any] = {}
+        visualization_run_id: Optional[str] = None
 
         try:
             dados = request.data
@@ -254,6 +334,25 @@ class RaioDeAlcanceStreamView(APIView):
                 "hora_inicio": hora_inicio,
             }
 
+            is_visualizer = _coerce_bool(dados.get("isMapVisualizer", False))
+            visualization_metadata = {
+                "source": "stream",
+                "lat": lat,
+                "lon": lon,
+                "tempo_min": tempo,
+                "dia_semana": dia_semana,
+                "hora_inicio_min": hora_inicio,
+                "requested_at": request_started_at.isoformat(),
+            }
+
+            if not is_visualizer:
+                return Response(
+                    {
+                        "error": "Streaming disponível apenas com isMapVisualizer=true.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             cache_result = cache_service.get_cached_response(
                 latitude=lat, longitude=lon, request_params=cache_params
             )
@@ -263,18 +362,33 @@ class RaioDeAlcanceStreamView(APIView):
                     "payload": cache_result.payload,
                     "distance_m": cache_result.distance_m,
                 }
+                if is_visualizer:
+                    visualization_hub.cache_hit(
+                        {
+                            **visualization_metadata,
+                            "distance_m": cache_result.distance_m,
+                        }
+                    )
                 return Response(payload)
 
             sentinel = object()
             event_queue: "queue.Queue[object]" = queue.Queue()
             algo_duration_ms = 0.0
 
+            if is_visualizer:
+                visualization_run_id = visualization_hub.start_run(
+                    visualization_metadata
+                )
+
             def enqueue_event(data: Dict[str, Any]) -> None:
                 event_queue.put(data)
+                if visualization_run_id:
+                    visualization_hub.publish(data)
 
             def run_algorithm() -> None:
                 nonlocal algo_duration_ms
                 close_old_connections()
+                completed_successfully = False
                 try:
                     algo_start = time.perf_counter()
                     geojson = calcular_raio(
@@ -296,10 +410,20 @@ class RaioDeAlcanceStreamView(APIView):
                         response_payload=geojson,
                         request_timestamp=request_started_at,
                     )
+                    completed_successfully = True
                 except Exception as exc:  # pragma: no cover - defensive
                     logger.exception("Unhandled error in streaming algorithm", exc_info=exc)
                     enqueue_event({"event": "error", "message": str(exc)})
+                    if visualization_run_id:
+                        visualization_hub.end_run(
+                            "error", {"message": str(exc)}
+                        )
                 finally:
+                    if visualization_run_id and completed_successfully:
+                        visualization_hub.end_run(
+                            "success",
+                            {"algorithm_duration_ms": round(algo_duration_ms, 2)},
+                        )
                     event_queue.put(sentinel)
                     close_old_connections()
 
@@ -341,6 +465,10 @@ class RaioDeAlcanceStreamView(APIView):
         except (KeyError, ValueError, TypeError) as e:
             if settings.DEBUG:
                 logger.exception("Invalid request payload for streaming: %s", e)
+            if visualization_run_id:
+                visualization_hub.end_run(
+                    "error", {"message": f"Entrada inválida: {e}"}
+                )
             return Response(
                 {"error": f"Entrada inválida: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -348,6 +476,8 @@ class RaioDeAlcanceStreamView(APIView):
         except Exception as e:  # pragma: no cover - defensive
             if settings.DEBUG:
                 logger.exception("Unhandled error while processing streaming request: %s", e)
+            if visualization_run_id:
+                visualization_hub.end_run("error", {"message": str(e)})
             return Response(
                 {"error": "Erro interno ao processar a solicitação."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -361,4 +491,33 @@ class RealTimeMonitorView(TemplateView):
         context = super().get_context_data(**kwargs)
         context.setdefault("stream_endpoint", reverse_lazy("raio-alcance-stream"))
         context.setdefault("api_endpoint", reverse_lazy("raio-alcance"))
+        context.setdefault(
+            "visualizer_stream_endpoint", reverse_lazy("visualizer-stream")
+        )
         return context
+
+
+class VisualizationStreamView(APIView):
+    permission_classes = [AllowAny]
+    renderer_classes = [NDJSONRenderer]
+
+    def get(self, request):
+        listener = visualization_hub.subscribe()
+
+        def event_stream():
+            encoder = json.JSONEncoder(ensure_ascii=False)
+            try:
+                while True:
+                    item = listener.get()
+                    if item is None:
+                        break
+                    yield encoder.encode(item).encode("utf-8") + b"\n"
+            finally:
+                visualization_hub.unsubscribe(listener)
+
+        response = StreamingHttpResponse(
+            event_stream(), content_type="application/x-ndjson"
+        )
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
