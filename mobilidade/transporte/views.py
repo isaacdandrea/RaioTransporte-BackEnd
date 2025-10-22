@@ -204,10 +204,12 @@ class RaioDeAlcanceView(APIView):
                         visualization_metadata
                     )
 
-                    def forward_progress(event: Dict[str, Any]) -> None:
-                        visualization_hub.publish(event)
+                    if visualization_run_id:
 
-                    progress_callback = forward_progress
+                        def forward_progress(event: Dict[str, Any]) -> None:
+                            visualization_hub.publish(event)
+
+                        progress_callback = forward_progress
 
                 geojson = calcular_raio(
                     lat,
