@@ -1,294 +1,445 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Monitoramento em Tempo Real - Raio de Alcance</title>
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha512-sA+e2ZKpK1iD7xE+nobBOhtSGcVwqDAVBBusZT6F4LmSpaV0Uy1Ik5+pUvNbK/CtYQgQki71RkVQUNBM8bY+AA=="
-        crossorigin=""
-    />
-    <style>
-        body {
-            font-family: "Inter", "Segoe UI", sans-serif;
-            margin: 0;
-            background: #0f172a;
-            color: #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            padding: 1.5rem 2rem 1rem;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(6px);
-            border-bottom: 1px solid rgba(148, 163, 184, 0.3);
-        }
-        h1 {
-            margin: 0;
-            font-size: 1.6rem;
-            font-weight: 600;
-        }
-        main {
-            flex: 1;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 0;
-        }
-        .control-panel {
-            background: rgba(15, 23, 42, 0.9);
-            border-right: 1px solid rgba(148, 163, 184, 0.25);
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        label {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.85rem;
-            color: #cbd5f5;
-            gap: 0.4rem;
-        }
-        input,
-        select {
-            background: rgba(15, 23, 42, 0.65);
-            border: 1px solid rgba(148, 163, 184, 0.35);
-            border-radius: 8px;
-            padding: 0.6rem 0.75rem;
-            color: #e2e8f0;
-            font-size: 0.95rem;
-        }
-        input:focus,
-        select:focus {
-            outline: none;
-            border-color: #38bdf8;
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-        }
-        button {
-            background: linear-gradient(135deg, #38bdf8, #6366f1);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 1rem;
-            padding: 0.75rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.25);
-        }
-        .status {
-            min-height: 3.5rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 12px;
-            padding: 1rem;
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-        .status strong {
-            color: #38bdf8;
-        }
-        #map {
-            width: 100%;
-            height: 100%;
-            min-height: 100vh;
-        }
-        .metrics {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 12px;
-            padding: 1rem;
-            font-size: 0.85rem;
-            display: grid;
-            gap: 0.4rem;
-        }
-        .metrics .value {
-            font-weight: 600;
-            color: #f97316;
-        }
-        .layer-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-        }
-        .layer-toggle input {
-            width: auto;
-        }
-        @media (max-width: 960px) {
-            main {
-                grid-template-columns: 1fr;
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Visualizador de Cálculo em Tempo Real</title>
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha512-sA+e2ZKpK1iD7xE+nobBOhtSGcVwqDAVBBusZT6F4LmSpaV0Uy1Ik5+pUvNbK/CtYQgQki71RkVQUNBM8bY+AA=="
+            crossorigin=""
+        />
+        <style>
+            :root {
+                color-scheme: dark;
+                font-family: "Inter", "Segoe UI", sans-serif;
             }
-            .control-panel {
-                border-right: none;
+
+            body {
+                margin: 0;
+                background: #0b1220;
+                color: #e2e8f0;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            header {
+                padding: 1.25rem 2rem 1rem;
+                background: rgba(11, 18, 32, 0.9);
                 border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+                backdrop-filter: blur(8px);
+                position: sticky;
+                top: 0;
+                z-index: 10;
             }
+
+            header h1 {
+                margin: 0 0 0.35rem;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            header p {
+                margin: 0;
+                font-size: 0.95rem;
+                color: #94a3b8;
+            }
+
+            main {
+                flex: 1;
+                position: relative;
+            }
+
             #map {
-                min-height: 400px;
+                height: calc(100vh - 90px);
+                width: 100%;
             }
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Monitoramento do Raio de Alcance em Tempo Real</h1>
-        <p>Observe em tempo real o cálculo da isócrona e o avanço do algoritmo de mobilidade.</p>
-    </header>
-    <main>
-        <section class="control-panel">
-            <form id="raio-form">
-                <label>
-                    Latitude
-                    <input type="number" step="any" id="lat" name="lat" required value="-23.5505" />
-                </label>
-                <label>
-                    Longitude
-                    <input type="number" step="any" id="lon" name="lon" required value="-46.6333" />
-                </label>
-                <label>
-                    Tempo máximo (minutos)
-                    <input type="number" min="5" max="180" id="tempo" name="tempo" value="30" required />
-                </label>
-                <label>
-                    Preset de dia/horário
-                    <select id="preset" name="presetsDia">
-                        <option value="DEFAULT">Padrão (terça-feira 15h)</option>
-                        <option value="DIA_SEMANA_TRAFEGO">Dia útil em horário de pico</option>
-                        <option value="FINAL_DE_SEMANA">Final de semana</option>
-                    </select>
-                </label>
-                <label>
-                    Chave de API (opcional)
-                    <input type="text" id="api-key" name="apiKey" placeholder="X-API-Key" autocomplete="off" />
-                </label>
-                <div class="layer-toggle">
-                    <input type="checkbox" id="show-points" checked />
-                    <label for="show-points">Exibir pontos de parada acessíveis</label>
+
+            .hud {
+                position: absolute;
+                top: 1.5rem;
+                right: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+                z-index: 400;
+                max-width: min(420px, 90vw);
+            }
+
+            .card {
+                background: rgba(15, 23, 42, 0.88);
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                border-radius: 14px;
+                padding: 1rem 1.1rem;
+                box-shadow: 0 24px 40px rgba(15, 23, 42, 0.32);
+                backdrop-filter: blur(12px);
+            }
+
+            .status-box {
+                font-size: 0.95rem;
+                line-height: 1.45;
+            }
+
+            .status-box strong {
+                color: #38bdf8;
+            }
+
+            .status-box.error strong {
+                color: #f87171;
+            }
+
+            .status-box.cache strong {
+                color: #facc15;
+            }
+
+            .status-box.idle {
+                color: #94a3b8;
+            }
+
+            .indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #94a3b8;
+            }
+
+            .indicator::before {
+                content: "";
+                width: 0.55rem;
+                height: 0.55rem;
+                border-radius: 999px;
+                background: #94a3b8;
+                box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+            }
+
+            .indicator[data-state="open"]::before {
+                background: #34d399;
+                box-shadow: 0 0 18px rgba(52, 211, 153, 0.4);
+            }
+
+            .indicator[data-state="connecting"]::before {
+                background: #facc15;
+            }
+
+            .indicator[data-state="error"]::before,
+            .indicator[data-state="closed"]::before {
+                background: #f87171;
+            }
+
+            .meta-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.6rem 0.9rem;
+                font-size: 0.85rem;
+                color: #cbd5f5;
+            }
+
+            .meta-grid span {
+                display: block;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #64748b;
+                margin-bottom: 0.15rem;
+            }
+
+            .metrics-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+
+            .metric {
+                display: flex;
+                flex-direction: column;
+                gap: 0.15rem;
+                font-size: 0.8rem;
+                color: #94a3b8;
+            }
+
+            .metric .value {
+                font-size: 1.15rem;
+                font-weight: 600;
+                color: #f97316;
+            }
+
+            .controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+            }
+
+            .toggle {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.45rem;
+                font-size: 0.8rem;
+                color: #94a3b8;
+            }
+
+            .toggle input {
+                width: auto;
+            }
+
+            @media (max-width: 768px) {
+                header {
+                    padding: 1rem 1.25rem;
+                }
+
+                #map {
+                    height: calc(100vh - 140px);
+                }
+
+                .hud {
+                    position: static;
+                    padding: 1.25rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>Painel de Visualização em Tempo Real</h1>
+            <p>
+                Acompanhe execuções do cálculo de raio em tempo real. Inclua
+                <code>isMapVisualizer=true</code> nos requests para transmitir os
+                eventos.
+            </p>
+        </header>
+        <main>
+            <div id="map"></div>
+            <aside class="hud">
+                <div class="card status-box idle" id="status">
+                    Aguardando execução com <strong>isMapVisualizer=true</strong>.
                 </div>
-                <button type="submit">Iniciar monitoramento</button>
-            </form>
-            <div class="status" id="status">Pronto para iniciar o cálculo.</div>
-            <div class="metrics" id="metrics">
-                <div>Paradas avaliadas: <span class="value" id="metric-expanded">0</span></div>
-                <div>Buffers gerados: <span class="value" id="metric-buffers">0</span></div>
-                <div>Paradas acessíveis: <span class="value" id="metric-points">0</span></div>
-            </div>
-            <div class="status" id="cache-indicator" style="display: none;">
-                O resultado foi entregue a partir do cache. Animação em tempo real desativada.
-            </div>
-        </section>
-        <section id="map"></section>
-    </main>
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha512-vRM2E1GONb5wlt3F4iAfDdc/K1Ji/7luWGINuDhcE7PK5EONosFVJeFt3LEMhQPzN0pG1JyP3Lr3GLT6rYb3yg=="
-        crossorigin=""
-    ></script>
-    <script>
-        const form = document.getElementById('raio-form');
-        const statusBox = document.getElementById('status');
-        const cacheIndicator = document.getElementById('cache-indicator');
-        const expandedMetric = document.getElementById('metric-expanded');
-        const buffersMetric = document.getElementById('metric-buffers');
-        const pointsMetric = document.getElementById('metric-points');
-        const showPointsToggle = document.getElementById('show-points');
+                <div class="card">
+                    <div class="controls">
+                        <div class="indicator" id="connection-indicator" data-state="closed">
+                            desconectado
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="show-points" checked />
+                            Exibir paradas acessíveis
+                        </label>
+                    </div>
+                    <div class="meta-grid" id="run-metadata">
+                        <div>
+                            <span>Latitude</span>
+                            <strong id="meta-lat">–</strong>
+                        </div>
+                        <div>
+                            <span>Longitude</span>
+                            <strong id="meta-lon">–</strong>
+                        </div>
+                        <div>
+                            <span>Horizonte (min)</span>
+                            <strong id="meta-horizon">–</strong>
+                        </div>
+                        <div>
+                            <span>Dia / horário</span>
+                            <strong id="meta-dia">–</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span>Paradas avaliadas</span>
+                            <div class="value" id="metric-expanded">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Buffers gerados</span>
+                            <div class="value" id="metric-buffers">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Paradas acessíveis</span>
+                            <div class="value" id="metric-points">0</div>
+                        </div>
+                        <div class="metric">
+                            <span>Duração algoritmo</span>
+                            <div class="value" id="metric-duration">–</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+        <script
+            src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha512-vRM2E1GONb5wlt3F4iAfDdc/K1Ji/7luWGINuDhcE7PK5EONosFVJeFt3LEMhQPzN0pG1JyP3Lr3GLT6rYb3yg=="
+            crossorigin=""
+        ></script>
+        <script>
+            const streamEndpoint = "{{ visualizer_stream_endpoint }}";
+            const statusBox = document.getElementById('status');
+            const connectionIndicator = document.getElementById('connection-indicator');
+            const metadataLat = document.getElementById('meta-lat');
+            const metadataLon = document.getElementById('meta-lon');
+            const metadataHorizon = document.getElementById('meta-horizon');
+            const metadataDia = document.getElementById('meta-dia');
+            const expandedMetric = document.getElementById('metric-expanded');
+            const buffersMetric = document.getElementById('metric-buffers');
+            const pointsMetric = document.getElementById('metric-points');
+            const durationMetric = document.getElementById('metric-duration');
+            const showPointsToggle = document.getElementById('show-points');
 
-        const streamEndpoint = "{{ stream_endpoint }}";
-        const apiEndpoint = "{{ api_endpoint }}";
+            const map = L.map('map', {
+                center: [-23.5505, -46.6333],
+                zoom: 12,
+                zoomControl: true,
+            });
 
-        const map = L.map('map', {
-            center: [-23.5505, -46.6333],
-            zoom: 12,
-            zoomControl: true,
-        });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores',
+            }).addTo(map);
 
-        const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores'
-        });
-        tileLayer.addTo(map);
+            const bufferLayer = L.geoJSON([], {
+                style: {
+                    color: '#38bdf8',
+                    weight: 2,
+                    fillOpacity: 0.2,
+                },
+            }).addTo(map);
 
-        const bufferLayer = L.geoJSON([], {
-            style: {
-                color: '#38bdf8',
-                weight: 2,
-                fillOpacity: 0.2,
+            const unionLayer = L.geoJSON([], {
+                style: {
+                    color: '#6366f1',
+                    weight: 2,
+                    fillOpacity: 0.25,
+                },
+                filter: (feature) => {
+                    const type = feature?.geometry?.type;
+                    return type === 'Polygon' || type === 'MultiPolygon';
+                },
+            }).addTo(map);
+
+            const pointsLayer = L.geoJSON([], {
+                pointToLayer: (feature, latlng) =>
+                    L.circleMarker(latlng, {
+                        radius: 4,
+                        fillColor: '#f97316',
+                        color: '#f97316',
+                        weight: 1,
+                        fillOpacity: 0.85,
+                    }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`),
+            }).addTo(map);
+
+            const originLayer = L.layerGroup().addTo(map);
+
+            showPointsToggle.addEventListener('change', () => {
+                if (showPointsToggle.checked) {
+                    map.addLayer(pointsLayer);
+                } else {
+                    map.removeLayer(pointsLayer);
+                }
+            });
+
+            let currentRunId = null;
+            let reconnectDelay = 1500;
+
+            function setConnectionState(state, label) {
+                connectionIndicator.dataset.state = state;
+                connectionIndicator.textContent = label;
             }
-        }).addTo(map);
 
-        const unionLayer = L.geoJSON([], {
-            style: {
-                color: '#6366f1',
-                weight: 2,
-                fillOpacity: 0.25,
-            },
-            filter: function (feature) {
-                const type = feature?.geometry?.type;
-                return type === 'Polygon' || type === 'MultiPolygon';
+            function resetMap() {
+                bufferLayer.clearLayers();
+                unionLayer.clearLayers();
+                pointsLayer.clearLayers();
+                originLayer.clearLayers();
+                expandedMetric.textContent = '0';
+                buffersMetric.textContent = '0';
+                pointsMetric.textContent = '0';
+                durationMetric.textContent = '–';
             }
-        }).addTo(map);
 
-        const pointsLayer = L.geoJSON([], {
-            pointToLayer: function (feature, latlng) {
-                return L.circleMarker(latlng, {
-                    radius: 4,
-                    fillColor: '#f97316',
-                    color: '#f97316',
-                    weight: 1,
-                    fillOpacity: 0.85,
-                }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`);
+            function updateStatus(message, variant = 'default') {
+                statusBox.classList.remove('error', 'cache', 'idle');
+                if (variant === 'error') {
+                    statusBox.classList.add('error');
+                } else if (variant === 'cache') {
+                    statusBox.classList.add('cache');
+                } else if (variant === 'idle') {
+                    statusBox.classList.add('idle');
+                }
+                statusBox.innerHTML = message;
             }
-        }).addTo(map);
 
-        showPointsToggle.addEventListener('change', () => {
-            if (showPointsToggle.checked) {
-                map.addLayer(pointsLayer);
-            } else {
-                map.removeLayer(pointsLayer);
+            function clearMetadata() {
+                metadataLat.textContent = '–';
+                metadataLon.textContent = '–';
+                metadataHorizon.textContent = '–';
+                metadataDia.textContent = '–';
             }
-        });
 
-        function resetLayers() {
-            bufferLayer.clearLayers();
-            unionLayer.clearLayers();
-            pointsLayer.clearLayers();
-            expandedMetric.textContent = '0';
-            buffersMetric.textContent = '0';
-            pointsMetric.textContent = '0';
-        }
+            function updateMetadata(event) {
+                if (typeof event.lat === 'number' && typeof event.lon === 'number') {
+                    metadataLat.textContent = event.lat.toFixed(6);
+                    metadataLon.textContent = event.lon.toFixed(6);
+                    const marker = L.circleMarker([event.lat, event.lon], {
+                        radius: 6,
+                        weight: 2,
+                        color: '#38bdf8',
+                        fillOpacity: 0.2,
+                    }).bindPopup('Origem da requisição');
+                    originLayer.addLayer(marker);
+                    map.setView([event.lat, event.lon], 13);
+                } else {
+                    metadataLat.textContent = '–';
+                    metadataLon.textContent = '–';
+                }
+                if (typeof event.tempo_min === 'number') {
+                    metadataHorizon.textContent = event.tempo_min.toString();
+                } else {
+                    metadataHorizon.textContent = '–';
+                }
+                if (event.dia_semana && event.hora_inicio_min !== undefined) {
+                    const horas = Math.floor(event.hora_inicio_min / 60)
+                        .toString()
+                        .padStart(2, '0');
+                    const minutos = (event.hora_inicio_min % 60)
+                        .toString()
+                        .padStart(2, '0');
+                    metadataDia.textContent = `${event.dia_semana} às ${horas}h${minutos}`;
+                } else {
+                    metadataDia.textContent = '–';
+                }
+            }
 
-        function updateStatus(message) {
-            statusBox.innerHTML = message;
-        }
-
-        function handleBufferEvent(event) {
-            if (event.geometry) {
-                buffersMetric.textContent = Number(buffersMetric.textContent) + 1;
+            function handleBufferEvent(event) {
+                if (!event.geometry) {
+                    return;
+                }
+                buffersMetric.textContent = (Number(buffersMetric.textContent) + 1).toString();
                 bufferLayer.addData(event.geometry);
                 const bounds = bufferLayer.getBounds();
                 if (bounds.isValid()) {
                     map.fitBounds(bounds.pad(0.25));
                 }
             }
-        }
 
-        function handlePointsEvent(event) {
-            if (!Array.isArray(event.features)) {
-                return;
+            function handlePointsEvent(event) {
+                if (!Array.isArray(event.features)) {
+                    return;
+                }
+                pointsMetric.textContent = (
+                    Number(pointsMetric.textContent) + event.features.length
+                ).toString();
+                if (showPointsToggle.checked) {
+                    pointsLayer.addData(event.features);
+                }
             }
-            pointsMetric.textContent = Number(pointsMetric.textContent) + event.features.length;
-            if (showPointsToggle.checked) {
-                pointsLayer.addData(event.features);
-            }
-        }
 
-        function handleCompleteEvent(event) {
-            if (event.geojson) {
+            function handleCompleteEvent(event) {
+                if (!event.geojson) {
+                    return;
+                }
                 bufferLayer.clearLayers();
                 unionLayer.clearLayers();
                 pointsLayer.clearLayers();
@@ -301,12 +452,10 @@
                     pointsLayer.addData(pointFeatures);
                 }
                 pointsMetric.textContent = pointFeatures.length.toString();
-                const polygonCount = (event.geojson.features || []).filter(
-                    (feature) => {
-                        const type = feature?.geometry?.type;
-                        return type === 'Polygon' || type === 'MultiPolygon';
-                    }
-                ).length;
+                const polygonCount = (event.geojson.features || []).filter((feature) => {
+                    const type = feature?.geometry?.type;
+                    return type === 'Polygon' || type === 'MultiPolygon';
+                }).length;
                 buffersMetric.textContent = polygonCount.toString();
 
                 const bounds = unionLayer.getBounds();
@@ -314,126 +463,170 @@
                     map.fitBounds(bounds.pad(0.2));
                 }
             }
-            updateStatus('<strong>Processo concluído.</strong> Resultado final renderizado.');
-        }
 
-        function parseStream(reader) {
-            const decoder = new TextDecoder();
-            let buffered = '';
-
-            function readChunk() {
-                return reader.read().then(({ value, done }) => {
-                    if (done) {
-                        if (buffered.trim()) {
-                            processLine(buffered);
-                        }
-                        return;
-                    }
-                    buffered += decoder.decode(value, { stream: true });
-                    const lines = buffered.split('\n');
-                    buffered = lines.pop();
-                    for (const line of lines) {
-                        if (line.trim()) {
-                            processLine(line.trim());
-                        }
-                    }
-                    return readChunk();
-                });
+            function handleRunStart(event) {
+                currentRunId = event.runId || null;
+                resetMap();
+                updateMetadata(event);
+                updateStatus('<strong>Execução iniciada.</strong> Aguardando eventos...');
             }
 
-            function processLine(line) {
-                try {
-                    const event = JSON.parse(line);
-                    if (event.event === 'status') {
-                        const stage = event.stage ? ` <small style="color:#94a3b8">(${event.stage})</small>` : '';
-                        updateStatus(`<strong>${event.message || 'Atualizando'}</strong>${stage}`);
-                    } else if (event.event === 'progress') {
+            function handleRunEnd(event) {
+                if (event.status === 'success') {
+                    updateStatus('<strong>Processo concluído.</strong> Resultado final disponível.');
+                } else {
+                    const message = event.message
+                        ? `<strong>Falha:</strong> ${event.message}`
+                        : '<strong>Execução finalizada com erros.</strong>';
+                    updateStatus(message, 'error');
+                }
+                if (typeof event.algorithm_duration_ms === 'number') {
+                    durationMetric.textContent = `${event.algorithm_duration_ms.toFixed(0)} ms`;
+                } else {
+                    durationMetric.textContent = '–';
+                }
+                currentRunId = null;
+            }
+
+            function handleCacheHit(event) {
+                resetMap();
+                updateMetadata(event);
+                updateStatus(
+                    '<strong>Resultado servido a partir do cache.</strong> Nenhuma animação em tempo real disponível.',
+                    'cache'
+                );
+                if (event.distance_m !== undefined && event.distance_m !== null) {
+                    durationMetric.textContent = `cache Δ ${Number(event.distance_m).toFixed(0)} m`;
+                } else {
+                    durationMetric.textContent = '–';
+                }
+                currentRunId = null;
+            }
+
+            function processEvent(event) {
+                if (event.runId && currentRunId && event.runId !== currentRunId) {
+                    return;
+                }
+
+                switch (event.event) {
+                    case 'run_start':
+                        handleRunStart(event);
+                        break;
+                    case 'status':
+                        updateStatus(
+                            `<strong>${event.message || 'Atualizando'}</strong>` +
+                                (event.stage ? ` <small style="color:#94a3b8">(${event.stage})</small>` : '')
+                        );
+                        break;
+                    case 'progress':
                         if (typeof event.expanded_nodes === 'number') {
                             expandedMetric.textContent = event.expanded_nodes.toString();
+                            updateStatus(
+                                `Exploração em andamento — nós expandidos: <strong>${event.expanded_nodes}</strong>`
+                            );
                         }
-                        updateStatus(`Exploração em andamento — nós expandidos: <strong>${event.expanded_nodes}</strong>`);
-                    } else if (event.event === 'initial_walk') {
+                        break;
+                    case 'initial_walk':
                         updateStatus(`Paradas acessíveis a pé: <strong>${event.count}</strong>`);
-                    } else if (event.event === 'buffer') {
+                        break;
+                    case 'buffer':
                         handleBufferEvent(event);
-                    } else if (event.event === 'points') {
+                        break;
+                    case 'points':
                         handlePointsEvent(event);
-                    } else if (event.event === 'complete') {
+                        break;
+                    case 'complete':
                         handleCompleteEvent(event);
-                    } else if (event.event === 'error') {
-                        updateStatus(`<strong>Erro:</strong> ${event.message || 'Falha inesperada.'}`);
+                        break;
+                    case 'error':
+                        updateStatus(`<strong>Erro:</strong> ${event.message || 'Falha inesperada.'}`, 'error');
+                        break;
+                    case 'run_end':
+                        handleRunEnd(event);
+                        break;
+                    case 'cache_hit':
+                        handleCacheHit(event);
+                        break;
+                    case 'idle':
+                        updateStatus(
+                            'Aguardando execução com <strong>isMapVisualizer=true</strong>.',
+                            'idle'
+                        );
+                        resetMap();
+                        clearMetadata();
+                        currentRunId = null;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            function parseStream(reader) {
+                const decoder = new TextDecoder();
+                let buffered = '';
+
+                function readChunk() {
+                    return reader.read().then(({ value, done }) => {
+                        if (done) {
+                            if (buffered.trim()) {
+                                processLine(buffered);
+                            }
+                            return;
+                        }
+                        buffered += decoder.decode(value, { stream: true });
+                        const lines = buffered.split('\n');
+                        buffered = lines.pop();
+                        for (const line of lines) {
+                            if (line.trim()) {
+                                processLine(line.trim());
+                            }
+                        }
+                        return readChunk();
+                    });
+                }
+
+                function processLine(line) {
+                    try {
+                        const event = JSON.parse(line);
+                        processEvent(event);
+                    } catch (error) {
+                        console.error('Falha ao interpretar evento', error, line);
                     }
+                }
+
+                return readChunk();
+            }
+
+            async function connectToStream() {
+                setConnectionState('connecting', 'conectando...');
+                try {
+                    const response = await fetch(streamEndpoint, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            Accept: 'application/x-ndjson',
+                        },
+                        cache: 'no-store',
+                    });
+
+                    if (!response.ok || !response.body) {
+                        throw new Error('Falha ao conectar ao stream');
+                    }
+
+                    setConnectionState('open', 'conectado');
+                    reconnectDelay = 1500;
+                    await parseStream(response.body.getReader());
+                    setConnectionState('closed', 'reconectando...');
                 } catch (error) {
-                    console.error('Erro ao interpretar evento do stream', error, line);
+                    console.error('Erro na conexão do stream', error);
+                    setConnectionState('error', 'erro de conexão');
+                } finally {
+                    setTimeout(connectToStream, reconnectDelay);
+                    reconnectDelay = Math.min(reconnectDelay * 1.5, 15000);
                 }
             }
 
-            return readChunk();
-        }
-
-        async function fetchStream(payload, headers) {
-            const response = await fetch(streamEndpoint, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                const errorBody = await response.json().catch(() => ({}));
-                throw new Error(errorBody.error || 'Falha ao iniciar stream.');
-            }
-
-            const contentType = response.headers.get('Content-Type') || '';
-            if (!contentType.includes('application/x-ndjson')) {
-                // Provavelmente veio do cache.
-                const data = await response.json();
-                cacheIndicator.style.display = 'block';
-                if (data.payload) {
-                    handleCompleteEvent({ geojson: data.payload });
-                    updateStatus('<strong>Resultado recuperado do cache.</strong> Sem animação em tempo real.');
-                }
-                return;
-            }
-
-            cacheIndicator.style.display = 'none';
-            await parseStream(response.body.getReader());
-        }
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            resetLayers();
-            updateStatus('Iniciando cálculo...');
-            cacheIndicator.style.display = 'none';
-
-            const payload = {
-                lat: parseFloat(document.getElementById('lat').value),
-                lon: parseFloat(document.getElementById('lon').value),
-                tempo: parseInt(document.getElementById('tempo').value, 10),
-                presetsDia: document.getElementById('preset').value,
-            };
-
-            const headers = {
-                'Content-Type': 'application/json',
-            };
-            const apiKey = document.getElementById('api-key').value.trim();
-            if (apiKey) {
-                headers['X-API-Key'] = apiKey;
-                localStorage.setItem('raioMonitorApiKey', apiKey);
-            }
-
-            try {
-                await fetchStream(payload, headers);
-            } catch (error) {
-                updateStatus(`<strong>Erro:</strong> ${error.message}`);
-                console.error(error);
-            }
-        });
-
-        // Restaurar API key salva anteriormente.
-        const savedKey = localStorage.getItem('raioMonitorApiKey');
-        if (savedKey) {
-            document.getElementById('api-key').value = savedKey;
-        }
-    </script>
-</body>
+            connectToStream();
+        </script>
+    </body>
 </html>
