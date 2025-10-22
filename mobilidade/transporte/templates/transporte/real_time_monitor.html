@@ -611,6 +611,28 @@
                 if (!clipping || typeof clipping.union !== 'function') {
                     console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
                     let fittedBounds = null;
+                    let pendingFitBounds = null;
+                    let fitTimeoutId = null;
+
+                    function scheduleFit() {
+                        if (fitTimeoutId) {
+                            return;
+                        }
+                        fitTimeoutId = setTimeout(() => {
+                            fitTimeoutId = null;
+                            if (!pendingFitBounds) {
+                                return;
+                            }
+                            const targetBounds = pendingFitBounds;
+                            pendingFitBounds = null;
+                            fittedBounds = targetBounds;
+                            map.flyToBounds(targetBounds, {
+                                animate: true,
+                                duration: 0.75,
+                                easeLinearity: 0.25,
+                            });
+                        }, 1000);
+                    }
 
                     function updateView(bounds) {
                         if (!bounds || !bounds.isValid()) {
@@ -623,12 +645,8 @@
                         if (fittedBounds && fittedBounds.contains(padded)) {
                             return;
                         }
-                        fittedBounds = padded;
-                        map.flyToBounds(padded, {
-                            animate: true,
-                            duration: 0.75,
-                            easeLinearity: 0.25,
-                        });
+                        pendingFitBounds = padded;
+                        scheduleFit();
                     }
 
                     return {
@@ -638,10 +656,20 @@
                         },
                         reset: () => {
                             fittedBounds = null;
+                            pendingFitBounds = null;
+                            if (fitTimeoutId) {
+                                clearTimeout(fitTimeoutId);
+                                fitTimeoutId = null;
+                            }
                             unionLayer.clearLayers();
                         },
                         replaceWithGeometry: (geojson) => {
                             fittedBounds = null;
+                            pendingFitBounds = null;
+                            if (fitTimeoutId) {
+                                clearTimeout(fitTimeoutId);
+                                fitTimeoutId = null;
+                            }
                             unionLayer.clearLayers();
                             if (geojson) {
                                 unionLayer.addData(geojson);
@@ -656,6 +684,8 @@
                 let queueIndex = 0;
                 let scheduled = false;
                 let fittedBounds = null;
+                let pendingFitBounds = null;
+                let fitTimeoutId = null;
                 const MAX_BATCH = 50;
                 const MAX_TIME_MS = 12;
 
@@ -670,12 +700,24 @@
                     if (fittedBounds && fittedBounds.contains(padded)) {
                         return;
                     }
-                    fittedBounds = padded;
-                    map.flyToBounds(padded, {
-                        animate: true,
-                        duration: 0.75,
-                        easeLinearity: 0.25,
-                    });
+                    pendingFitBounds = padded;
+                    if (fitTimeoutId) {
+                        return;
+                    }
+                    fitTimeoutId = setTimeout(() => {
+                        fitTimeoutId = null;
+                        if (!pendingFitBounds) {
+                            return;
+                        }
+                        const targetBounds = pendingFitBounds;
+                        pendingFitBounds = null;
+                        fittedBounds = targetBounds;
+                        map.flyToBounds(targetBounds, {
+                            animate: true,
+                            duration: 0.75,
+                            easeLinearity: 0.25,
+                        });
+                    }, 1000);
                 }
 
                 function combinePolygons(base, addition) {
@@ -779,6 +821,11 @@
                         queueIndex = 0;
                         scheduled = false;
                         fittedBounds = null;
+                        pendingFitBounds = null;
+                        if (fitTimeoutId) {
+                            clearTimeout(fitTimeoutId);
+                            fitTimeoutId = null;
+                        }
                         unionLayer.clearLayers();
                     },
                     replaceWithGeometry: (geojson) => {
@@ -787,6 +834,11 @@
                         queueIndex = 0;
                         scheduled = false;
                         fittedBounds = null;
+                        pendingFitBounds = null;
+                        if (fitTimeoutId) {
+                            clearTimeout(fitTimeoutId);
+                            fitTimeoutId = null;
+                        }
                         unionLayer.clearLayers();
                         if (geojson) {
                             const polygons = flattenToPolygons(geojson);
