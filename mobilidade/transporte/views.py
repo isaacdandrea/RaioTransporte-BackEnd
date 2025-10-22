@@ -16,6 +16,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import TemplateView
 from rest_framework import status
+from rest_framework.renderers import BaseRenderer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -58,6 +59,21 @@ def _log_debug(metrics: Dict[str, Any]) -> None:
 
 
 cache_service = GeoRequestCacheService()
+
+
+class NDJSONRenderer(BaseRenderer):
+    media_type = "application/x-ndjson"
+    format = "ndjson"
+    charset = "utf-8"
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):  # type: ignore[override]
+        if data is None:
+            return b""
+        if isinstance(data, (bytes, bytearray)):
+            return bytes(data)
+        if isinstance(data, str):
+            return data.encode(self.charset)
+        return json.dumps(data).encode(self.charset)
 
 
 PRESET_CONFIGS: Dict[str, Tuple[str, dtime]] = {
@@ -293,6 +309,7 @@ class RaioDeAlcanceView(APIView):
 
 class RaioDeAlcanceStreamView(APIView):
     permission_classes = [IsAuthenticated]
+    renderer_classes = [NDJSONRenderer]
 
     def post(self, request):
         request_started_at = timezone.now()
@@ -482,6 +499,7 @@ class RealTimeMonitorView(TemplateView):
 
 class VisualizationStreamView(APIView):
     permission_classes = [IsAuthenticated]
+    renderer_classes = [NDJSONRenderer]
 
     def get(self, request):
         listener = visualization_hub.subscribe()
