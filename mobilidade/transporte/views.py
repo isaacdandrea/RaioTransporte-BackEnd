@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 from rest_framework import status
 from rest_framework.renderers import BaseRenderer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -498,7 +498,7 @@ class RealTimeMonitorView(TemplateView):
 
 
 class VisualizationStreamView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     renderer_classes = [NDJSONRenderer]
 
     def get(self, request):
