@@ -25,27 +25,24 @@
                 flex-direction: column;
             }
 
-            header {
-                padding: 1.75rem 2rem;
-                background: rgba(11, 18, 32, 0.9);
-                border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-                backdrop-filter: blur(8px);
-                position: sticky;
-                top: 0;
-                z-index: 10;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-
             main {
                 flex: 1;
                 position: relative;
             }
 
             #map {
-                height: calc(100vh - 90px);
+                height: 100vh;
                 width: 100%;
+            }
+
+            .status-overlay {
+                position: absolute;
+                top: 1.5rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 450;
+                pointer-events: none;
+                width: min(720px, calc(100% - 2rem));
             }
 
             .hud {
@@ -77,7 +74,7 @@
                 padding: 1.35rem 1.75rem;
                 text-align: center;
                 font-size: 1.1rem;
-                max-width: min(720px, 100%);
+                pointer-events: auto;
             }
 
             .status-box strong {
@@ -187,12 +184,9 @@
             }
 
             @media (max-width: 768px) {
-                header {
-                    padding: 1rem 1.25rem;
-                }
-
-                #map {
-                    height: calc(100vh - 140px);
+                .status-overlay {
+                    top: 1rem;
+                    width: calc(100% - 2.5rem);
                 }
 
                 .hud {
@@ -203,13 +197,13 @@
         </style>
     </head>
     <body>
-        <header>
-            <div class="card status-box idle header-status" id="status">
-                Aguardando execução com <strong>isMapVisualizer=true</strong>.
-            </div>
-        </header>
         <main>
             <div id="map"></div>
+            <div class="status-overlay">
+                <div class="card status-box idle header-status" id="status">
+                    Aguardando execução com <strong>isMapVisualizer=true</strong>.
+                </div>
+            </div>
             <aside class="hud">
                 <div class="card">
                     <div class="controls">
@@ -287,9 +281,33 @@
 
             const map = L.map('map', {
                 center: [-23.5505, -46.6333],
-                zoom: 12,
+                zoom: 13,
                 zoomControl: true,
             });
+
+            const POINT_VISIBILITY_ZOOM_THRESHOLD = 12;
+            const POINT_RADIUS_RANGE = {
+                min: 0.9,
+                max: 4,
+            };
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function getPointRadiusForZoom(zoom) {
+                const relativeZoom = zoom - POINT_VISIBILITY_ZOOM_THRESHOLD;
+                const baseRadius = 0.9 + relativeZoom * 0.45;
+                return clamp(baseRadius, POINT_RADIUS_RANGE.min, POINT_RADIUS_RANGE.max);
+            }
+
+            function updateCircleMarkerRadius(layer) {
+                if (!layer || typeof layer.setStyle !== 'function') {
+                    return;
+                }
+                const radius = getPointRadiusForZoom(map.getZoom());
+                layer.setStyle({ radius });
+            }
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> colaboradores',
@@ -310,25 +328,44 @@
             const bufferUnionManager = createBufferUnionManager({ unionLayer, map });
 
             const pointsLayer = L.geoJSON([], {
-                pointToLayer: (feature, latlng) =>
-                    L.circleMarker(latlng, {
-                        radius: 2,
+                pointToLayer: (feature, latlng) => {
+                    const marker = L.circleMarker(latlng, {
+                        radius: getPointRadiusForZoom(map.getZoom()),
                         fillColor: '#f97316',
                         color: '#f97316',
-                        weight: 0.75,
-                        fillOpacity: 0.75,
-                    }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`),
-            }).addTo(map);
+                        weight: 0.6,
+                        opacity: 0.8,
+                        fillOpacity: 0.65,
+                    }).bindTooltip(`${feature.properties.stop_name} (${feature.properties.tempo_min} min)`);
+                    marker.on('add', () => updateCircleMarkerRadius(marker));
+                    return marker;
+                },
+            });
+
+            function syncPointsLayerVisibility() {
+                const zoom = map.getZoom();
+                const shouldDisplay = showPointsToggle.checked && zoom >= POINT_VISIBILITY_ZOOM_THRESHOLD;
+                if (shouldDisplay) {
+                    if (!map.hasLayer(pointsLayer)) {
+                        map.addLayer(pointsLayer);
+                    }
+                    pointsLayer.eachLayer((layer) => updateCircleMarkerRadius(layer));
+                } else if (map.hasLayer(pointsLayer)) {
+                    map.removeLayer(pointsLayer);
+                }
+            }
 
             const originLayer = L.layerGroup().addTo(map);
 
             showPointsToggle.addEventListener('change', () => {
-                if (showPointsToggle.checked) {
-                    map.addLayer(pointsLayer);
-                } else {
-                    map.removeLayer(pointsLayer);
-                }
+                syncPointsLayerVisibility();
             });
+
+            map.on('zoomend', () => {
+                syncPointsLayerVisibility();
+            });
+
+            syncPointsLayerVisibility();
 
             let currentRunId = null;
             let reconnectDelay = 1500;
@@ -346,6 +383,7 @@
                 buffersMetric.textContent = '0';
                 pointsMetric.textContent = '0';
                 durationMetric.textContent = '–';
+                syncPointsLayerVisibility();
             }
 
             function updateStatus(message, variant = 'default') {
@@ -378,7 +416,11 @@
                         fillOpacity: 0.2,
                     }).bindPopup('Origem da requisição');
                     originLayer.addLayer(marker);
-                    map.setView([event.lat, event.lon], 13);
+                    map.flyTo([event.lat, event.lon], 15, {
+                        animate: true,
+                        duration: 0.7,
+                        easeLinearity: 0.25,
+                    });
                 } else {
                     metadataLat.textContent = '–';
                     metadataLon.textContent = '–';
@@ -460,9 +502,8 @@
                 pointsMetric.textContent = (
                     Number(pointsMetric.textContent) + event.features.length
                 ).toString();
-                if (showPointsToggle.checked) {
-                    pointsLayer.addData(event.features);
-                }
+                pointsLayer.addData(event.features);
+                syncPointsLayerVisibility();
             }
 
             function handleCompleteEvent(event) {
@@ -475,12 +516,13 @@
                 const pointFeatures = (event.geojson.features || []).filter(
                     (feature) => feature?.geometry?.type === 'Point'
                 );
-                if (pointFeatures.length && showPointsToggle.checked) {
+                if (pointFeatures.length) {
                     pointsLayer.addData(pointFeatures);
                 }
                 pointsMetric.textContent = pointFeatures.length.toString();
                 const polygonCount = countPolygonGeometries(event.geojson);
                 buffersMetric.textContent = polygonCount.toString();
+                syncPointsLayerVisibility();
             }
 
             function flattenToPolygons(geometry) {
@@ -595,38 +637,126 @@
                 };
             }
 
+            function createLayerFitController({ map, layer, padding = 0.25 }) {
+                let lastBounds = null;
+                const animationOptions = {
+                    animate: true,
+                    duration: 0.9,
+                    easeLinearity: 0.25,
+                };
+
+                function cloneBounds(bounds) {
+                    return L.latLngBounds(bounds.getSouthWest(), bounds.getNorthEast());
+                }
+
+                function boundsArea(bounds) {
+                    const sw = bounds.getSouthWest();
+                    const ne = bounds.getNorthEast();
+                    return Math.abs((ne.lat - sw.lat) * (ne.lng - sw.lng));
+                }
+
+                function areBoundsClose(a, b, epsilon = 1e-5) {
+                    if (!a || !b) {
+                        return false;
+                    }
+                    const cornersA = [
+                        a.getSouthWest(),
+                        a.getSouthEast(),
+                        a.getNorthEast(),
+                        a.getNorthWest(),
+                    ];
+                    const cornersB = [
+                        b.getSouthWest(),
+                        b.getSouthEast(),
+                        b.getNorthEast(),
+                        b.getNorthWest(),
+                    ];
+                    return cornersA.every((corner, index) => {
+                        const counterpart = cornersB[index];
+                        return (
+                            Math.abs(corner.lat - counterpart.lat) <= epsilon &&
+                            Math.abs(corner.lng - counterpart.lng) <= epsilon
+                        );
+                    });
+                }
+
+                function containsBounds(outer, inner) {
+                    const corners = [
+                        inner.getSouthWest(),
+                        inner.getSouthEast(),
+                        inner.getNorthEast(),
+                        inner.getNorthWest(),
+                    ];
+                    return corners.every((corner) => outer.contains(corner));
+                }
+
+                function shouldUpdateView(nextBounds) {
+                    if (!lastBounds) {
+                        return true;
+                    }
+                    if (areBoundsClose(lastBounds, nextBounds)) {
+                        return false;
+                    }
+                    const currentContainsNext = containsBounds(lastBounds, nextBounds);
+                    if (!currentContainsNext) {
+                        return true;
+                    }
+                    const nextContainsCurrent = containsBounds(nextBounds, lastBounds);
+                    if (!nextContainsCurrent) {
+                        const currentArea = boundsArea(lastBounds);
+                        const nextArea = boundsArea(nextBounds);
+                        if (currentArea === 0 || nextArea === 0) {
+                            return true;
+                        }
+                        return nextArea < currentArea * 0.85;
+                    }
+                    return false;
+                }
+
+                return {
+                    reset() {
+                        lastBounds = null;
+                    },
+                    fit() {
+                        const rawBounds = layer.getBounds();
+                        if (!rawBounds.isValid()) {
+                            return;
+                        }
+                        const padded = cloneBounds(rawBounds.pad(padding));
+                        if (shouldUpdateView(padded)) {
+                            lastBounds = padded;
+                            map.flyToBounds(padded, animationOptions);
+                        }
+                    },
+                };
+            }
+
             function createBufferUnionManager({ unionLayer, map, fitPadding = 0.25 }) {
+                const fitController = createLayerFitController({
+                    map,
+                    layer: unionLayer,
+                    padding: fitPadding,
+                });
                 const clipping =
                     (typeof window !== 'undefined' && (window.polygonClipping || window.martinez)) || null;
 
                 if (!clipping || typeof clipping.union !== 'function') {
                     console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
-                    let adjusted = false;
                     return {
                         enqueue: (geometry) => {
                             unionLayer.addData(geometry);
-                            if (!adjusted) {
-                                const bounds = unionLayer.getBounds();
-                                if (bounds.isValid()) {
-                                    map.fitBounds(bounds.pad(fitPadding));
-                                    adjusted = true;
-                                }
-                            }
+                            fitController.fit();
                         },
                         reset: () => {
-                            adjusted = false;
+                            fitController.reset();
                             unionLayer.clearLayers();
                         },
                         replaceWithGeometry: (geojson) => {
-                            adjusted = false;
+                            fitController.reset();
                             unionLayer.clearLayers();
                             if (geojson) {
                                 unionLayer.addData(geojson);
-                                const bounds = unionLayer.getBounds();
-                                if (bounds.isValid()) {
-                                    map.fitBounds(bounds.pad(fitPadding));
-                                    adjusted = true;
-                                }
+                                fitController.fit();
                             }
                         },
                     };
@@ -636,7 +766,6 @@
                 let queue = [];
                 let queueIndex = 0;
                 let scheduled = false;
-                let hasAdjustedView = false;
                 const MAX_BATCH = 50;
                 const MAX_TIME_MS = 12;
 
@@ -723,13 +852,7 @@
                         return;
                     }
                     unionLayer.addData(feature);
-                    if (!hasAdjustedView) {
-                        const bounds = unionLayer.getBounds();
-                        if (bounds.isValid()) {
-                            map.fitBounds(bounds.pad(fitPadding));
-                            hasAdjustedView = true;
-                        }
-                    }
+                    fitController.fit();
                 }
 
                 return {
@@ -746,7 +869,7 @@
                         queue = [];
                         queueIndex = 0;
                         scheduled = false;
-                        hasAdjustedView = false;
+                        fitController.reset();
                         unionLayer.clearLayers();
                     },
                     replaceWithGeometry: (geojson) => {
@@ -754,7 +877,7 @@
                         queue = [];
                         queueIndex = 0;
                         scheduled = false;
-                        hasAdjustedView = false;
+                        fitController.reset();
                         unionLayer.clearLayers();
                         if (geojson) {
                             const polygons = flattenToPolygons(geojson);
