@@ -265,6 +265,24 @@
                 color: #94a3b8;
             }
 
+            .config-input {
+                width: 100%;
+                padding: calc(0.45rem * var(--ui-scale)) calc(0.6rem * var(--ui-scale));
+                border-radius: calc(10px * var(--ui-scale));
+                border: 1px solid rgba(148, 163, 184, 0.3);
+                background: rgba(15, 23, 42, 0.92);
+                color: #e2e8f0;
+                font-size: calc(0.85rem * var(--ui-scale));
+                font-family: inherit;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .config-input:focus-visible {
+                outline: none;
+                border-color: rgba(56, 189, 248, 0.65);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+            }
+
             .ui-size-control {
                 display: flex;
                 align-items: center;
@@ -347,6 +365,43 @@
                                 <span class="ui-size-value" id="ui-size-value">100%</span>
                             </div>
                         </div>
+                        <div class="config-item">
+                            <label for="polygon-outline-color">Cor do contorno do polígono</label>
+                            <input
+                                type="text"
+                                id="polygon-outline-color"
+                                class="config-input"
+                                name="polygon-outline-color"
+                                value="#38BDF8"
+                                maxlength="7"
+                                spellcheck="false"
+                                autocomplete="off"
+                                inputmode="text"
+                                pattern="#?[0-9a-fA-F]{3,6}"
+                            />
+                        </div>
+                        <div class="config-item">
+                            <label for="polygon-fill-color">Cor do preenchimento do polígono</label>
+                            <input
+                                type="text"
+                                id="polygon-fill-color"
+                                class="config-input"
+                                name="polygon-fill-color"
+                                value="#38BDF8"
+                                maxlength="7"
+                                spellcheck="false"
+                                autocomplete="off"
+                                inputmode="text"
+                                pattern="#?[0-9a-fA-F]{3,6}"
+                            />
+                        </div>
+                        <div class="config-item">
+                            <label for="polygon-transparency">Transparência do polígono</label>
+                            <div class="ui-size-control">
+                                <input type="range" id="polygon-transparency" min="0" max="100" step="1" value="78" />
+                                <span class="ui-size-value" id="polygon-transparency-value">78%</span>
+                            </div>
+                        </div>
                         <label class="toggle">
                             <input type="checkbox" id="show-points" checked />
                             Exibir paradas acessíveis
@@ -421,6 +476,22 @@
             const uiSizeInput = document.getElementById('ui-size');
             const uiSizeValue = document.getElementById('ui-size-value');
             const rootElement = document.documentElement;
+            const polygonOutlineInput = document.getElementById('polygon-outline-color');
+            const polygonFillInput = document.getElementById('polygon-fill-color');
+            const polygonTransparencyInput = document.getElementById('polygon-transparency');
+            const polygonTransparencyValue = document.getElementById('polygon-transparency-value');
+
+            const DEFAULT_POLYGON_OUTLINE = '#38BDF8';
+            const DEFAULT_POLYGON_FILL = '#38BDF8';
+            const DEFAULT_POLYGON_TRANSPARENCY = 78;
+
+            let currentPolygonStyle = {
+                color: DEFAULT_POLYGON_OUTLINE,
+                fillColor: DEFAULT_POLYGON_FILL,
+                fillOpacity: computeFillOpacity(DEFAULT_POLYGON_TRANSPARENCY),
+                weight: 2,
+                opacity: 1,
+            };
 
             function clampUiScale(value) {
                 const numeric = Number.parseFloat(value);
@@ -469,6 +540,132 @@
                 applyUiScale(uiSizeInput.value);
             }
 
+            function clampTransparencyPercent(value, fallback = DEFAULT_POLYGON_TRANSPARENCY) {
+                const numeric = Number.parseFloat(value);
+                if (!Number.isFinite(numeric)) {
+                    return fallback;
+                }
+                return Math.min(100, Math.max(0, numeric));
+            }
+
+            function computeFillOpacity(transparencyPercent) {
+                const transparency = clampTransparencyPercent(transparencyPercent, DEFAULT_POLYGON_TRANSPARENCY);
+                const opacity = 1 - transparency / 100;
+                return Math.round(opacity * 100) / 100;
+            }
+
+            function normalizeHexColor(value) {
+                if (typeof value !== 'string') {
+                    return null;
+                }
+                const trimmed = value.trim();
+                if (!trimmed) {
+                    return null;
+                }
+                const withoutHash = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+                if (!(withoutHash.length === 3 || withoutHash.length === 6)) {
+                    return null;
+                }
+                if (!/^[0-9a-fA-F]+$/.test(withoutHash)) {
+                    return null;
+                }
+                const expanded =
+                    withoutHash.length === 3
+                        ? withoutHash
+                              .split('')
+                              .map((char) => `${char}${char}`)
+                              .join('')
+                        : withoutHash;
+                return `#${expanded.toUpperCase()}`;
+            }
+
+            function applyPolygonAppearance({ forceDefaults = false } = {}) {
+                if (!unionLayer) {
+                    return;
+                }
+
+                const nextStyle = { ...currentPolygonStyle };
+
+                if (polygonOutlineInput) {
+                    const normalizedOutline =
+                        normalizeHexColor(polygonOutlineInput.value) ||
+                        (forceDefaults ? currentPolygonStyle.color || DEFAULT_POLYGON_OUTLINE : null);
+                    if (normalizedOutline) {
+                        if (polygonOutlineInput.value !== normalizedOutline) {
+                            polygonOutlineInput.value = normalizedOutline;
+                        }
+                        if (nextStyle.color !== normalizedOutline) {
+                            nextStyle.color = normalizedOutline;
+                        }
+                    }
+                }
+
+                if (polygonFillInput) {
+                    const normalizedFill =
+                        normalizeHexColor(polygonFillInput.value) ||
+                        (forceDefaults ? currentPolygonStyle.fillColor || DEFAULT_POLYGON_FILL : null);
+                    if (normalizedFill) {
+                        if (polygonFillInput.value !== normalizedFill) {
+                            polygonFillInput.value = normalizedFill;
+                        }
+                        if (nextStyle.fillColor !== normalizedFill) {
+                            nextStyle.fillColor = normalizedFill;
+                        }
+                    }
+                }
+
+                const transparency = polygonTransparencyInput
+                    ? clampTransparencyPercent(polygonTransparencyInput.value)
+                    : DEFAULT_POLYGON_TRANSPARENCY;
+                const normalizedTransparency = Number.isFinite(transparency)
+                    ? transparency
+                    : DEFAULT_POLYGON_TRANSPARENCY;
+
+                if (polygonTransparencyInput && Number(polygonTransparencyInput.value) !== normalizedTransparency) {
+                    polygonTransparencyInput.value = normalizedTransparency.toString();
+                }
+
+                if (polygonTransparencyValue) {
+                    polygonTransparencyValue.textContent = `${normalizedTransparency}%`;
+                }
+
+                const fillOpacity = computeFillOpacity(normalizedTransparency);
+                if (nextStyle.fillOpacity !== fillOpacity) {
+                    nextStyle.fillOpacity = fillOpacity;
+                }
+
+                const styleChanged = Object.keys(nextStyle).some(
+                    (key) => nextStyle[key] !== currentPolygonStyle[key]
+                );
+
+                if (styleChanged || forceDefaults) {
+                    currentPolygonStyle = nextStyle;
+                    unionLayer.setStyle({ ...currentPolygonStyle });
+                }
+            }
+
+            function initializePolygonControls() {
+                const forceUpdate = () => applyPolygonAppearance({ forceDefaults: true });
+
+                if (polygonOutlineInput) {
+                    polygonOutlineInput.addEventListener('change', forceUpdate);
+                    polygonOutlineInput.addEventListener('blur', forceUpdate);
+                    polygonOutlineInput.addEventListener('input', () => applyPolygonAppearance());
+                }
+
+                if (polygonFillInput) {
+                    polygonFillInput.addEventListener('change', forceUpdate);
+                    polygonFillInput.addEventListener('blur', forceUpdate);
+                    polygonFillInput.addEventListener('input', () => applyPolygonAppearance());
+                }
+
+                if (polygonTransparencyInput) {
+                    polygonTransparencyInput.addEventListener('input', forceUpdate);
+                }
+
+                applyPolygonAppearance({ forceDefaults: true });
+            }
+
             const MIN_POINTS_ZOOM = 13;
             const map = L.map('map', {
                 center: [-23.5505, -46.6333],
@@ -481,11 +678,9 @@
             }).addTo(map);
 
             const unionLayer = L.geoJSON([], {
-                style: {
-                    color: '#38bdf8',
-                    weight: 2,
-                    fillOpacity: 0.22,
-                },
+                style: () => ({
+                    ...currentPolygonStyle,
+                }),
                 filter: (feature) => {
                     const type = feature?.geometry?.type;
                     return type === 'Polygon' || type === 'MultiPolygon';
@@ -493,6 +688,7 @@
             }).addTo(map);
 
             const bufferUnionManager = createBufferUnionManager({ unionLayer, map });
+            initializePolygonControls();
 
             const pointsLayer = L.geoJSON([], {
                 pointToLayer: (feature, latlng) =>
