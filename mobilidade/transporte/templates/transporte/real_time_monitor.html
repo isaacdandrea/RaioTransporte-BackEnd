@@ -14,6 +14,7 @@
             :root {
                 color-scheme: dark;
                 font-family: "Inter", "Segoe UI", sans-serif;
+                --ui-scale: 1;
             }
 
             body {
@@ -37,38 +38,39 @@
 
             .hud {
                 position: absolute;
-                top: 1.5rem;
-                right: 1.5rem;
+                top: calc(1.5rem * var(--ui-scale));
+                right: calc(1.5rem * var(--ui-scale));
                 display: flex;
                 flex-direction: column;
-                gap: 0.75rem;
+                gap: calc(0.75rem * var(--ui-scale));
                 z-index: 400;
-                max-width: min(420px, 90vw);
+                max-width: min(calc(420px * var(--ui-scale)), 90vw);
             }
 
             .card {
                 background: rgba(15, 23, 42, 0.88);
                 border: 1px solid rgba(148, 163, 184, 0.25);
-                border-radius: 14px;
-                padding: 1rem 1.1rem;
+                border-radius: calc(14px * var(--ui-scale));
+                padding: calc(1rem * var(--ui-scale)) calc(1.1rem * var(--ui-scale));
                 box-shadow: 0 24px 40px rgba(15, 23, 42, 0.32);
                 backdrop-filter: blur(12px);
+                transition: padding 0.2s ease, border-radius 0.2s ease;
             }
 
             .status-box {
-                font-size: 1.05rem;
-                line-height: 1.45;
+                font-size: calc(1.05rem * var(--ui-scale));
+                line-height: calc(1.45 * var(--ui-scale));
             }
 
             .status-overlay {
                 position: absolute;
-                top: 1.75rem;
+                top: calc(1.75rem * var(--ui-scale));
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 410;
                 display: flex;
                 justify-content: center;
-                width: min(720px, 95vw);
+                width: min(calc(720px * var(--ui-scale)), 95vw);
                 pointer-events: none;
             }
 
@@ -95,20 +97,22 @@
             .indicator {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.4rem;
-                font-size: 0.8rem;
+                gap: calc(0.4rem * var(--ui-scale));
+                font-size: calc(0.8rem * var(--ui-scale));
                 text-transform: uppercase;
                 letter-spacing: 0.08em;
                 color: #94a3b8;
+                transition: font-size 0.2s ease, gap 0.2s ease;
             }
 
             .indicator::before {
                 content: "";
-                width: 0.55rem;
-                height: 0.55rem;
+                width: calc(0.55rem * var(--ui-scale));
+                height: calc(0.55rem * var(--ui-scale));
                 border-radius: 999px;
                 background: #94a3b8;
                 box-shadow: 0 0 12px rgba(148, 163, 184, 0.35);
+                transition: width 0.2s ease, height 0.2s ease;
             }
 
             .indicator[data-state="open"]::before {
@@ -128,58 +132,172 @@
             .meta-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.6rem 0.9rem;
-                font-size: 0.85rem;
+                gap: calc(0.6rem * var(--ui-scale)) calc(0.9rem * var(--ui-scale));
+                font-size: calc(0.85rem * var(--ui-scale));
                 color: #cbd5f5;
+                transition: font-size 0.2s ease, gap 0.2s ease;
             }
 
             .meta-grid span {
                 display: block;
-                font-size: 0.75rem;
+                font-size: calc(0.75rem * var(--ui-scale));
                 text-transform: uppercase;
                 letter-spacing: 0.08em;
                 color: #64748b;
-                margin-bottom: 0.15rem;
+                margin-bottom: calc(0.15rem * var(--ui-scale));
+                transition: font-size 0.2s ease, margin-bottom 0.2s ease;
             }
 
             .metrics-grid {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.75rem;
+                gap: calc(0.75rem * var(--ui-scale));
+                transition: gap 0.2s ease;
             }
 
             .metric {
                 display: flex;
                 flex-direction: column;
-                gap: 0.15rem;
-                font-size: 0.8rem;
+                gap: calc(0.15rem * var(--ui-scale));
+                font-size: calc(0.8rem * var(--ui-scale));
                 color: #94a3b8;
+                transition: font-size 0.2s ease, gap 0.2s ease;
             }
 
             .metric .value {
-                font-size: 1.15rem;
+                font-size: calc(1.15rem * var(--ui-scale));
                 font-weight: 600;
                 color: #f97316;
+                transition: font-size 0.2s ease;
             }
 
             .controls {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 0.75rem;
+                gap: calc(0.75rem * var(--ui-scale));
                 flex-wrap: wrap;
             }
 
             .toggle {
                 display: inline-flex;
                 align-items: center;
-                gap: 0.45rem;
-                font-size: 0.8rem;
+                gap: calc(0.45rem * var(--ui-scale));
+                font-size: calc(0.8rem * var(--ui-scale));
                 color: #94a3b8;
+                transition: font-size 0.2s ease, gap 0.2s ease;
             }
 
             .toggle input {
                 width: auto;
+            }
+
+            .config-button {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: calc(2.4rem * var(--ui-scale));
+                height: calc(2.4rem * var(--ui-scale));
+                border-radius: calc(12px * var(--ui-scale));
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                background: rgba(15, 23, 42, 0.88);
+                color: #94a3b8;
+                cursor: pointer;
+                transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+            }
+
+            .config-button:hover,
+            .config-button:focus-visible {
+                color: #e2e8f0;
+                border-color: rgba(148, 163, 184, 0.45);
+                outline: none;
+            }
+
+            .config-button svg {
+                width: calc(1.1rem * var(--ui-scale));
+                height: calc(1.1rem * var(--ui-scale));
+            }
+
+            .config-banner {
+                margin-top: calc(0.8rem * var(--ui-scale));
+                padding: calc(0.85rem * var(--ui-scale));
+                border-radius: calc(12px * var(--ui-scale));
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                background: rgba(10, 16, 30, 0.92);
+                display: flex;
+                flex-direction: column;
+                gap: calc(0.9rem * var(--ui-scale));
+            }
+
+            .config-banner[hidden] {
+                display: none;
+            }
+
+            .config-banner__header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: calc(0.9rem * var(--ui-scale));
+                color: #cbd5f5;
+            }
+
+            .config-close {
+                background: transparent;
+                border: none;
+                color: #94a3b8;
+                cursor: pointer;
+                font-size: calc(1.2rem * var(--ui-scale));
+                line-height: 1;
+                padding: 0;
+            }
+
+            .config-close:hover,
+            .config-close:focus-visible {
+                color: #e2e8f0;
+                outline: none;
+            }
+
+            .config-item {
+                display: flex;
+                flex-direction: column;
+                gap: calc(0.45rem * var(--ui-scale));
+                font-size: calc(0.8rem * var(--ui-scale));
+                color: #94a3b8;
+            }
+
+            .config-input {
+                width: 100%;
+                padding: calc(0.45rem * var(--ui-scale)) calc(0.6rem * var(--ui-scale));
+                border-radius: calc(10px * var(--ui-scale));
+                border: 1px solid rgba(148, 163, 184, 0.3);
+                background: rgba(15, 23, 42, 0.92);
+                color: #e2e8f0;
+                font-size: calc(0.85rem * var(--ui-scale));
+                font-family: inherit;
+                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .config-input:focus-visible {
+                outline: none;
+                border-color: rgba(56, 189, 248, 0.65);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+            }
+
+            .ui-size-control {
+                display: flex;
+                align-items: center;
+                gap: calc(0.6rem * var(--ui-scale));
+            }
+
+            .ui-size-control input[type='range'] {
+                flex: 1;
+            }
+
+            .ui-size-value {
+                font-size: calc(0.8rem * var(--ui-scale));
+                color: #e2e8f0;
+                min-width: 3ch;
+                text-align: right;
             }
 
             @media (max-width: 768px) {
@@ -208,6 +326,81 @@
                     <div class="controls">
                         <div class="indicator" id="connection-indicator" data-state="closed">
                             desconectado
+                        </div>
+                        <button
+                            type="button"
+                            class="config-button"
+                            id="open-config"
+                            aria-label="Abrir configurações"
+                            aria-expanded="false"
+                            aria-controls="config-banner"
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path
+                                    d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M19.4 13.5a1.25 1.25 0 0 0 .25-1.35 1.25 1.25 0 0 0-.27-.4l-.12-.12a1.25 1.25 0 0 1-.24-1.33l.07-.18a1.25 1.25 0 0 0-1.15-1.7h-.17a1.25 1.25 0 0 1-1.2-.9l-.05-.17a1.25 1.25 0 0 0-1.22-.9h-.18a1.25 1.25 0 0 1-1.18-.92l-.04-.16a1.25 1.25 0 0 0-2.42 0l-.04.16a1.25 1.25 0 0 1-1.18.92h-.18a1.25 1.25 0 0 0-1.22.9l-.05.17a1.25 1.25 0 0 1-1.2.9h-.17a1.25 1.25 0 0 0-1.15 1.7l.07.18c.2.45.1.97-.24 1.33l-.12.12a1.25 1.25 0 0 0 0 1.75l.12.12c.33.36.43.88.24 1.33l-.07.18a1.25 1.25 0 0 0 1.15 1.7h.17c.55 0 1.04.37 1.2.9l.05.17a1.25 1.25 0 0 0 1.22.9h.18c.55 0 1.04.37 1.18.92l.04.16a1.25 1.25 0 0 0 2.42 0l.04-.16c.14-.55.63-.92 1.18-.92h.18a1.25 1.25 0 0 0 1.22-.9l.05-.17a1.25 1.25 0 0 1 1.2-.9h.17a1.25 1.25 0 0 0 1.15-1.7l-.07-.18a1.25 1.25 0 0 1 .24-1.33l.12-.12Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.5"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="config-banner" id="config-banner" hidden>
+                        <div class="config-banner__header">
+                            <span>Configurações</span>
+                            <button type="button" class="config-close" id="close-config" aria-label="Fechar configurações">&times;</button>
+                        </div>
+                        <div class="config-item">
+                            <span>Tamanho da UI</span>
+                            <div class="ui-size-control">
+                                <input type="range" id="ui-size" min="0.85" max="2" step="0.05" value="1" />
+                                <span class="ui-size-value" id="ui-size-value">100%</span>
+                            </div>
+                        </div>
+                        <div class="config-item">
+                            <label for="polygon-outline-color">Cor do contorno do polígono</label>
+                            <input
+                                type="text"
+                                id="polygon-outline-color"
+                                class="config-input"
+                                name="polygon-outline-color"
+                                value="#38BDF8"
+                                maxlength="7"
+                                spellcheck="false"
+                                autocomplete="off"
+                                inputmode="text"
+                                pattern="#?[0-9a-fA-F]{3,6}"
+                            />
+                        </div>
+                        <div class="config-item">
+                            <label for="polygon-fill-color">Cor do preenchimento do polígono</label>
+                            <input
+                                type="text"
+                                id="polygon-fill-color"
+                                class="config-input"
+                                name="polygon-fill-color"
+                                value="#38BDF8"
+                                maxlength="7"
+                                spellcheck="false"
+                                autocomplete="off"
+                                inputmode="text"
+                                pattern="#?[0-9a-fA-F]{3,6}"
+                            />
+                        </div>
+                        <div class="config-item">
+                            <label for="polygon-transparency">Transparência do polígono</label>
+                            <div class="ui-size-control">
+                                <input type="range" id="polygon-transparency" min="0" max="100" step="1" value="78" />
+                                <span class="ui-size-value" id="polygon-transparency-value">78%</span>
+                            </div>
                         </div>
                         <label class="toggle">
                             <input type="checkbox" id="show-points" checked />
@@ -277,6 +470,201 @@
             const pointsMetric = document.getElementById('metric-points');
             const durationMetric = document.getElementById('metric-duration');
             const showPointsToggle = document.getElementById('show-points');
+            const configButton = document.getElementById('open-config');
+            const closeConfigButton = document.getElementById('close-config');
+            const configBanner = document.getElementById('config-banner');
+            const uiSizeInput = document.getElementById('ui-size');
+            const uiSizeValue = document.getElementById('ui-size-value');
+            const rootElement = document.documentElement;
+            const polygonOutlineInput = document.getElementById('polygon-outline-color');
+            const polygonFillInput = document.getElementById('polygon-fill-color');
+            const polygonTransparencyInput = document.getElementById('polygon-transparency');
+            const polygonTransparencyValue = document.getElementById('polygon-transparency-value');
+
+            const DEFAULT_POLYGON_OUTLINE = '#38BDF8';
+            const DEFAULT_POLYGON_FILL = '#38BDF8';
+            const DEFAULT_POLYGON_TRANSPARENCY = 78;
+
+            let currentPolygonStyle = {
+                color: DEFAULT_POLYGON_OUTLINE,
+                fillColor: DEFAULT_POLYGON_FILL,
+                fillOpacity: computeFillOpacity(DEFAULT_POLYGON_TRANSPARENCY),
+                weight: 2,
+                opacity: 1,
+            };
+
+            function clampUiScale(value) {
+                const numeric = Number.parseFloat(value);
+                if (Number.isNaN(numeric)) {
+                    return 1;
+                }
+                return Math.min(2, Math.max(0.85, numeric));
+            }
+
+            function applyUiScale(scale) {
+                const clamped = clampUiScale(scale);
+                rootElement.style.setProperty('--ui-scale', clamped);
+                if (uiSizeValue) {
+                    uiSizeValue.textContent = `${Math.round(clamped * 100)}%`;
+                }
+                if (uiSizeInput && Number.parseFloat(uiSizeInput.value) !== clamped) {
+                    uiSizeInput.value = clamped;
+                }
+            }
+
+            if (configButton && configBanner) {
+                configButton.addEventListener('click', () => {
+                    const isHidden = configBanner.hasAttribute('hidden');
+                    if (isHidden) {
+                        configBanner.removeAttribute('hidden');
+                        configButton.setAttribute('aria-expanded', 'true');
+                    } else {
+                        configBanner.setAttribute('hidden', '');
+                        configButton.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+
+            if (closeConfigButton && configBanner && configButton) {
+                closeConfigButton.addEventListener('click', () => {
+                    configBanner.setAttribute('hidden', '');
+                    configButton.setAttribute('aria-expanded', 'false');
+                    configButton.focus({ preventScroll: true });
+                });
+            }
+
+            if (uiSizeInput) {
+                uiSizeInput.addEventListener('input', (event) => {
+                    applyUiScale(event.target.value);
+                });
+                applyUiScale(uiSizeInput.value);
+            }
+
+            function clampTransparencyPercent(value, fallback = DEFAULT_POLYGON_TRANSPARENCY) {
+                const numeric = Number.parseFloat(value);
+                if (!Number.isFinite(numeric)) {
+                    return fallback;
+                }
+                return Math.min(100, Math.max(0, numeric));
+            }
+
+            function computeFillOpacity(transparencyPercent) {
+                const transparency = clampTransparencyPercent(transparencyPercent, DEFAULT_POLYGON_TRANSPARENCY);
+                const opacity = 1 - transparency / 100;
+                return Math.round(opacity * 100) / 100;
+            }
+
+            function normalizeHexColor(value) {
+                if (typeof value !== 'string') {
+                    return null;
+                }
+                const trimmed = value.trim();
+                if (!trimmed) {
+                    return null;
+                }
+                const withoutHash = trimmed.startsWith('#') ? trimmed.slice(1) : trimmed;
+                if (!(withoutHash.length === 3 || withoutHash.length === 6)) {
+                    return null;
+                }
+                if (!/^[0-9a-fA-F]+$/.test(withoutHash)) {
+                    return null;
+                }
+                const expanded =
+                    withoutHash.length === 3
+                        ? withoutHash
+                              .split('')
+                              .map((char) => `${char}${char}`)
+                              .join('')
+                        : withoutHash;
+                return `#${expanded.toUpperCase()}`;
+            }
+
+            function applyPolygonAppearance({ forceDefaults = false } = {}) {
+                if (!unionLayer) {
+                    return;
+                }
+
+                const nextStyle = { ...currentPolygonStyle };
+
+                if (polygonOutlineInput) {
+                    const normalizedOutline =
+                        normalizeHexColor(polygonOutlineInput.value) ||
+                        (forceDefaults ? currentPolygonStyle.color || DEFAULT_POLYGON_OUTLINE : null);
+                    if (normalizedOutline) {
+                        if (polygonOutlineInput.value !== normalizedOutline) {
+                            polygonOutlineInput.value = normalizedOutline;
+                        }
+                        if (nextStyle.color !== normalizedOutline) {
+                            nextStyle.color = normalizedOutline;
+                        }
+                    }
+                }
+
+                if (polygonFillInput) {
+                    const normalizedFill =
+                        normalizeHexColor(polygonFillInput.value) ||
+                        (forceDefaults ? currentPolygonStyle.fillColor || DEFAULT_POLYGON_FILL : null);
+                    if (normalizedFill) {
+                        if (polygonFillInput.value !== normalizedFill) {
+                            polygonFillInput.value = normalizedFill;
+                        }
+                        if (nextStyle.fillColor !== normalizedFill) {
+                            nextStyle.fillColor = normalizedFill;
+                        }
+                    }
+                }
+
+                const transparency = polygonTransparencyInput
+                    ? clampTransparencyPercent(polygonTransparencyInput.value)
+                    : DEFAULT_POLYGON_TRANSPARENCY;
+                const normalizedTransparency = Number.isFinite(transparency)
+                    ? transparency
+                    : DEFAULT_POLYGON_TRANSPARENCY;
+
+                if (polygonTransparencyInput && Number(polygonTransparencyInput.value) !== normalizedTransparency) {
+                    polygonTransparencyInput.value = normalizedTransparency.toString();
+                }
+
+                if (polygonTransparencyValue) {
+                    polygonTransparencyValue.textContent = `${normalizedTransparency}%`;
+                }
+
+                const fillOpacity = computeFillOpacity(normalizedTransparency);
+                if (nextStyle.fillOpacity !== fillOpacity) {
+                    nextStyle.fillOpacity = fillOpacity;
+                }
+
+                const styleChanged = Object.keys(nextStyle).some(
+                    (key) => nextStyle[key] !== currentPolygonStyle[key]
+                );
+
+                if (styleChanged || forceDefaults) {
+                    currentPolygonStyle = nextStyle;
+                    unionLayer.setStyle({ ...currentPolygonStyle });
+                }
+            }
+
+            function initializePolygonControls() {
+                const forceUpdate = () => applyPolygonAppearance({ forceDefaults: true });
+
+                if (polygonOutlineInput) {
+                    polygonOutlineInput.addEventListener('change', forceUpdate);
+                    polygonOutlineInput.addEventListener('blur', forceUpdate);
+                    polygonOutlineInput.addEventListener('input', () => applyPolygonAppearance());
+                }
+
+                if (polygonFillInput) {
+                    polygonFillInput.addEventListener('change', forceUpdate);
+                    polygonFillInput.addEventListener('blur', forceUpdate);
+                    polygonFillInput.addEventListener('input', () => applyPolygonAppearance());
+                }
+
+                if (polygonTransparencyInput) {
+                    polygonTransparencyInput.addEventListener('input', forceUpdate);
+                }
+
+                applyPolygonAppearance({ forceDefaults: true });
+            }
 
             const MIN_POINTS_ZOOM = 13;
             const map = L.map('map', {
@@ -290,11 +678,9 @@
             }).addTo(map);
 
             const unionLayer = L.geoJSON([], {
-                style: {
-                    color: '#38bdf8',
-                    weight: 2,
-                    fillOpacity: 0.22,
-                },
+                style: () => ({
+                    ...currentPolygonStyle,
+                }),
                 filter: (feature) => {
                     const type = feature?.geometry?.type;
                     return type === 'Polygon' || type === 'MultiPolygon';
@@ -302,6 +688,7 @@
             }).addTo(map);
 
             const bufferUnionManager = createBufferUnionManager({ unionLayer, map });
+            initializePolygonControls();
 
             const pointsLayer = L.geoJSON([], {
                 pointToLayer: (feature, latlng) =>
