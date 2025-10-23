@@ -1274,6 +1274,22 @@
                 } else {
                     durationMetric.textContent = '–';
                 }
+                const cachedGeojson = event.geojson || event.payload;
+                if (cachedGeojson) {
+                    bufferUnionManager.replaceWithGeometry(cachedGeojson);
+                    pointsLayer.clearLayers();
+
+                    const pointFeatures = (cachedGeojson.features || []).filter(
+                        (feature) => feature?.geometry?.type === 'Point'
+                    );
+                    if (pointFeatures.length) {
+                        pointsLayer.addData(pointFeatures);
+                        updatePointsVisibility();
+                    }
+                    pointsMetric.textContent = pointFeatures.length.toString();
+                    const polygonCount = countPolygonGeometries(cachedGeojson);
+                    buffersMetric.textContent = polygonCount.toString();
+                }
                 currentRunId = null;
             }
 

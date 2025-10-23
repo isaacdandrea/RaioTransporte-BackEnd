@@ -193,6 +193,7 @@ class RaioDeAlcanceView(APIView):
                         {
                             **visualization_metadata,
                             "distance_m": cache_distance_m,
+                            "geojson": geojson,
                         }
                     )
             else:
@@ -369,6 +370,7 @@ class RaioDeAlcanceStreamView(APIView):
                         {
                             **visualization_metadata,
                             "distance_m": cache_result.distance_m,
+                            "geojson": cache_result.payload,
                         }
                     )
                 return Response(payload)
