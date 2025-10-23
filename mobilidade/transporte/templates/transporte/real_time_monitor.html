@@ -608,6 +608,25 @@
                 const clipping =
                     (typeof window !== 'undefined' && (window.polygonClipping || window.martinez)) || null;
 
+                const AUTO_FIT_MIN_ZOOM = 10;
+                const FLY_OPTIONS = {
+                    animate: true,
+                    duration: 0.75,
+                    easeLinearity: 0.25,
+                };
+
+                function applyAutoFit(targetBounds) {
+                    if (!targetBounds || !targetBounds.isValid()) {
+                        return;
+                    }
+                    const center = targetBounds.getCenter();
+                    const computedZoom = map.getBoundsZoom(targetBounds, true);
+                    const limitedZoom = Number.isFinite(computedZoom)
+                        ? Math.max(computedZoom, AUTO_FIT_MIN_ZOOM)
+                        : AUTO_FIT_MIN_ZOOM;
+                    map.flyTo(center, limitedZoom, FLY_OPTIONS);
+                }
+
                 if (!clipping || typeof clipping.union !== 'function') {
                     console.warn('Biblioteca de união de polígonos indisponível. Buffers não serão mesclados.');
                     let fittedBounds = null;
@@ -626,11 +645,7 @@
                             const targetBounds = pendingFitBounds;
                             pendingFitBounds = null;
                             fittedBounds = targetBounds;
-                            map.flyToBounds(targetBounds, {
-                                animate: true,
-                                duration: 0.75,
-                                easeLinearity: 0.25,
-                            });
+                            applyAutoFit(targetBounds);
                         }, 1000);
                     }
 
@@ -712,11 +727,7 @@
                         const targetBounds = pendingFitBounds;
                         pendingFitBounds = null;
                         fittedBounds = targetBounds;
-                        map.flyToBounds(targetBounds, {
-                            animate: true,
-                            duration: 0.75,
-                            easeLinearity: 0.25,
-                        });
+                        applyAutoFit(targetBounds);
                     }, 1000);
                 }
 
@@ -939,8 +950,6 @@
                             'Aguardando execução com <strong>isMapVisualizer=true</strong>.',
                             'idle'
                         );
-                        resetMap();
-                        clearMetadata();
                         currentRunId = null;
                         break;
                     default:
