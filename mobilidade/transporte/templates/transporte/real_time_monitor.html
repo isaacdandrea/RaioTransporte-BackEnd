@@ -459,6 +459,7 @@
         ></script>
         <script>
             const streamEndpoint = "{{ visualizer_stream_endpoint }}";
+            const apiEndpoint = "{{ api_endpoint }}";
             const statusBox = document.getElementById('status');
             const connectionIndicator = document.getElementById('connection-indicator');
             const metadataLat = document.getElementById('meta-lat');
@@ -484,6 +485,91 @@
             const DEFAULT_POLYGON_OUTLINE = '#38BDF8';
             const DEFAULT_POLYGON_FILL = '#38BDF8';
             const DEFAULT_POLYGON_TRANSPARENCY = 78;
+            const PRESET_LOOKUP = Object.freeze([
+                { key: 'DEFAULT', dia_semana: 'tuesday', hora_inicio_min: 15 * 60 },
+                { key: 'DIA_SEMANA_TRAFEGO', dia_semana: 'thursday', hora_inicio_min: 18 * 60 + 30 },
+                { key: 'FINAL_DE_SEMANA', dia_semana: 'saturday', hora_inicio_min: 11 * 60 },
+            ]);
+
+            function getCsrfToken() {
+                const name = 'csrftoken';
+                const cookies = document.cookie ? document.cookie.split(';') : [];
+                for (const cookie of cookies) {
+                    const trimmed = cookie.trim();
+                    if (trimmed.startsWith(`${name}=`)) {
+                        return decodeURIComponent(trimmed.slice(name.length + 1));
+                    }
+                }
+                return null;
+            }
+
+            function inferPresetKeyFromMetadata(metadata) {
+                if (!metadata) {
+                    return null;
+                }
+                const dia = typeof metadata.dia_semana === 'string' ? metadata.dia_semana.trim().toLowerCase() : null;
+                const hora = Number(metadata.hora_inicio_min);
+                if (!dia || !Number.isFinite(hora)) {
+                    return null;
+                }
+                const match = PRESET_LOOKUP.find(
+                    (preset) => preset.dia_semana === dia && preset.hora_inicio_min === hora
+                );
+                return match ? match.key : null;
+            }
+
+            async function fetchCacheGeometry(metadata) {
+                if (!apiEndpoint) {
+                    return null;
+                }
+
+                const lat = Number(metadata.lat);
+                const lon = Number(metadata.lon);
+                const tempo = Number(metadata.tempo_min);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(tempo)) {
+                    return null;
+                }
+
+                const payload = {
+                    lat,
+                    lon,
+                    tempo,
+                    isMapVisualizer: false,
+                };
+
+                const presetKey = inferPresetKeyFromMetadata(metadata);
+                if (presetKey) {
+                    payload.presetsDia = presetKey;
+                }
+
+                const headers = { 'Content-Type': 'application/json' };
+                const csrfToken = getCsrfToken();
+                if (csrfToken) {
+                    headers['X-CSRFToken'] = csrfToken;
+                }
+
+                try {
+                    const response = await fetch(apiEndpoint, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers,
+                        body: JSON.stringify(payload),
+                    });
+
+                    if (!response.ok) {
+                        console.warn(
+                            `Cache geometry request failed: ${response.status} ${response.statusText}`
+                        );
+                        return null;
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('Failed to fetch cached geometry', error);
+                    return null;
+                }
+            }
 
             let currentPolygonStyle = {
                 color: DEFAULT_POLYGON_OUTLINE,
@@ -860,23 +946,30 @@
                 updatePointsVisibility();
             }
 
-            function handleCompleteEvent(event) {
-                if (!event.geojson) {
+            function renderFinalGeometry(geojson) {
+                if (!geojson) {
                     return;
                 }
-                bufferUnionManager.replaceWithGeometry(event.geojson);
+                bufferUnionManager.replaceWithGeometry(geojson);
                 pointsLayer.clearLayers();
 
-                const pointFeatures = (event.geojson.features || []).filter(
+                const pointFeatures = (geojson.features || []).filter(
                     (feature) => feature?.geometry?.type === 'Point'
                 );
                 if (pointFeatures.length) {
                     pointsLayer.addData(pointFeatures);
-                    updatePointsVisibility();
                 }
+                updatePointsVisibility();
                 pointsMetric.textContent = pointFeatures.length.toString();
-                const polygonCount = countPolygonGeometries(event.geojson);
+                const polygonCount = countPolygonGeometries(geojson);
                 buffersMetric.textContent = polygonCount.toString();
+            }
+
+            function handleCompleteEvent(event) {
+                if (!event.geojson) {
+                    return;
+                }
+                renderFinalGeometry(event.geojson);
             }
 
             function flattenToPolygons(geometry) {
@@ -1262,7 +1355,10 @@
                 currentRunId = null;
             }
 
+            let lastCacheRenderToken = 0;
+
             function handleCacheHit(event) {
+                const cacheRenderToken = ++lastCacheRenderToken;
                 resetMap();
                 updateMetadata(event);
                 updateStatus(
@@ -1275,6 +1371,13 @@
                     durationMetric.textContent = '–';
                 }
                 currentRunId = null;
+
+                fetchCacheGeometry(event).then((geojson) => {
+                    if (cacheRenderToken !== lastCacheRenderToken || !geojson) {
+                        return;
+                    }
+                    renderFinalGeometry(geojson);
+                });
             }
 
             function processEvent(event) {
