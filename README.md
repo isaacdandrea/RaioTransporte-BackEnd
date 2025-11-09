@@ -11,17 +11,17 @@ Bem-vindo ao backend do **UrbanIso** (RaioTransporte), um software que transform
 ## Destaques do Projeto
 
 ### Explore a cidade de forma inteligente
-- Algoritmo baseado em **Connection Scan Algorithm (CSA)**, combinando dados de caminhada e conexões de transporte para gerar isócronas precisas. 【F:mobilidade/transporte/algorithms/raio_alcance.py†L1-L132】
-- Suporte a diferentes presets de horários para comparar a acessibilidade em dias úteis, horários de pico e fins de semana. 【F:mobilidade/transporte/views.py†L58-L96】
-- API de monitoramento em tempo real com hub de visualização thread-safe, permitindo criar experiências interativas para o usuário final. 【F:mobilidade/transporte/visualization.py†L1-L126】
+- Algoritmo baseado em **Connection Scan Algorithm (CSA)**, combinando dados de caminhada e conexões de transporte para gerar isócronas precisas.
+- Suporte a diferentes presets de horários para comparar a acessibilidade em dias úteis, horários de pico e fins de semana.
+- API de monitoramento em tempo real com hub de visualização thread-safe, permitindo criar experiências interativas para o usuário final.
 
 ### Boas práticas de cibersegurança
-- **Autenticação com chave estática e comparação em tempo constante** via cabeçalho `X-API-Key`, prevenindo ataques de timing e garantindo que apenas clientes autorizados acessem o endpoint de isócronas. 【F:mobilidade/transporte/authentication.py†L1-L60】
-- **Proteções HTTP fortalecidas** com middlewares de segurança do Django, cabeçalhos CORS controlados e suporte a `SECURE_PROXY_SSL_HEADER` para implantação atrás de proxies HTTPS. 【F:mobilidade/mobilidade/settings.py†L78-L146】
-- **Caching controlado** das respostas geoespaciais com validação por coordenadas, reduzindo carga sem expor dados sensíveis ou exceder limites de tempo de processamento. 【F:mobilidade/transporte/views.py†L104-L179】
+- **Autenticação com chave estática e comparação em tempo constante** via cabeçalho `X-API-Key`, prevenindo ataques de timing e garantindo que apenas clientes autorizados acessem o endpoint de isócronas.
+- **Proteções HTTP fortalecidas** com middlewares de segurança do Django, cabeçalhos CORS controlados e suporte a `SECURE_PROXY_SSL_HEADER` para implantação atrás de proxies HTTPS.
+- **Caching controlado** das respostas geoespaciais com validação por coordenadas, reduzindo carga sem expor dados sensíveis ou exceder limites de tempo de processamento.
 
 ### Outras vantagens
-- Código preparado para **implantações em contêineres**, com Dockerfile multi-stage e compatibilidade com AWS Lambda Web Adapter. 【F:mobilidade/Dockerfile†L1-L70】
+- Código preparado para **implantações em contêineres**, com Dockerfile multi-stage e compatibilidade com AWS Lambda Web Adapter.
 - Suporte a **PostGIS** e bibliotecas científicas robustas (SciPy, GDAL) para manipular geometrias em alta performance.
 - Ferramentas de observabilidade integradas, com logs estruturados que ajudam a auditar métricas de execução e performance.
 
