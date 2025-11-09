@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: mobilidade
       POSTGRES_USER: mobilidade
-      POSTGRES_PASSWORD: eId6DiJ3c8tFVK1AC0PQxlgSAZRpZT69iSTAJJjDpxm7VbDdvpCoMCXEudV2W37z
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
     ports:
       - "5433:5432"
     volumes:
